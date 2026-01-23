@@ -12,8 +12,7 @@ The **Campus Placement Portal** simplifies campus hiring by providing a centrali
 
 ## 👩‍💻 Creator
 
-**Namratha R**  
-*(Project Owner & Developer)*
+
 
 ---
 

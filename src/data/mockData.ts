@@ -1,0 +1,169 @@
+import { Company, Application, Notification, PlacementStats, User } from '@/types';
+
+export const mockCompanies: Company[] = [
+  {
+    id: '1',
+    name: 'Google',
+    role: 'Software Engineer',
+    salary: '₹25 LPA',
+    qualifications: 'B.Tech/M.Tech in CS/IT',
+    minGpa: 8.0,
+    description: 'Join Google as a Software Engineer and work on products used by billions of people worldwide. You will be part of a team that develops innovative solutions.',
+    deadline: '2026-02-15',
+    location: 'Bangalore',
+    jobType: 'Full-time',
+  },
+  {
+    id: '2',
+    name: 'Microsoft',
+    role: 'Full Stack Developer',
+    salary: '₹22 LPA',
+    qualifications: 'B.Tech/M.Tech in CS/IT/ECE',
+    minGpa: 7.5,
+    description: 'Microsoft is looking for passionate Full Stack Developers to join our Azure team. Work on cloud technologies that power millions of businesses.',
+    deadline: '2026-02-20',
+    location: 'Hyderabad',
+    jobType: 'Full-time',
+  },
+  {
+    id: '3',
+    name: 'Amazon',
+    role: 'SDE Intern',
+    salary: '₹60,000/month',
+    qualifications: 'B.Tech in any branch',
+    minGpa: 7.0,
+    description: 'Amazon Summer Internship Program. Work on real-world projects and get mentored by industry experts.',
+    deadline: '2026-01-30',
+    location: 'Chennai',
+    jobType: 'Internship',
+  },
+  {
+    id: '4',
+    name: 'Infosys',
+    role: 'Systems Engineer',
+    salary: '₹6.5 LPA',
+    qualifications: 'B.Tech/B.E. in any branch',
+    minGpa: 6.0,
+    description: 'Join Infosys as a Systems Engineer and work on enterprise-level applications for Fortune 500 clients.',
+    deadline: '2026-02-28',
+    location: 'Pune',
+    jobType: 'Full-time',
+  },
+  {
+    id: '5',
+    name: 'TCS',
+    role: 'Digital Trainee',
+    salary: '₹7 LPA',
+    qualifications: 'B.Tech/B.E. in any branch',
+    minGpa: 6.0,
+    description: 'TCS Digital hiring for exceptional performers. Work on cutting-edge technologies and digital transformation projects.',
+    deadline: '2026-03-01',
+    location: 'Multiple Locations',
+    jobType: 'Full-time',
+  },
+  {
+    id: '6',
+    name: 'Wipro',
+    role: 'Project Engineer',
+    salary: '₹5.5 LPA',
+    qualifications: 'B.Tech/B.E. in CS/IT/ECE',
+    minGpa: 5.5,
+    description: 'Wipro is hiring fresh graduates for various technology roles across different domains.',
+    deadline: '2026-03-10',
+    location: 'Bangalore',
+    jobType: 'Full-time',
+  },
+];
+
+export const mockApplications: Application[] = [
+  {
+    id: '1',
+    studentId: 'STU001',
+    studentName: 'John Doe',
+    companyId: '1',
+    companyName: 'Google',
+    status: 'shortlisted',
+    appliedAt: '2026-01-10',
+  },
+  {
+    id: '2',
+    studentId: 'STU001',
+    studentName: 'John Doe',
+    companyId: '2',
+    companyName: 'Microsoft',
+    status: 'applied',
+    appliedAt: '2026-01-12',
+  },
+  {
+    id: '3',
+    studentId: 'STU001',
+    studentName: 'John Doe',
+    companyId: '3',
+    companyName: 'Amazon',
+    status: 'interview',
+    appliedAt: '2026-01-08',
+  },
+];
+
+export const mockNotifications: Notification[] = [
+  {
+    id: '1',
+    title: 'Google Campus Drive',
+    message: 'Google campus drive scheduled for Feb 15, 2026. Eligible students please register by Feb 10.',
+    createdAt: '2026-01-14',
+    type: 'info',
+  },
+  {
+    id: '2',
+    title: 'Resume Submission Deadline',
+    message: 'Submit your updated resume by Jan 20 for Amazon internship opportunity.',
+    createdAt: '2026-01-13',
+    type: 'warning',
+  },
+  {
+    id: '3',
+    title: 'Placement Drive Success',
+    message: 'Congratulations! 150 students placed in the first phase of placements.',
+    createdAt: '2026-01-12',
+    type: 'success',
+  },
+];
+
+export const mockStats: PlacementStats = {
+  totalStudents: 500,
+  placedStudents: 320,
+  unplacedStudents: 180,
+  averageSalary: '₹12 LPA',
+  topCompany: 'Google',
+  companiesVisited: 45,
+};
+
+export const mockCurrentUser: User = {
+  id: 'STU001',
+  email: 'john.doe@college.edu',
+  role: 'student',
+  name: 'John Doe',
+  registerNumber: '20CS001',
+  phone: '+91 9876543210',
+  department: 'Computer Science',
+  section: 'A',
+  gpa: 8.5,
+};
+
+export const monthlyPlacementData = [
+  { month: 'Aug', placed: 20, target: 50 },
+  { month: 'Sep', placed: 45, target: 60 },
+  { month: 'Oct', placed: 80, target: 80 },
+  { month: 'Nov', placed: 120, target: 100 },
+  { month: 'Dec', placed: 200, target: 150 },
+  { month: 'Jan', placed: 320, target: 200 },
+];
+
+export const companyWiseData = [
+  { company: 'Google', offers: 15 },
+  { company: 'Microsoft', offers: 25 },
+  { company: 'Amazon', offers: 30 },
+  { company: 'Infosys', offers: 80 },
+  { company: 'TCS', offers: 100 },
+  { company: 'Wipro', offers: 70 },
+];

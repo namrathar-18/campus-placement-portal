@@ -6,12 +6,15 @@ export interface Company {
   name: string;
   description: string;
   logoUrl?: string;
-  industry: string;
-  location: string;
+  industry?: string;
+  location?: string;
   package: number;
+  salary?: string;
   eligibility: string;
+  min_gpa?: number;
   deadline: string;
   roles?: string[];
+  job_type?: 'full-time' | 'internship' | 'both';
   requirements?: string[];
   status: 'active' | 'closed' | 'draft';
   openings?: number;

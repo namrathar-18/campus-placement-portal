@@ -15,27 +15,38 @@ export interface User {
 }
 
 export interface Company {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
-  role: string;
-  salary: string;
-  qualifications: string;
-  minGpa: number;
   description: string;
-  deadline: string;
-  logo?: string;
-  location?: string;
-  jobType: 'Full-time' | 'Internship' | 'Part-time';
+  logoUrl?: string;
+  industry: string;
+  location: string;
+  package: number;
+  salary?: string;
+  min_gpa: number;
+  eligibility: string;
+  deadline: Date | string;
+  role?: string;
+  roles?: string[];
+  requirements?: string[];
+  job_type?: 'full-time' | 'internship' | 'both';
+  status?: 'active' | 'closed' | 'draft';
+  openings?: number;
+  createdBy?: string;
+  [key: string]: any;
 }
 
 export interface Application {
-  id: string;
-  studentId: string;
-  studentName: string;
-  companyId: string;
-  companyName: string;
-  status: 'applied' | 'shortlisted' | 'interview' | 'selected' | 'rejected';
-  appliedAt: string;
+  _id?: string;
+  id?: string;
+  studentId: any;
+  studentName?: string;
+  companyId: any;
+  companyName?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'under_review';
+  appliedAt?: string;
+  appliedDate?: Date;
 }
 
 export interface Notification {

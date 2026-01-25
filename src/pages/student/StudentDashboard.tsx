@@ -4,6 +4,8 @@ import { useApplications } from '@/hooks/useApplications';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import StatsCard from '@/components/cards/StatsCard';
 import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell } from 'lucide-react';
@@ -15,7 +17,7 @@ import { useToast } from '@/components/ui/use-toast';
 import api from '@/lib/api';
 
 const StudentDashboard = () => {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, refreshUser, setUserData } = useAuth();
   const { data: companies, isLoading: companiesLoading } = useCompanies();
   const { data: applications, isLoading: applicationsLoading } = useApplications();
   const { data: notifications } = useNotifications();
@@ -24,6 +26,12 @@ const StudentDashboard = () => {
   const { toast } = useToast();
   const [resumeUrl, setResumeUrl] = useState<string | undefined>(user?.resumeUrl);
   const [uploading, setUploading] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    phone: user?.phone || '',
+    department: user?.department || '',
+    section: user?.section || '',
+    registerNumber: user?.registerNumber || '',
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onViewResume = () => {
@@ -45,6 +53,19 @@ const StudentDashboard = () => {
   const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
+
+    // Validate file type
+    if (!file.type.includes('pdf')) {
+      toast({ title: 'Invalid file', description: 'Please upload a PDF file.', variant: 'destructive' });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Please upload a file smaller than 5MB.', variant: 'destructive' });
+      return;
+    }
+
     setUploading(true);
     try {
       // Read file as base64
@@ -55,6 +76,7 @@ const StudentDashboard = () => {
         try {
           await api.put(`/users/${user.id}`, { resumeUrl: base64String });
           setResumeUrl(base64String);
+          await refreshUser();
           toast({ title: 'Resume uploaded', description: 'Your resume has been saved successfully.' });
         } catch (err: any) {
           toast({ title: 'Upload failed', description: err?.message || 'Please try again.', variant: 'destructive' });
@@ -68,6 +90,18 @@ const StudentDashboard = () => {
       toast({ title: 'Upload failed', description: err?.message || 'Please try again.', variant: 'destructive' });
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const onSaveProfile = async () => {
+    if (!user?.id) return;
+    try {
+      await api.put(`/users/${user.id}`, profileForm);
+      setUserData(profileForm);
+      await refreshUser();
+      toast({ title: 'Profile updated', description: 'Your details have been saved.' });
+    } catch (err: any) {
+      toast({ title: 'Update failed', description: err?.message || 'Please try again.', variant: 'destructive' });
     }
   };
 
@@ -196,6 +230,40 @@ const StudentDashboard = () => {
                     <span className="text-sm font-medium">Current GPA</span>
                     <span className="text-lg font-bold text-success">{user?.gpa || 'N/A'}</span>
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label>Register Number</Label>
+                    <Input
+                      value={profileForm.registerNumber}
+                      onChange={(e) => setProfileForm({ ...profileForm, registerNumber: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Department</Label>
+                    <Input
+                      value={profileForm.department}
+                      onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Section</Label>
+                    <Input
+                      value={profileForm.section}
+                      onChange={(e) => setProfileForm({ ...profileForm, section: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Phone</Label>
+                    <Input
+                      value={profileForm.phone}
+                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    />
+                  </div>
+                  <Button className="w-full" onClick={onSaveProfile}>
+                    Save Profile
+                  </Button>
                 </div>
 
                 <input

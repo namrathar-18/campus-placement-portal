@@ -26,9 +26,8 @@ const CompanyListings = () => {
   const isPlaced = user?.isPlaced || false;
 
   const filteredCompanies = companies?.filter((company) => {
-    const matchesSearch =
-      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.role.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchTarget = `${company.name} ${(company.roles || []).join(' ')} ${company.industry || ''}`.toLowerCase();
+    const matchesSearch = searchTarget.includes(searchTerm.toLowerCase());
     const matchesJobType = jobTypeFilter === 'all' || company.job_type === jobTypeFilter;
     const matchesEligibility = !showEligibleOnly || company.min_gpa <= userGpa;
 

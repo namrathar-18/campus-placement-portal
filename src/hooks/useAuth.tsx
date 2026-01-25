@@ -25,6 +25,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  setUserData: (updates: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,7 +63,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initAuth();
+
+    // Auto sign-out when window/tab is closed
+    const handleBeforeUnload = async () => {
+      try {
+        await api.post('/auth/logout');
+      } catch (error) {
+        console.error('Error during logout:', error);
+      }
+      localStorage.removeItem('token');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
+
+  const refreshUser = async () => {
+    try {
+      const response = await api.get('/auth/me');
+      setUser(response.data);
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+    }
+  };
+
+  const setUserData = (updates: Partial<AuthUser>) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  };
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -118,6 +149,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signIn,
         signUp,
         signOut,
+        refreshUser,
+        setUserData,
       }}
     >
       {children}

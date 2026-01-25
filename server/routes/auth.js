@@ -129,4 +129,16 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// @route   POST /api/auth/logout
+// @desc    Logout user
+// @access  Private
+router.post('/logout', (req, res) => {
+  try {
+    // Clear any server-side session data if needed
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export default router;

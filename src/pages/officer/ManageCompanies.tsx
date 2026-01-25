@@ -6,14 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { mockCompanies } from '@/data/mockData';
 import { Company } from '@/types';
-import { Plus, Pencil, Trash2, Building2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Search, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany } from '@/hooks/useCompanies';
 
 const ManageCompanies = () => {
   const { toast } = useToast();
-  const [companies, setCompanies] = useState<Company[]>(mockCompanies);
+  const { data: companies = [], isLoading } = useCompanies();
+  const createCompany = useCreateCompany();
+  const updateCompany = useUpdateCompany();
+  const deleteCompany = useDeleteCompany();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
@@ -21,32 +25,38 @@ const ManageCompanies = () => {
     name: '',
     role: '',
     salary: '',
+    package: '',
     qualifications: '',
     minGpa: '',
     description: '',
+    industry: '',
+    eligibility: '',
     deadline: '',
     location: '',
-    jobType: 'Full-time' as Company['jobType'],
+    jobType: 'full-time' as 'full-time' | 'internship' | 'both',
   });
 
-  const filteredCompanies = companies.filter((company) =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCompanies = companies.filter((company) => {
+    const searchTarget = `${company.name} ${(company.roles || []).join(' ')} ${company.industry || ''}`.toLowerCase();
+    return searchTarget.includes(searchTerm.toLowerCase());
+  });
 
   const handleOpenDialog = (company?: Company) => {
     if (company) {
       setEditingCompany(company);
       setFormData({
         name: company.name,
-        role: company.role,
-        salary: company.salary,
-        qualifications: company.qualifications,
-        minGpa: company.minGpa.toString(),
+        role: company.roles?.[0] || '',
+        salary: company.salary || '',
+        package: company.package?.toString() || '',
+        qualifications: (company.requirements || []).join(', '),
+        minGpa: (company.min_gpa ?? '').toString(),
         description: company.description,
-        deadline: company.deadline,
+        industry: company.industry || '',
+        eligibility: company.eligibility || '',
+        deadline: company.deadline ? company.deadline.toString().substring(0,10) : '',
         location: company.location || '',
-        jobType: company.jobType,
+        jobType: company.job_type || 'full-time',
       });
     } else {
       setEditingCompany(null);
@@ -54,48 +64,68 @@ const ManageCompanies = () => {
         name: '',
         role: '',
         salary: '',
+        package: '',
         qualifications: '',
         minGpa: '',
         description: '',
+        industry: '',
+        eligibility: '',
         deadline: '',
         location: '',
-        jobType: 'Full-time',
+        jobType: 'full-time',
       });
     }
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newCompany: Company = {
-      id: editingCompany?.id || Date.now().toString(),
+    const payload = {
       name: formData.name,
-      role: formData.role,
-      salary: formData.salary,
-      qualifications: formData.qualifications,
-      minGpa: parseFloat(formData.minGpa),
       description: formData.description,
-      deadline: formData.deadline,
+      industry: formData.industry,
       location: formData.location,
-      jobType: formData.jobType,
+      package: parseFloat(formData.package || '0'),
+      salary: formData.salary,
+      min_gpa: parseFloat(formData.minGpa || '0'),
+      eligibility: formData.eligibility,
+      deadline: formData.deadline,
+      roles: formData.role ? [formData.role] : [],
+      requirements: formData.qualifications ? formData.qualifications.split(',').map(r => r.trim()).filter(Boolean) : [],
+      job_type: formData.jobType,
+      status: 'active',
     };
 
-    if (editingCompany) {
-      setCompanies(companies.map((c) => (c.id === editingCompany.id ? newCompany : c)));
-      toast({ title: 'Company Updated', description: `${formData.name} has been updated successfully.` });
-    } else {
-      setCompanies([...companies, newCompany]);
-      toast({ title: 'Company Added', description: `${formData.name} has been added successfully.` });
+    try {
+      if (editingCompany && editingCompany._id) {
+        await updateCompany.mutateAsync({ id: editingCompany._id, ...payload });
+        toast({ title: 'Company Updated', description: `${formData.name} has been updated.` });
+      } else {
+        await createCompany.mutateAsync(payload as any);
+        toast({ title: 'Company Added', description: `${formData.name} has been added.` });
+      }
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to save company', variant: 'destructive' });
     }
-
-    setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    const company = companies.find((c) => c.id === id);
-    setCompanies(companies.filter((c) => c.id !== id));
-    toast({ title: 'Company Deleted', description: `${company?.name} has been removed.`, variant: 'destructive' });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteCompany.mutateAsync(id);
+      toast({ title: 'Company Deleted', description: `The company has been removed.`, variant: 'destructive' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to delete company', variant: 'destructive' });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -134,6 +164,14 @@ const ManageCompanies = () => {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label>Industry</Label>
+                    <Input
+                      value={formData.industry}
+                      onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label>Role</Label>
                     <Input
                       value={formData.role}
@@ -147,6 +185,17 @@ const ManageCompanies = () => {
                       value={formData.salary}
                       onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
                       placeholder="e.g., ₹12 LPA"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Package (number)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.package}
+                      onChange={(e) => setFormData({ ...formData, package: e.target.value })}
                       required
                     />
                   </div>
@@ -173,7 +222,7 @@ const ManageCompanies = () => {
                     <Label>Job Type</Label>
                     <Select
                       value={formData.jobType}
-                      onValueChange={(value: Company['jobType']) =>
+                      onValueChange={(value: 'full-time' | 'internship' | 'both') =>
                         setFormData({ ...formData, jobType: value })
                       }
                     >
@@ -181,9 +230,9 @@ const ManageCompanies = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Full-time">Full-time</SelectItem>
-                        <SelectItem value="Internship">Internship</SelectItem>
-                        <SelectItem value="Part-time">Part-time</SelectItem>
+                        <SelectItem value="full-time">Full-time</SelectItem>
+                        <SelectItem value="internship">Internship</SelectItem>
+                        <SelectItem value="both">Both</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -198,7 +247,15 @@ const ManageCompanies = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Qualifications</Label>
+                  <Label>Eligibility</Label>
+                  <Input
+                    value={formData.eligibility}
+                    onChange={(e) => setFormData({ ...formData, eligibility: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Requirements (comma separated)</Label>
                   <Input
                     value={formData.qualifications}
                     onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
@@ -242,7 +299,7 @@ const ManageCompanies = () => {
         <div className="space-y-4">
           {filteredCompanies.map((company, index) => (
             <Card
-              key={company.id}
+              key={company._id || company.id}
               className="animate-slide-up hover:shadow-card-hover transition-all"
               style={{ animationDelay: `${index * 50}ms` }}
             >
@@ -254,10 +311,10 @@ const ManageCompanies = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg">{company.name}</h3>
-                      <p className="text-muted-foreground">{company.role}</p>
+                      <p className="text-muted-foreground">{company.roles?.[0] || 'Role'}</p>
                       <div className="flex items-center gap-4 mt-1 text-sm">
-                        <span className="text-success font-medium">{company.salary}</span>
-                        <span className="text-muted-foreground">Min GPA: {company.minGpa}</span>
+                        <span className="text-success font-medium">{company.salary || `₹${company.package?.toLocaleString?.() || 'TBD'}`}</span>
+                        <span className="text-muted-foreground">Min GPA: {company.min_gpa ?? 'N/A'}</span>
                         <span className="text-muted-foreground">{company.location}</span>
                       </div>
                     </div>
@@ -273,7 +330,7 @@ const ManageCompanies = () => {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => handleDelete(company.id)}
+                      onClick={() => handleDelete(company._id || company.id)}
                       className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                     >
                       <Trash2 className="w-4 h-4" />

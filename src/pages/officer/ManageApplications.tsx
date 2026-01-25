@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useApplications, useUpdateApplication, Application } from '@/hooks/useApplications';
+import { useUsers, useUpdateUser } from '@/hooks/useUsers';
 import { CheckCircle, Clock, XCircle, Users, Send, FileText, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -12,7 +14,10 @@ const ManageApplications = () => {
   const { toast } = useToast();
   const { data: applications = [] } = useApplications();
   const updateApplication = useUpdateApplication();
+  const { data: users = [] } = useUsers();
+  const updateUser = useUpdateUser();
   const [activeTab, setActiveTab] = useState('all');
+  const [gpaEdits, setGpaEdits] = useState<Record<string, string>>({});
 
   const getFilteredApplications = (status: string): Application[] => {
     if (status === 'all') return applications;
@@ -42,6 +47,21 @@ const ManageApplications = () => {
         description: error?.message || 'Could not update status.',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleGpaUpdate = async (studentId: string) => {
+    const value = gpaEdits[studentId];
+    const parsed = Number(value);
+    if (Number.isNaN(parsed) || parsed < 0 || parsed > 10) {
+      toast({ title: 'Invalid GPA', description: 'Enter a value between 0 and 10.', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updateUser.mutateAsync({ id: studentId, gpa: parsed });
+      toast({ title: 'GPA Updated', description: 'Student GPA has been updated.' });
+    } catch (error: any) {
+      toast({ title: 'Update failed', description: error?.message || 'Could not update GPA.', variant: 'destructive' });
     }
   };
 
@@ -120,6 +140,7 @@ const ManageApplications = () => {
               {getFilteredApplications(activeTab).map((application, index) => {
                 const config = getStatusConfig(application.status);
                 const Icon = config.icon;
+                const student = users.find(u => u._id === application.studentId?._id);
                 
                 return (
                   <div
@@ -145,6 +166,19 @@ const ManageApplications = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">GPA</span>
+                        <Input
+                          className="w-20"
+                          value={gpaEdits[application.studentId._id] ?? (student?.gpa?.toString() || '')}
+                          placeholder="0-10"
+                          onChange={(e) => setGpaEdits({ ...gpaEdits, [application.studentId._id]: e.target.value })}
+                        />
+                        <Button size="sm" variant="outline" onClick={() => handleGpaUpdate(application.studentId._id)}>
+                          Save
+                        </Button>
+                      </div>
+
                       <Badge className={`gap-1.5 ${config.color}`}>
                         <Icon className="w-3.5 h-3.5" />
                         {config.label}

@@ -29,8 +29,8 @@ const OfficerDashboard = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const pendingApplications = applications?.filter(a => a.status === 'applied' || a.status === 'shortlisted').length || 0;
-  const placementRate = stats?.totalStudents ? Math.round((stats.placedStudents / stats.totalStudents) * 100) : 0;
+  const pendingApplications = applications?.filter(a => a.status === 'pending' || a.status === 'under_review').length || 0;
+  const placementRate = stats?.totalStudents ? Math.round((stats?.placedStudents / stats.totalStudents) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -45,7 +45,7 @@ const OfficerDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard title="Total Students" value={statsLoading ? '-' : stats?.totalStudents || 0} icon={Users} />
           <StatsCard title="Placed Students" value={statsLoading ? '-' : stats?.placedStudents || 0} icon={UserCheck} variant="success" trend={`${placementRate}% placement rate`} trendUp />
-          <StatsCard title="Unplaced Students" value={statsLoading ? '-' : stats?.unplacedStudents || 0} icon={UserX} variant="warning" />
+          <StatsCard title="Pending Applications" value={statsLoading ? '-' : pendingApplications} icon={UserX} variant="warning" />
           <StatsCard title="Active Companies" value={companies?.length || 0} icon={Building2} variant="primary" />
         </div>
 
@@ -62,40 +62,42 @@ const OfficerDashboard = () => {
 
             <Card className="rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Recently Placed</CardTitle>
-                <Badge className="bg-success/10 text-success">{placedStudents?.length || 0} placed</Badge>
+                <CardTitle className="text-lg">Application Overview</CardTitle>
+                <Badge className="bg-primary/10 text-primary">{applications?.length || 0} total</Badge>
               </CardHeader>
               <CardContent className="space-y-3">
-                {placedStudents?.slice(0, 4).map((student) => (
-                  <div key={student.id} className="flex items-center justify-between p-3 rounded-xl bg-success/5 border border-success/20">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center font-bold text-success">{student.name.charAt(0)}</div>
-                      <p className="font-medium text-sm">{student.name}</p>
-                    </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 rounded-lg bg-blue-50 text-center">
+                    <p className="text-2xl font-bold text-blue-600">{applications?.filter(a => a.status === 'pending').length || 0}</p>
+                    <p className="text-xs text-muted-foreground">Pending</p>
                   </div>
-                ))}
-                {!placedStudents?.length && <p className="text-muted-foreground text-center py-2">No placed students yet</p>}
+                  <div className="p-3 rounded-lg bg-purple-50 text-center">
+                    <p className="text-2xl font-bold text-purple-600">{applications?.filter(a => a.status === 'under_review').length || 0}</p>
+                    <p className="text-xs text-muted-foreground">Under Review</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-50 text-center">
+                    <p className="text-2xl font-bold text-orange-600">{applications?.filter(a => a.status === 'rejected').length || 0}</p>
+                    <p className="text-xs text-muted-foreground">Rejected</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-green-50 text-center">
+                    <p className="text-2xl font-bold text-green-600">{applications?.filter(a => a.status === 'approved').length || 0}</p>
+                    <p className="text-xs text-muted-foreground">Approved</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
             <Card className="rounded-2xl">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Yet to be Placed</CardTitle>
-                <Badge className="bg-warning/10 text-warning">{unplacedStudents?.length || 0} pending</Badge>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">Statistics</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                {unplacedStudents?.slice(0, 3).map((student) => (
-                  <div key={student.id} className="flex items-center p-3 rounded-xl bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center font-bold text-warning">{student.name.charAt(0)}</div>
-                      <div>
-                        <p className="font-medium text-sm">{student.name}</p>
-                        <p className="text-xs text-muted-foreground">{student.department || 'Student'}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {!unplacedStudents?.length && <p className="text-muted-foreground text-center py-2">All students placed!</p>}
+                <div className="p-3 rounded-lg bg-success/10 border border-success/20">
+                  <p className="text-sm text-muted-foreground">Placement Rate</p>
+                  <p className="text-2xl font-bold text-success">{placementRate}%</p>
+                </div>
+                <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
+                  <p className="text-sm text-muted-foreground">Active Companies</p>
+                  <p className="text-2xl font-bold text-warning">{companies?.length || 0}</p>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -109,20 +111,20 @@ const OfficerDashboard = () => {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="p-5 rounded-xl bg-muted/50 text-center">
-                    <p className="text-3xl font-bold">{applications?.filter(a => a.status === 'applied').length || 0}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Applied</p>
+                    <p className="text-3xl font-bold">{applications?.filter(a => a.status === 'pending').length || 0}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Pending</p>
                   </div>
                   <div className="p-5 rounded-xl bg-accent/10 text-center">
-                    <p className="text-3xl font-bold text-accent">{applications?.filter(a => a.status === 'shortlisted').length || 0}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Shortlisted</p>
+                    <p className="text-3xl font-bold text-accent">{applications?.filter(a => a.status === 'under_review').length || 0}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Under Review</p>
                   </div>
                   <div className="p-5 rounded-xl bg-warning/10 text-center">
-                    <p className="text-3xl font-bold text-warning">{applications?.filter(a => a.status === 'interview').length || 0}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Interview</p>
+                    <p className="text-3xl font-bold text-warning">{applications?.filter(a => a.status === 'rejected').length || 0}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Rejected</p>
                   </div>
                   <div className="p-5 rounded-xl bg-success/10 text-center">
-                    <p className="text-3xl font-bold text-success">{applications?.filter(a => a.status === 'selected').length || 0}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Selected</p>
+                    <p className="text-3xl font-bold text-success">{applications?.filter(a => a.status === 'approved').length || 0}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Approved</p>
                   </div>
                 </div>
               </CardContent>
@@ -136,16 +138,16 @@ const OfficerDashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   {companies?.slice(0, 4).map((company) => (
-                    <div key={company.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                    <div key={company._id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold">{company.name.charAt(0)}</div>
                         <div>
                           <h3 className="font-semibold">{company.name}</h3>
-                          <p className="text-sm text-muted-foreground">{company.role}</p>
+                          <p className="text-sm text-muted-foreground">{company.roles?.[0] || 'Position'}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-success">{company.salary}</p>
+                        <p className="font-semibold text-success">₹{company.package?.toLocaleString() || 'TBD'}</p>
                         <p className="text-xs text-muted-foreground">Due: {new Date(company.deadline).toLocaleDateString()}</p>
                       </div>
                     </div>

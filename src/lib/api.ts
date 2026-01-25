@@ -29,11 +29,10 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
+      // Just remove the token - let the app handle navigation via isAuthenticated state
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
     }
-    const errorData = error.response?.data || { message: error.message };
+    const errorData = error.response?.data || { message: error.message || 'Network error' };
     return Promise.reject(errorData);
   }
 );

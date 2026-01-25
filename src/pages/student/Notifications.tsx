@@ -1,12 +1,26 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications, useMarkNotificationAsRead } from '@/hooks/useNotifications';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Bell, Loader2 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const Notifications = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { data: notifications, isLoading: notificationsLoading } = useNotifications();
+  const { mutate: markAsRead } = useMarkNotificationAsRead();
+
+  // Mark all notifications as read when page loads
+  useEffect(() => {
+    if (notifications && notifications.length > 0) {
+      notifications.forEach((notification) => {
+        if (!notification.isRead) {
+          markAsRead(notification._id);
+        }
+      });
+    }
+  }, [notifications, markAsRead]);
 
   if (authLoading) {
     return (
@@ -42,7 +56,10 @@ const Notifications = () => {
           ) : notifications && notifications.length > 0 ? (
             <div className="space-y-4">
               {notifications.map((notification) => (
-                <Card key={notification.id} className="animate-slide-up">
+                <Card 
+                  key={notification._id} 
+                  className={`animate-slide-up ${!notification.isRead ? 'border-primary/50 bg-primary/5' : ''}`}
+                >
                   <CardContent className="pt-6">
                     <div
                       className={`p-4 rounded-lg border ${
@@ -70,9 +87,9 @@ const Notifications = () => {
                           <p className="text-sm text-muted-foreground mt-1">
                             {notification.message}
                           </p>
-                          {notification.created_at && (
+                          {notification.createdAt && (
                             <p className="text-xs text-muted-foreground mt-2">
-                              {new Date(notification.created_at).toLocaleDateString()}
+                              {new Date(notification.createdAt).toLocaleDateString()}
                             </p>
                           )}
                         </div>

@@ -8,12 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import StatsCard from '@/components/cards/StatsCard';
-import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell, Edit2, X } from 'lucide-react';
+import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell, Edit2, X, Upload, Camera } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
 
 const StudentDashboard = () => {
@@ -25,7 +26,13 @@ const StudentDashboard = () => {
 
   const { toast } = useToast();
   const [resumeUrl, setResumeUrl] = useState<string | undefined>(user?.resumeUrl);
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(user?.photoUrl);
   const [uploading, setUploading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showPhotoCropper, setShowPhotoCropper] = useState(false);
+  const [photoCrop, setPhotoCrop] = useState({ x: 0, y: 0 });
+  const [photoZoom, setPhotoZoom] = useState(1);
+  const [croppedPhotoUrl, setCroppedPhotoUrl] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -36,16 +43,49 @@ const StudentDashboard = () => {
     gpa: user?.gpa?.toString() || '',
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoCropperRef = useRef<any>(null);
+
+  // Sync resumeUrl with user data
+  useEffect(() => {
+    if (user?.resumeUrl) {
+      setResumeUrl(user.resumeUrl);
+    }
+  }, [user?.resumeUrl]);
+
+  // Sync photoUrl with user data
+  useEffect(() => {
+    if (user?.photoUrl) {
+      setPhotoUrl(user.photoUrl);
+    }
+  }, [user?.photoUrl]);
 
   const onViewResume = () => {
-    if (resumeUrl) {
-      // If it's a base64 string, open it directly
-      if (resumeUrl.startsWith('data:')) {
-        window.open(resumeUrl, '_blank');
+    if (!resumeUrl) return;
+    
+    try {
+      if (resumeUrl.startsWith('data:application/pdf')) {
+        // Create a blob from base64 and open it
+        const base64Data = resumeUrl.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
       } else {
         // If it's a URL, open it normally
         window.open(resumeUrl, '_blank');
       }
+    } catch (error) {
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to open resume. Please try uploading again.', 
+        variant: 'destructive' 
+      });
     }
   };
 
@@ -57,15 +97,10 @@ const StudentDashboard = () => {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
 
-    // Validate file type
-    if (!file.type.includes('pdf')) {
+    // Validate file type - check both mime type and extension
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
       toast({ title: 'Invalid file', description: 'Please upload a PDF file.', variant: 'destructive' });
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'File too large', description: 'Please upload a file smaller than 5MB.', variant: 'destructive' });
       return;
     }
 
@@ -115,16 +150,24 @@ const StudentDashboard = () => {
         department: profileForm.department,
         section: profileForm.section,
         registerNumber: profileForm.registerNumber,
-        ...(profileForm.gpa && { gpa: parseFloat(profileForm.gpa) }),
+        gpa: profileForm.gpa ? parseFloat(profileForm.gpa) : undefined,
       };
 
-      await api.put(`/users/${user.id}`, updateData);
-      setUserData(updateData);
-      await refreshUser();
-      toast({ title: 'Success', description: 'Your profile has been updated.' });
-      setIsEditMode(false);
+      const response = await api.put(`/users/${user.id}`, updateData);
+      
+      if (response) {
+        await refreshUser();
+        toast({ title: 'Success', description: 'Your profile has been updated.' });
+        setIsEditMode(false);
+      } else {
+        throw new Error('Failed to update profile');
+      }
     } catch (err: any) {
-      toast({ title: 'Update failed', description: err?.message || 'Please try again.', variant: 'destructive' });
+      toast({ 
+        title: 'Update failed', 
+        description: err?.message || err?.error || 'Please try again.', 
+        variant: 'destructive' 
+      });
     } finally {
       setIsSavingProfile(false);
     }
@@ -139,6 +182,136 @@ const StudentDashboard = () => {
       gpa: user?.gpa?.toString() || '',
     });
     setIsEditMode(false);
+  };
+
+  const onPhotoUploadClick = () => {
+    if (isEditMode) {
+      photoInputRef.current?.click();
+    }
+  };
+
+  const onPhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid file',
+        description: 'Please upload an image file (JPG, PNG, etc.)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB for images)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Image must be smaller than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Read file and show cropper
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCroppedPhotoUrl(reader.result as string);
+      setShowPhotoCropper(true);
+      setPhotoCrop({ x: 0, y: 0 });
+      setPhotoZoom(1);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const onCropComplete = async (croppedArea: any, croppedAreaPixels: any) => {
+    // Store the cropped area for later use when saving
+    photoCropperRef.current = croppedAreaPixels;
+  };
+
+  const createImage = (url: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.addEventListener('load', () => resolve(image));
+      image.addEventListener('error', (err) => reject(err));
+      image.setAttribute('crossOrigin', 'anonymous');
+      image.src = url;
+    });
+  };
+
+  const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string> => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('No 2d context');
+    }
+
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height
+    );
+
+    return canvas.toDataURL('image/jpeg');
+  };
+
+  const onSaveCroppedPhoto = async () => {
+    if (!croppedPhotoUrl || !photoCropperRef.current || !user?.id) return;
+
+    setUploadingPhoto(true);
+    try {
+      const croppedImage = await getCroppedImg(croppedPhotoUrl, photoCropperRef.current);
+      await api.put(`/users/${user.id}`, { photoUrl: croppedImage });
+      setPhotoUrl(croppedImage);
+      await refreshUser();
+      setShowPhotoCropper(false);
+      setCroppedPhotoUrl(null);
+      toast({
+        title: 'Success',
+        description: 'Profile photo updated successfully!',
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Upload failed',
+        description: err?.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  };
+
+  const removePhoto = async () => {
+    if (!user?.id) return;
+
+    try {
+      await api.put(`/users/${user.id}`, { photoUrl: null });
+      setPhotoUrl(undefined);
+      await refreshUser();
+      toast({
+        title: 'Success',
+        description: 'Profile photo removed',
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err?.message || 'Failed to remove photo',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (authLoading) {
@@ -159,8 +332,8 @@ const StudentDashboard = () => {
 
   const statusCounts = {
     total: applications?.length || 0,
-    shortlisted: applications?.filter(a => a.status === 'shortlisted').length || 0,
-    applied: applications?.filter(a => a.status === 'applied').length || 0,
+    shortlisted: applications?.filter(a => a.status === 'approved').length || 0,
+    applied: applications?.filter(a => a.status === 'pending').length || 0,
   };
 
   // Scroll to notifications section if hash is present
@@ -247,11 +420,19 @@ const StudentDashboard = () => {
                   <>
                     {/* View Mode */}
                     <div className="flex flex-col items-center text-center">
-                      <Avatar className="w-24 h-24 mb-4">
-                        <AvatarFallback className="text-2xl gradient-primary text-primary-foreground">
-                          {user?.name?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
+                      {photoUrl ? (
+                        <img 
+                          src={photoUrl} 
+                          alt={user?.name} 
+                          className="w-24 h-24 rounded-full object-cover border-4 border-primary mb-4"
+                        />
+                      ) : (
+                        <Avatar className="w-24 h-24 mb-4">
+                          <AvatarFallback className="text-2xl gradient-primary text-primary-foreground">
+                            {user?.name?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
                       <h3 className="font-heading font-semibold text-xl">{user?.name}</h3>
                       <p className="text-muted-foreground">{user?.registerNumber || 'Student'}</p>
                       {user?.isPlaced && (
@@ -285,6 +466,110 @@ const StudentDashboard = () => {
                 ) : (
                   <>
                     {/* Edit Mode */}
+                    <div className="flex flex-col items-center mb-4">
+                      <input
+                        type="file"
+                        ref={photoInputRef}
+                        onChange={onPhotoSelected}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      {showPhotoCropper && croppedPhotoUrl ? (
+                        <div className="w-full space-y-4">
+                          <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden">
+                            <Cropper
+                              image={croppedPhotoUrl}
+                              crop={photoCrop}
+                              zoom={photoZoom}
+                              aspect={1}
+                              cropShape="round"
+                              showGrid={false}
+                              onCropChange={setPhotoCrop}
+                              onCropComplete={onCropComplete}
+                              onZoomChange={setPhotoZoom}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-sm">Zoom</Label>
+                            <input
+                              type="range"
+                              min={1}
+                              max={3}
+                              step={0.1}
+                              value={photoZoom}
+                              onChange={(e) => setPhotoZoom(parseFloat(e.target.value))}
+                              className="w-full"
+                            />
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setShowPhotoCropper(false);
+                                setCroppedPhotoUrl(null);
+                                if (photoInputRef.current) photoInputRef.current.value = '';
+                              }}
+                              className="flex-1"
+                              size="sm"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={onSaveCroppedPhoto}
+                              disabled={uploadingPhoto}
+                              className="flex-1 gap-2"
+                              size="sm"
+                            >
+                              {uploadingPhoto ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  Saving...
+                                </>
+                              ) : (
+                                'Save Photo'
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative mb-4">
+                          {photoUrl ? (
+                            <img 
+                              src={photoUrl} 
+                              alt={user?.name} 
+                              className="w-24 h-24 rounded-full object-cover border-4 border-primary"
+                            />
+                          ) : (
+                            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-2 border-dashed border-border">
+                              <Camera className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <button
+                            onClick={onPhotoUploadClick}
+                            disabled={uploadingPhoto}
+                            className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 hover:bg-primary/90"
+                          >
+                            {uploadingPhoto ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Camera className="w-4 h-4" />
+                            )}
+                          </button>
+                          {photoUrl && (
+                            <button
+                              onClick={removePhoto}
+                              className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-full p-2 hover:bg-destructive/80"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="registerNumber" className="text-sm">
@@ -392,26 +677,26 @@ const StudentDashboard = () => {
                   onChange={onFileSelected}
                 />
 
-                {isEditMode ? null : (
-                  <>
-                    {resumeUrl ? (
-                      <Button variant="outline" className="w-full gap-2" onClick={onViewResume}>
-                        <FileText className="w-4 h-4" />
-                        View Resume
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        className="w-full gap-2"
-                        onClick={onUploadClick}
-                        disabled={uploading}
-                      >
-                        <FileText className="w-4 h-4" />
-                        {uploading ? 'Uploading…' : 'Upload Resume'}
-                      </Button>
-                    )}
-                  </>
-                )}
+                <div className="space-y-2">
+                  {resumeUrl && !isEditMode && (
+                    <Button variant="outline" className="w-full gap-2" onClick={onViewResume}>
+                      <FileText className="w-4 h-4" />
+                      View Resume
+                    </Button>
+                  )}
+                  
+                  {isEditMode && (
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2"
+                      onClick={onUploadClick}
+                      disabled={uploading}
+                    >
+                      <Upload className="w-4 h-4" />
+                      {uploading ? 'Uploading…' : (resumeUrl ? 'Change Resume' : 'Upload Resume')}
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -431,14 +716,14 @@ const StudentDashboard = () => {
               <CardContent className="space-y-3">
                 {recentApplications.length > 0 ? (
                   recentApplications.map((app) => (
-                    <div key={app.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                    <div key={app._id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center text-primary-foreground font-bold">
-                          {app.companies.name.charAt(0)}
+                          {typeof app.companyId === 'object' && app.companyId ? app.companyId.name.charAt(0) : 'C'}
                         </div>
                         <div>
-                          <p className="font-medium">{app.companies.name}</p>
-                          <p className="text-sm text-muted-foreground">{app.companies.role}</p>
+                          <p className="font-medium">{typeof app.companyId === 'object' && app.companyId ? app.companyId.name : 'Company'}</p>
+                          <p className="text-sm text-muted-foreground">{app.status}</p>
                         </div>
                       </div>
                       <Badge variant="outline">{app.status}</Badge>
@@ -459,7 +744,7 @@ const StudentDashboard = () => {
                 {recentNotifications.length > 0 ? (
                   recentNotifications.map((notification) => (
                     <div
-                      key={notification.id}
+                      key={notification._id}
                       className={`p-4 rounded-xl border ${
                         notification.type === 'success'
                           ? 'bg-success/5 border-success/20'

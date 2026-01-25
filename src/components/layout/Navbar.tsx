@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 import { LogOut, Bell, User, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
@@ -8,11 +9,17 @@ import christLogo from '@/assets/christ-university-logo.png';
 
 const Navbar = () => {
   const { user, signOut, isAuthenticated, isLoading } = useAuth();
+  const { data: notifications = [] } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Count only unread notifications
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   if (isLoading) return null;
+  // Don't return null for unauthenticated users - let them see the login page navbar if needed
+  // Only return null if they're in a protected area
   if (!isAuthenticated) return null;
 
   const getNavLinks = () => {
@@ -96,16 +103,18 @@ const Navbar = () => {
             <Link to={user?.role === 'student' ? '/student/notifications' : '/officer/notifications'}>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-                  3
-                </span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
               </Button>
             </Link>
             
             {/* Desktop User Info */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{user?.name}</span>
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-700">
+              <User className="w-4 h-4 text-white" />
+              <span className="text-sm font-medium text-white">{user?.name}</span>
             </div>
             
             <Button
@@ -113,10 +122,8 @@ const Navbar = () => {
               size="icon"
               onClick={async () => {
                 await signOut();
-                // Force a small delay to ensure state updates complete
-                setTimeout(() => {
-                  window.location.href = '/login';
-                }, 50);
+                // Give React time to update state before navigating
+                setTimeout(() => navigate('/login', { replace: true }), 0);
               }}
             >
               <LogOut className="w-5 h-5" />

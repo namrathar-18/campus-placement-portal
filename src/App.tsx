@@ -21,7 +21,16 @@ import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Prevents refetch-induced flicker when the tab/window regains focus
+      refetchOnWindowFocus: false,
+      // Keep retry disabled for now to avoid repeated spinners on failing endpoints
+      retry: false,
+    },
+  },
+});
 
 const AppContent = () => {
   const { isLoading } = useAuth();

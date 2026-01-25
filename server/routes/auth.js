@@ -18,6 +18,15 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
 
+    // Validate student email domain
+    const userRole = role || 'student';
+    if (userRole === 'student' && !email.endsWith('@mca.christuniversity.in')) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Students must register with @mca.christuniversity.in email address' 
+      });
+    }
+
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -29,7 +38,7 @@ router.post('/register', async (req, res) => {
       email,
       password,
       name,
-      role: role || 'student'
+      role: userRole
     });
 
     if (user) {
@@ -58,6 +67,14 @@ router.post('/login', async (req, res) => {
 
     // Check for user
     const user = await User.findOne({ email });
+
+    // Validate student email domain on login
+    if (user && user.role === 'student' && !email.endsWith('@mca.christuniversity.in')) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Students must login with @mca.christuniversity.in email address' 
+      });
+    }
 
     if (user && (await user.matchPassword(password))) {
       res.json({

@@ -31,6 +31,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Normalize API responses (axios interceptor already returns `response.data`)
+const extractPayload = (resp: any) => {
+  if (!resp) return null;
+  // Typical shape: { success: true, data: { ...user } }
+  if (resp.data) return resp.data;
+  // Fallback if payload is already the user object
+  return resp;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,11 +61,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const initAuth = async () => {
       try {
         const response = await api.get('/auth/me');
-        setUser(response.data);
+        const payload = extractPayload(response);
+        setUser(payload as AuthUser | null);
       } catch (error) {
         console.error('Error fetching user:', error);
-        localStorage.removeItem('token');
-        initializeRef.current = false;
+        // Set user to null on auth fail - React Router will redirect via isAuthenticated
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -64,27 +74,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     initAuth();
 
-    // Auto sign-out when window/tab is closed
-    const handleBeforeUnload = async () => {
-      try {
-        await api.post('/auth/logout');
-      } catch (error) {
-        console.error('Error during logout:', error);
-      }
-      localStorage.removeItem('token');
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // no-op cleanup
     };
   }, []);
 
   const refreshUser = async () => {
     try {
       const response = await api.get('/auth/me');
-      setUser(response.data);
+      const payload = extractPayload(response);
+      setUser(payload as AuthUser | null);
     } catch (error) {
       console.error('Error refreshing user:', error);
     }
@@ -97,8 +96,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const payload = response?.data?.data || response?.data || response;
-      const { token, ...userData } = payload;
+      const payload = extractPayload(response) as any;
+      const { token, ...userData } = payload || {};
       
       localStorage.setItem('token', token);
       setUser(userData);
@@ -113,8 +112,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, name: string) => {
     try {
       const response = await api.post('/auth/register', { email, password, name });
-      const payload = response?.data?.data || response?.data || response;
-      const { token, ...userData } = payload;
+      const payload = extractPayload(response) as any;
+      const { token, ...userData } = payload || {};
       
       localStorage.setItem('token', token);
       setUser(userData);
@@ -127,14 +126,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    // Reset initialization ref so auth can check again on next load
-    initializeRef.current = false;
-    // Clear state
     setUser(null);
     setIsLoading(false);
-    // Remove token
     localStorage.removeItem('token');
-    // Clear API auth header
     if (api.defaults.headers.common) {
       delete api.defaults.headers.common['Authorization'];
     }

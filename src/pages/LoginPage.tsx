@@ -65,7 +65,7 @@ const LoginPage = () => {
             <img 
               src={christLogo} 
               alt="Christ University Logo" 
-              className="h-16 w-auto object-contain"
+              className="h-16 w-auto object-contain bg-white rounded-lg p-1"
             />
           </div>
           <CardTitle className="text-2xl font-heading">Christ University</CardTitle>

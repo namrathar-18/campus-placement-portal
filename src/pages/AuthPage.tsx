@@ -129,7 +129,7 @@ const AuthPage = () => {
       <Card className="w-full max-w-md shadow-2xl border-border/50">
         <CardHeader className="text-center pb-6">
           <div className="flex flex-col items-center gap-4 mb-4">
-            <img src={christLogo} alt="Christ University" className="h-16 w-auto" />
+            <img src={christLogo} alt="Christ University" className="h-16 w-auto bg-white rounded-lg p-1" />
             <div className="flex items-center gap-2">
               <GraduationCap className="w-8 h-8 text-primary" />
               <span className="text-xl font-heading font-bold gradient-text">Campus Placement Portal</span>

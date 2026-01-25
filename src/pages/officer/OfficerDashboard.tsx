@@ -52,15 +52,6 @@ const OfficerDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1 space-y-6">
             <Card className="rounded-2xl">
-              <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <Link to="/officer/companies"><Button variant="hero" className="w-full justify-start gap-3"><Plus className="w-4 h-4" />Add New Company</Button></Link>
-                <Link to="/officer/applications"><Button variant="outline" className="w-full justify-start gap-3"><Clock className="w-4 h-4" />Pending Applications ({pendingApplications})</Button></Link>
-                <Link to="/officer/notifications"><Button variant="outline" className="w-full justify-start gap-3"><Plus className="w-4 h-4" />Create Announcement</Button></Link>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">Application Overview</CardTitle>
                 <Badge className="bg-primary/10 text-primary">{applications?.length || 0} total</Badge>

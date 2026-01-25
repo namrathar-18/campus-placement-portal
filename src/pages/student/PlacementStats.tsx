@@ -6,8 +6,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const PlacementStats = () => {
   const placementRatio = [
-    { name: 'Placed', value: mockStats.placedStudents, color: 'hsl(145, 60%, 40%)' },
-    { name: 'Unplaced', value: mockStats.unplacedStudents, color: 'hsl(210, 20%, 88%)' },
+    { name: 'Placed', value: mockStats.placedStudents, color: 'hsl(207, 31%, 32%)' }, /* #456882 */
+    { name: 'Unplaced', value: mockStats.unplacedStudents, color: 'hsl(207, 50%, 28%)' }, /* #234C6A */
   ];
 
   return (
@@ -99,14 +99,14 @@ const PlacementStats = () => {
                     <Line
                       type="monotone"
                       dataKey="placed"
-                      stroke="hsl(var(--primary))"
+                      stroke="hsl(207, 31%, 32%)" /* #456882 */
                       strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                      dot={{ fill: 'hsl(207, 31%, 32%)', r: 4 }}
                     />
                     <Line
                       type="monotone"
                       dataKey="target"
-                      stroke="hsl(var(--muted-foreground))"
+                      stroke="hsl(207, 50%, 28%)" /* #234C6A */
                       strokeWidth={2}
                       strokeDasharray="5 5"
                     />
@@ -135,7 +135,7 @@ const PlacementStats = () => {
                         borderRadius: '8px',
                       }}
                     />
-                    <Bar dataKey="offers" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="offers" fill="hsl(207, 31%, 32%)" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

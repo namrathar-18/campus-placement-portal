@@ -107,7 +107,7 @@ const AuthPage = () => {
     } else {
       toast({
         title: 'Account Created! 🎉',
-        description: 'Welcome to PlaceHub! You can now login.',
+        description: 'Welcome to Campus Placement Portal! You can now login.',
       });
       setActiveTab('login');
       setLoginData({ email: signupData.email, password: '' });
@@ -132,10 +132,10 @@ const AuthPage = () => {
             <img src={christLogo} alt="Christ University" className="h-16 w-auto" />
             <div className="flex items-center gap-2">
               <GraduationCap className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-heading font-bold gradient-text">PlaceHub</span>
+              <span className="text-xl font-heading font-bold gradient-text">Campus Placement Portal</span>
             </div>
           </div>
-          <CardTitle className="text-xl">Welcome to PlaceHub</CardTitle>
+          <CardTitle className="text-xl">Welcome to Campus Placement Portal</CardTitle>
           <CardDescription>Christ (Deemed to be University) Placement Portal</CardDescription>
         </CardHeader>
         <CardContent>

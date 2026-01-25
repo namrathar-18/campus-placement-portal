@@ -35,8 +35,8 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative gradient-hero min-h-[90vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -47,20 +47,20 @@ const Index = () => {
                 alt="Christ University Logo" 
                 className="h-12 w-auto object-contain bg-white rounded-lg p-1"
               />
-              <span className="text-sm text-white/90 font-medium">Centre for Career Development & Placement</span>
+              <span className="text-sm text-white font-medium">Centre for Career Development & Placement</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6 leading-tight">
               Christ University
-              <span className="block text-primary">Placement Portal</span>
+              <span className="block text-white">Placement Portal</span>
             </h1>
             
-            <p className="text-xl text-white/80 mb-8 max-w-2xl">
+            <p className="text-xl text-white/90 mb-8 max-w-2xl">
               Connect with top companies, track your applications, and land your perfect job through our comprehensive placement management system.
             </p>
             
             <Link to="/login">
-              <Button variant="hero" size="xl">
+              <Button variant="outline" size="xl" className="bg-white text-primary hover:bg-primary hover:text-white border-white">
                 Login to Portal
                 <ArrowRight className="w-5 h-5" />
               </Button>

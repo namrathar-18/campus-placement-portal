@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import StatsCard from '@/components/cards/StatsCard';
-import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell } from 'lucide-react';
+import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell, Edit2, X } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -26,11 +26,14 @@ const StudentDashboard = () => {
   const { toast } = useToast();
   const [resumeUrl, setResumeUrl] = useState<string | undefined>(user?.resumeUrl);
   const [uploading, setUploading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
     phone: user?.phone || '',
     department: user?.department || '',
     section: user?.section || '',
     registerNumber: user?.registerNumber || '',
+    gpa: user?.gpa?.toString() || '',
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -95,14 +98,47 @@ const StudentDashboard = () => {
 
   const onSaveProfile = async () => {
     if (!user?.id) return;
+
+    // Validate GPA
+    if (profileForm.gpa) {
+      const gpa = parseFloat(profileForm.gpa);
+      if (isNaN(gpa) || gpa < 0 || gpa > 10) {
+        toast({ title: 'Error', description: 'GPA must be between 0 and 10', variant: 'destructive' });
+        return;
+      }
+    }
+
+    setIsSavingProfile(true);
     try {
-      await api.put(`/users/${user.id}`, profileForm);
-      setUserData(profileForm);
+      const updateData = {
+        phone: profileForm.phone,
+        department: profileForm.department,
+        section: profileForm.section,
+        registerNumber: profileForm.registerNumber,
+        ...(profileForm.gpa && { gpa: parseFloat(profileForm.gpa) }),
+      };
+
+      await api.put(`/users/${user.id}`, updateData);
+      setUserData(updateData);
       await refreshUser();
-      toast({ title: 'Profile updated', description: 'Your details have been saved.' });
+      toast({ title: 'Success', description: 'Your profile has been updated.' });
+      setIsEditMode(false);
     } catch (err: any) {
       toast({ title: 'Update failed', description: err?.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSavingProfile(false);
     }
+  };
+
+  const handleCancelEdit = () => {
+    setProfileForm({
+      phone: user?.phone || '',
+      department: user?.department || '',
+      section: user?.section || '',
+      registerNumber: user?.registerNumber || '',
+      gpa: user?.gpa?.toString() || '',
+    });
+    setIsEditMode(false);
   };
 
   if (authLoading) {
@@ -192,79 +228,161 @@ const StudentDashboard = () => {
           {/* Profile Card */}
           <div className="lg:col-span-1 animate-slide-up" style={{ animationDelay: '400ms' }}>
             <Card className="h-full">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <CardTitle className="text-lg">My Profile</CardTitle>
+                {!isEditMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditMode(true)}
+                    className="gap-1 h-8 px-2"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit
+                  </Button>
+                )}
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex flex-col items-center text-center">
-                  <Avatar className="w-24 h-24 mb-4">
-                    <AvatarFallback className="text-2xl gradient-primary text-primary-foreground">
-                      {user?.name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h3 className="font-heading font-semibold text-xl">{user?.name}</h3>
-                  <p className="text-muted-foreground">{user?.registerNumber || 'Student'}</p>
-                  {user?.isPlaced && (
-                    <Badge className="mt-2 bg-success/10 text-success">Placed ✓</Badge>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  {user?.department && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <GraduationCap className="w-4 h-4 text-muted-foreground" />
-                      <span>{user.department} {user.section && `- Section ${user.section}`}</span>
+                {!isEditMode ? (
+                  <>
+                    {/* View Mode */}
+                    <div className="flex flex-col items-center text-center">
+                      <Avatar className="w-24 h-24 mb-4">
+                        <AvatarFallback className="text-2xl gradient-primary text-primary-foreground">
+                          {user?.name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <h3 className="font-heading font-semibold text-xl">{user?.name}</h3>
+                      <p className="text-muted-foreground">{user?.registerNumber || 'Student'}</p>
+                      {user?.isPlaced && (
+                        <Badge className="mt-2 bg-success/10 text-success">Placed ✓</Badge>
+                      )}
                     </div>
-                  )}
-                  <div className="flex items-center gap-3 text-sm">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span>{user?.email}</span>
-                  </div>
-                  {user?.phone && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span>{user.phone}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-success/10 border border-success/20">
-                    <span className="text-sm font-medium">Current GPA</span>
-                    <span className="text-lg font-bold text-success">{user?.gpa || 'N/A'}</span>
-                  </div>
-                </div>
 
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label>Register Number</Label>
-                    <Input
-                      value={profileForm.registerNumber}
-                      onChange={(e) => setProfileForm({ ...profileForm, registerNumber: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Department</Label>
-                    <Input
-                      value={profileForm.department}
-                      onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Section</Label>
-                    <Input
-                      value={profileForm.section}
-                      onChange={(e) => setProfileForm({ ...profileForm, section: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input
-                      value={profileForm.phone}
-                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                    />
-                  </div>
-                  <Button className="w-full" onClick={onSaveProfile}>
-                    Save Profile
-                  </Button>
-                </div>
+                    <div className="space-y-3">
+                      {user?.department && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                          <span>{user.department} {user.section && `- Section ${user.section}`}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-3 text-sm">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        <span>{user?.email}</span>
+                      </div>
+                      {user?.phone && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          <span>{user.phone}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-success/10 border border-success/20">
+                        <span className="text-sm font-medium">Current GPA</span>
+                        <span className="text-lg font-bold text-success">{user?.gpa || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Edit Mode */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="registerNumber" className="text-sm">
+                          Register Number
+                        </Label>
+                        <Input
+                          id="registerNumber"
+                          value={profileForm.registerNumber}
+                          onChange={(e) =>
+                            setProfileForm({ ...profileForm, registerNumber: e.target.value })
+                          }
+                          placeholder="e.g., CHR20XX001"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-sm">
+                          Phone Number
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={profileForm.phone}
+                          onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                          placeholder="e.g., 9876543210"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="department" className="text-sm">
+                          Department
+                        </Label>
+                        <Input
+                          id="department"
+                          value={profileForm.department}
+                          onChange={(e) =>
+                            setProfileForm({ ...profileForm, department: e.target.value })
+                          }
+                          placeholder="e.g., Computer Science"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="section" className="text-sm">
+                          Section
+                        </Label>
+                        <Input
+                          id="section"
+                          value={profileForm.section}
+                          onChange={(e) => setProfileForm({ ...profileForm, section: e.target.value })}
+                          placeholder="e.g., A"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="gpa" className="text-sm">
+                          Current GPA (0-10)
+                        </Label>
+                        <Input
+                          id="gpa"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="10"
+                          value={profileForm.gpa}
+                          onChange={(e) => setProfileForm({ ...profileForm, gpa: e.target.value })}
+                          placeholder="e.g., 8.5"
+                        />
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          onClick={onSaveProfile}
+                          disabled={isSavingProfile}
+                          className="flex-1 bg-success hover:bg-success/90"
+                        >
+                          {isSavingProfile ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              Saving...
+                            </>
+                          ) : (
+                            'Save Changes'
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          disabled={isSavingProfile}
+                          className="flex-1"
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <input
                   ref={fileInputRef}
@@ -273,16 +391,26 @@ const StudentDashboard = () => {
                   className="hidden"
                   onChange={onFileSelected}
                 />
-                {resumeUrl ? (
-                  <Button variant="outline" className="w-full gap-2" onClick={onViewResume}>
-                    <FileText className="w-4 h-4" />
-                    View Resume
-                  </Button>
-                ) : (
-                  <Button variant="outline" className="w-full gap-2" onClick={onUploadClick} disabled={uploading}>
-                    <FileText className="w-4 h-4" />
-                    {uploading ? 'Uploading…' : 'Upload Resume'}
-                  </Button>
+
+                {isEditMode ? null : (
+                  <>
+                    {resumeUrl ? (
+                      <Button variant="outline" className="w-full gap-2" onClick={onViewResume}>
+                        <FileText className="w-4 h-4" />
+                        View Resume
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2"
+                        onClick={onUploadClick}
+                        disabled={uploading}
+                      >
+                        <FileText className="w-4 h-4" />
+                        {uploading ? 'Uploading…' : 'Upload Resume'}
+                      </Button>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

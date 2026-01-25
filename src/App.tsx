@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
+import ProfileSetup from "./pages/student/ProfileSetup";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import CompanyListings from "./pages/student/CompanyListings";
 import Applications from "./pages/student/Applications";
@@ -42,6 +43,7 @@ const AppContent = () => {
             <Route path="/auth" element={<AuthPage />} />
             
             {/* Student Routes */}
+            <Route path="/student/profile-setup" element={<ProfileSetup />} />
             <Route path="/student/dashboard" element={<StudentDashboard />} />
             <Route path="/student/companies" element={<CompanyListings />} />
             <Route path="/student/applications" element={<Applications />} />

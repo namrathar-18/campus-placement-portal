@@ -30,7 +30,12 @@ const AuthPage = () => {
       if (user.role === 'placement_officer') {
         navigate('/officer/dashboard');
       } else {
-        navigate('/student/dashboard');
+        // Check if student has completed profile setup
+        if (!user.registerNumber || !user.phone || !user.department || !user.gpa) {
+          navigate('/student/profile-setup');
+        } else {
+          navigate('/student/dashboard');
+        }
       }
     }
   }, [isAuthenticated, user, navigate]);
@@ -104,16 +109,15 @@ const AuthPage = () => {
         description: message,
         variant: 'destructive',
       });
+      setIsLoading(false);
     } else {
       toast({
         title: 'Account Created! 🎉',
-        description: 'Welcome to Campus Placement Portal! You can now login.',
+        description: 'Let\'s complete your profile!',
       });
-      setActiveTab('login');
-      setLoginData({ email: signupData.email, password: '' });
+      // Redirect to profile setup after successful signup
+      navigate('/student/profile-setup');
     }
-    
-    setIsLoading(false);
   };
 
   if (authLoading) {

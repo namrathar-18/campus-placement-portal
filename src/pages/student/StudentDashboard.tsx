@@ -20,7 +20,7 @@ import api from '@/lib/api';
 const StudentDashboard = () => {
   const { user, isAuthenticated, isLoading: authLoading, refreshUser, setUserData } = useAuth();
   const { data: companies, isLoading: companiesLoading } = useCompanies();
-  const { data: applications, isLoading: applicationsLoading } = useApplications();
+  const { data: applications, isLoading: applicationsLoading, refetch: refetchApplications } = useApplications();
   const { data: notifications } = useNotifications();
   const location = useLocation();
 
@@ -59,6 +59,19 @@ const StudentDashboard = () => {
       setPhotoUrl(user.photoUrl);
     }
   }, [user?.photoUrl]);
+
+  // Scroll to notifications section if hash is present
+  useEffect(() => {
+    if (location.hash === '#notifications') {
+      // Small delay to ensure the element is rendered
+      setTimeout(() => {
+        const element = document.getElementById('notifications');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [location.hash]);
 
   const onViewResume = () => {
     if (!resumeUrl) return;
@@ -322,32 +335,22 @@ const StudentDashboard = () => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
 
   const eligibleCompanies = companies?.filter(c => c.min_gpa <= (user?.gpa || 0)).length || 0;
-  const recentApplications = applications?.slice(0, 3) || [];
+  
+  // Filter out applications with missing/null company data
+  const validApplications = applications?.filter(app => app.companyId && app.companyId.name) || [];
+  const recentApplications = validApplications.slice(0, 3);
   const recentNotifications = notifications?.slice(0, 2) || [];
 
   const statusCounts = {
-    total: applications?.length || 0,
-    shortlisted: applications?.filter(a => a.status === 'approved').length || 0,
-    applied: applications?.filter(a => a.status === 'pending').length || 0,
+    total: validApplications.length,
+    shortlisted: validApplications.filter(a => a.status === 'approved').length,
+    applied: validApplications.filter(a => a.status === 'pending').length,
   };
-
-  // Scroll to notifications section if hash is present
-  useEffect(() => {
-    if (location.hash === '#notifications') {
-      // Small delay to ensure the element is rendered
-      setTimeout(() => {
-        const element = document.getElementById('notifications');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    }
-  }, [location.hash]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -703,38 +706,6 @@ const StudentDashboard = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Recent Applications */}
-            <Card className="animate-slide-up" style={{ animationDelay: '500ms' }}>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Recent Applications</CardTitle>
-                <Link to="/student/applications">
-                  <Button variant="ghost" size="sm" className="gap-1">
-                    View All <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {recentApplications.length > 0 ? (
-                  recentApplications.map((app) => (
-                    <div key={app._id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center text-primary-foreground font-bold">
-                          {typeof app.companyId === 'object' && app.companyId ? app.companyId.name.charAt(0) : 'C'}
-                        </div>
-                        <div>
-                          <p className="font-medium">{typeof app.companyId === 'object' && app.companyId ? app.companyId.name : 'Company'}</p>
-                          <p className="text-sm text-muted-foreground">{app.status}</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline">{app.status}</Badge>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-muted-foreground text-center py-4">No applications yet</p>
-                )}
-              </CardContent>
-            </Card>
-
             {/* Notifications */}
             <Card id="notifications" className="animate-slide-up" style={{ animationDelay: '600ms' }}>
               <CardHeader className="flex flex-row items-center justify-between">

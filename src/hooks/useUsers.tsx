@@ -11,6 +11,7 @@ export interface BasicUser {
   department?: string;
   section?: string;
   phone?: string;
+  isPlaced?: boolean;
 }
 
 export const useUsers = () => {

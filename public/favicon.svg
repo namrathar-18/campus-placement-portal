@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="white"/>
+  <circle cx="100" cy="100" r="95" fill="none" stroke="#B8860B" stroke-width="3"/>
+  <text x="100" y="30" text-anchor="middle" font-size="10" fill="#B8860B" font-family="serif">EXCELLENCE</text>
+  <text x="100" y="180" text-anchor="middle" font-size="10" fill="#B8860B" font-family="serif">CHRIST</text>
+  <text x="25" y="105" text-anchor="middle" font-size="9" fill="#B8860B" font-family="serif" transform="rotate(-90 25 105)">SERVICE</text>
+  <path d="M100 45 L100 155 M85 60 L100 45 L115 60" stroke="#B8860B" stroke-width="2" fill="none"/>
+  <rect x="95" y="120" width="10" height="15" fill="#B8860B"/>
+  <circle cx="100" cy="90" r="25" fill="none" stroke="#B8860B" stroke-width="1.5"/>
+  <path d="M85 90 Q100 75 115 90" stroke="#B8860B" stroke-width="1" fill="none"/>
+  <ellipse cx="100" cy="90" rx="8" ry="20" fill="none" stroke="#B8860B" stroke-width="1"/>
+  <path d="M100 70 L100 110" stroke="#B8860B" stroke-width="1"/>
+</svg>

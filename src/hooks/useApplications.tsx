@@ -44,8 +44,13 @@ export const useApplications = () => {
     queryKey: ['applications'],
     queryFn: async () => {
       const response = await api.get('/applications');
-      return response.data as Application[];
+      const data = response.data?.data || response.data || [];
+      console.log('Applications API Response:', data);
+      return data as Application[];
     },
+    staleTime: 0,
+    refetchOnMount: true,
+    initialData: [], // Prevent undefined errors
   });
 };
 
@@ -66,10 +71,11 @@ export const useCreateApplication = () => {
   return useMutation({
     mutationFn: async (application: ApplicationInsert) => {
       const response = await api.post('/applications', application);
-      return response.data;
+      return response.data.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applications'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['applications'] });
+      await queryClient.refetchQueries({ queryKey: ['applications'] });
     },
   });
 };

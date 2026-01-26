@@ -23,16 +23,19 @@ const CompanyCard = ({
   hasApplied = false 
 }: CompanyCardProps) => {
   const navigate = useNavigate();
-  const isEligible = userGpa >= company.minGpa;
+  const isEligible = userGpa >= (company.min_gpa || company.minGpa || 0);
 
   const getJobTypeBadge = () => {
-    switch (company.jobType) {
+    const jobType = company.job_type || company.jobType;
+    switch (jobType) {
+      case 'full-time':
       case 'Full-time':
         return <Badge className="bg-success/10 text-success border-success/20 font-medium">Full-time</Badge>;
+      case 'internship':
       case 'Internship':
         return <Badge className="bg-accent/10 text-accent border-accent/20 font-medium">Internship</Badge>;
       default:
-        return <Badge variant="secondary" className="font-medium">{company.jobType}</Badge>;
+        return <Badge variant="secondary" className="font-medium">{jobType}</Badge>;
     }
   };
 
@@ -68,7 +71,7 @@ const CompanyCard = ({
         variant="hero" 
         className="flex-1"
         disabled={!isEligible}
-        onClick={() => onApply?.(company.id)}
+        onClick={() => onApply?.(company._id)}
       >
         Apply Now
       </Button>
@@ -87,7 +90,7 @@ const CompanyCard = ({
               <h3 className="font-heading font-semibold text-lg text-card-foreground group-hover:text-primary transition-colors">
                 {company.name}
               </h3>
-              <p className="text-sm text-muted-foreground">{company.role}</p>
+              <p className="text-sm text-muted-foreground">{company.roles?.[0] || company.role || 'Position'}</p>
             </div>
           </div>
           {getJobTypeBadge()}
@@ -110,18 +113,18 @@ const CompanyCard = ({
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg bg-muted/50">
             <Briefcase className="w-4 h-4 text-accent" />
-            <span>Min GPA: {company.minGpa}</span>
+            <span>Min GPA: {company.min_gpa || company.minGpa || 0}</span>
           </div>
         </div>
 
         <p className="text-sm text-muted-foreground line-clamp-2">
-          {company.qualifications}
+          {company.eligibility || company.qualifications || company.description}
         </p>
 
         {!isEligible && !isPlaced && (
           <div className="px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20">
             <p className="text-sm text-destructive font-medium">
-              ⚠️ You need a minimum GPA of {company.minGpa} to apply
+              ⚠️ You need a minimum GPA of {company.min_gpa || company.minGpa || 0} to apply
             </p>
           </div>
         )}
@@ -132,7 +135,7 @@ const CompanyCard = ({
           <Button 
             variant="outline" 
             className="flex-1 rounded-xl"
-            onClick={() => navigate(`/company/${company.id}`)}
+            onClick={() => navigate(`/company/${company._id}`)}
           >
             View Details
           </Button>

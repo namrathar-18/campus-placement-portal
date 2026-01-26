@@ -6,10 +6,9 @@ import { useApplications, Application } from '@/hooks/useApplications';
 import { FileText, Loader2, Building2, Clock, CheckCircle, XCircle, Users } from 'lucide-react';
 
 const statusConfig = {
-  applied: { label: 'Applied', color: 'bg-muted text-muted-foreground', icon: Clock },
-  shortlisted: { label: 'Shortlisted', color: 'bg-accent/10 text-accent', icon: Users },
-  interview: { label: 'Interview', color: 'bg-warning/10 text-warning', icon: Users },
-  selected: { label: 'Selected', color: 'bg-success/10 text-success', icon: CheckCircle },
+  pending: { label: 'Pending', color: 'bg-muted text-muted-foreground', icon: Clock },
+  under_review: { label: 'Under Review', color: 'bg-accent/10 text-accent', icon: Users },
+  approved: { label: 'Approved', color: 'bg-success/10 text-success', icon: CheckCircle },
   rejected: { label: 'Rejected', color: 'bg-destructive/10 text-destructive', icon: XCircle },
 };
 
@@ -19,17 +18,18 @@ const Applications = () => {
 
   const getFilteredApplications = (status: string): Application[] => {
     if (!applications) return [];
-    if (status === 'all') return applications;
-    return applications.filter((app) => app.status === status);
+    // Filter out applications with null/missing companyId
+    const validApplications = applications.filter(app => app.companyId && app.companyId.name);
+    if (status === 'all') return validApplications;
+    return validApplications.filter((app) => app.status === status);
   };
 
   const statusCounts = {
-    all: applications?.length || 0,
-    applied: applications?.filter((a) => a.status === 'applied').length || 0,
-    shortlisted: applications?.filter((a) => a.status === 'shortlisted').length || 0,
-    interview: applications?.filter((a) => a.status === 'interview').length || 0,
-    selected: applications?.filter((a) => a.status === 'selected').length || 0,
-    rejected: applications?.filter((a) => a.status === 'rejected').length || 0,
+    all: applications?.filter(app => app.companyId && app.companyId.name).length || 0,
+    pending: applications?.filter((a) => a.status === 'pending' && a.companyId && a.companyId.name).length || 0,
+    under_review: applications?.filter((a) => a.status === 'under_review' && a.companyId && a.companyId.name).length || 0,
+    approved: applications?.filter((a) => a.status === 'approved' && a.companyId && a.companyId.name).length || 0,
+    rejected: applications?.filter((a) => a.status === 'rejected' && a.companyId && a.companyId.name).length || 0,
   };
 
   if (isLoading) {
@@ -59,17 +59,14 @@ const Applications = () => {
             <TabsTrigger value="all" className="gap-2">
               All <span className="text-xs bg-muted px-1.5 rounded">{statusCounts.all}</span>
             </TabsTrigger>
-            <TabsTrigger value="applied" className="gap-2">
-              Applied <span className="text-xs bg-muted px-1.5 rounded">{statusCounts.applied}</span>
+            <TabsTrigger value="pending" className="gap-2">
+              Pending <span className="text-xs bg-muted px-1.5 rounded">{statusCounts.pending}</span>
             </TabsTrigger>
-            <TabsTrigger value="shortlisted" className="gap-2">
-              Shortlisted <span className="text-xs bg-accent/20 px-1.5 rounded">{statusCounts.shortlisted}</span>
+            <TabsTrigger value="under_review" className="gap-2">
+              Under Review <span className="text-xs bg-accent/20 px-1.5 rounded">{statusCounts.under_review}</span>
             </TabsTrigger>
-            <TabsTrigger value="interview" className="gap-2">
-              Interview <span className="text-xs bg-warning/20 px-1.5 rounded">{statusCounts.interview}</span>
-            </TabsTrigger>
-            <TabsTrigger value="selected" className="gap-2">
-              Selected <span className="text-xs bg-success/20 px-1.5 rounded">{statusCounts.selected}</span>
+            <TabsTrigger value="approved" className="gap-2">
+              Approved <span className="text-xs bg-success/20 px-1.5 rounded">{statusCounts.approved}</span>
             </TabsTrigger>
             <TabsTrigger value="rejected" className="gap-2">
               Rejected <span className="text-xs bg-destructive/20 px-1.5 rounded">{statusCounts.rejected}</span>
@@ -82,9 +79,14 @@ const Applications = () => {
                 const config = statusConfig[application.status as keyof typeof statusConfig];
                 const StatusIcon = config.icon;
                 
+                // Skip if company data is missing
+                if (!application.companyId || !application.companyId.name) {
+                  return null;
+                }
+                
                 return (
                   <Card
-                    key={application.id}
+                    key={application._id}
                     className="animate-slide-up hover:shadow-card-hover transition-all"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
@@ -92,18 +94,22 @@ const Applications = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
-                            {application.companies.name.charAt(0)}
+                            {application.companyId.name.charAt(0)}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-lg">{application.companies.name}</h3>
-                            <p className="text-muted-foreground text-sm">{application.companies.role}</p>
+                            <h3 className="font-semibold text-lg">{application.companyId.name}</h3>
+                            <p className="text-muted-foreground text-sm">{application.companyId.location}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Applied on {new Date(application.applied_at).toLocaleDateString()}
+                              Applied on {new Date(application.appliedDate || application.createdAt || '').toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="font-medium text-success">{application.companies.salary}</span>
+                          {application.companyId.package && (
+                            <span className="font-medium text-success">
+                              ₹{application.companyId.package.toLocaleString('en-IN')}
+                            </span>
+                          )}
                           <Badge className={config.color}>
                             <StatusIcon className="w-3 h-3 mr-1" />
                             {config.label}

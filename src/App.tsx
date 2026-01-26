@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/layout/Navbar";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
-import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import ProfileSetup from "./pages/student/ProfileSetup";
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -47,7 +46,7 @@ const AppContent = () => {
         <Navbar />
         <div style={{ minHeight: '100vh' }}>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<AuthPage />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/auth" element={<AuthPage />} />
             

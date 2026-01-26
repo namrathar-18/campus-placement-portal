@@ -35,7 +35,11 @@ const CompanyListings = () => {
   }) || [];
 
   const hasApplied = (companyId: string) => {
-    return myApplications?.some(app => app.companyId._id === companyId) || false;
+    if (!myApplications || myApplications.length === 0) return false;
+    return myApplications.some(app => {
+      const appCompanyId = app.companyId?._id || app.companyId;
+      return appCompanyId === companyId;
+    });
   };
 
   const handleApply = async (companyId: string) => {
@@ -177,11 +181,12 @@ const CompanyListings = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCompanies.map((company, index) => {
             const isEligible = company.min_gpa <= userGpa;
-            const applied = hasApplied(company.id);
+            const applied = hasApplied(company._id);
+            const isExpired = new Date(company.deadline) < new Date();
             
             return (
               <Card
-                key={company.id}
+                key={company._id}
                 className="group hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
@@ -198,7 +203,7 @@ const CompanyListings = () => {
                     </Badge>
                   </div>
 
-                  <Link to={`/company/${company.id}`}>
+                  <Link to={`/company/${company._id}`}>
                     <h3 className="font-heading font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
                       {company.name}
                     </h3>
@@ -226,24 +231,31 @@ const CompanyListings = () => {
                     <Badge variant={isEligible ? 'outline' : 'secondary'} className={isEligible ? 'bg-success/10 text-success' : ''}>
                       Min GPA: {company.min_gpa}
                     </Badge>
-                    <Button
-                      size="sm"
-                      variant={applied ? 'outline' : 'hero'}
-                      disabled={!isEligible || isPlaced || applied || applyMutation.isPending}
-                      onClick={() => handleApply(company.id)}
-                    >
-                      {applyMutation.isPending ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : applied ? (
-                        'Applied'
-                      ) : isPlaced ? (
-                        'Placed'
-                      ) : !isEligible ? (
-                        'Not Eligible'
-                      ) : (
-                        'Apply Now'
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Link to={`/company/${company._id}`}>
+                        <Button size="sm" variant="outline">View Details</Button>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant={applied ? 'outline' : 'hero'}
+                        disabled={!isEligible || isPlaced || applied || isExpired || applyMutation.isPending}
+                        onClick={() => handleApply(company._id)}
+                      >
+                        {applyMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : applied ? (
+                          'Applied'
+                        ) : isPlaced ? (
+                          'Placed'
+                        ) : isExpired ? (
+                          'Expired'
+                        ) : !isEligible ? (
+                          'Not Eligible'
+                        ) : (
+                          'Apply Now'
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

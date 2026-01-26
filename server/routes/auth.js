@@ -1,6 +1,8 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
+import { sendPasswordResetEmail } from '../config/email.js';
 
 const router = express.Router();
 
@@ -153,6 +155,98 @@ router.post('/logout', (req, res) => {
   try {
     // Clear any server-side session data if needed
     res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   POST /api/auth/forgot-password
+// @desc    Send password reset code to email
+// @access  Public
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'No account found with that email address' 
+      });
+    }
+
+    // Get reset token (6-digit code)
+    const resetToken = user.getResetPasswordToken();
+
+    await user.save({ validateBeforeSave: false });
+
+    // Send email with reset code
+    try {
+      const emailResult = await sendPasswordResetEmail(email, resetToken);
+      
+      res.json({
+        success: true,
+        message: 'Password reset code sent to email',
+        // Only send code in response if email service is not configured (dev mode)
+        devCode: emailResult.devMode ? resetToken : undefined
+      });
+    } catch (emailError) {
+      // If email fails, clear the reset token
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+      
+      throw new Error('Error sending email. Please try again later.');
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   POST /api/auth/reset-password
+// @desc    Reset password using code
+// @access  Public
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide email, code, and new password' 
+      });
+    }
+
+    // Hash the provided code to compare with stored hash
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(code)
+      .digest('hex');
+
+    const user = await User.findOne({
+      email,
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid or expired reset code' 
+      });
+    }
+
+    // Set new password
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password reset successful',
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

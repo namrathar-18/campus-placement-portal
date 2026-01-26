@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useApplications, useCreateApplication } from '@/hooks/useApplications';
+import { useCompanies } from '@/hooks/useCompanies';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { mockCompanies } from '@/data/mockData';
-import { ArrowLeft, MapPin, Calendar, Briefcase, IndianRupee, GraduationCap, Clock, FileText, CheckCircle, Ban, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Briefcase, IndianRupee, GraduationCap, Clock, FileText, CheckCircle, Ban, CheckCircle2, Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const CompanyDetails = () => {
@@ -13,10 +13,19 @@ const CompanyDetails = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: applications = [] } = useApplications();
+  const { data: companies = [], isLoading } = useCompanies();
   const createApplication = useCreateApplication();
   const { toast } = useToast();
 
-  const company = mockCompanies.find((c) => c.id === id);
+  const company = companies.find((c) => c._id === id);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!company) {
     return (
@@ -31,10 +40,38 @@ const CompanyDetails = () => {
 
   const userGpa = user?.gpa || 0;
   const studentId = user?.id || '';
-  const isEligible = userGpa >= company.minGpa;
+  const isEligible = userGpa >= (company.min_gpa || 0);
   const isPlaced = user?.isPlaced ?? false;
   const studentApplications = applications.filter(app => app.studentId?._id === studentId);
   const hasApplied = studentApplications.some(app => app.companyId?._id === id);
+
+  const handleDownloadDetails = () => {
+    if (!(company as any).detailsFile) {
+      toast({
+        title: 'No File Available',
+        description: 'This company has not uploaded additional details.',
+      });
+      return;
+    }
+
+    try {
+      const base64Data = (company as any).detailsFile;
+      const link = document.createElement('a');
+      link.href = base64Data;
+      link.download = `${company.name}_Details.pdf`;
+      link.click();
+      toast({
+        title: 'Download Started',
+        description: 'Company details PDF is downloading...',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to download the file.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleApply = async () => {
     if (!user) {
@@ -160,11 +197,11 @@ const CompanyDetails = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h1 className="text-3xl font-heading font-bold">{company.name}</h1>
-                      <Badge className={company.jobType === 'Full-time' ? 'bg-success/10 text-success' : 'bg-accent/10 text-accent'}>
-                        {company.jobType}
+                      <Badge className={company.job_type === 'full-time' ? 'bg-success/10 text-success' : 'bg-accent/10 text-accent'}>
+                        {company.job_type}
                       </Badge>
                     </div>
-                    <p className="text-xl text-muted-foreground mb-4">{company.role}</p>
+                    <p className="text-xl text-muted-foreground mb-4">{company.roles?.[0] || 'Position'}</p>
                     <div className="flex flex-wrap gap-4">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin className="w-4 h-4" />
@@ -192,29 +229,25 @@ const CompanyDetails = () => {
               </CardContent>
             </Card>
 
-            {/* Qualifications */}
+            {/* Additional Information */}
             <Card className="animate-slide-up rounded-2xl" style={{ animationDelay: '200ms' }}>
               <CardHeader>
-                <CardTitle className="text-xl font-heading">Qualifications Required</CardTitle>
+                <CardTitle className="text-xl font-heading">Additional Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-success mt-0.5" />
-                    <span>{company.qualifications}</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-success mt-0.5" />
-                    <span>Minimum GPA of {company.minGpa} required</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-success mt-0.5" />
-                    <span>Strong problem-solving and analytical skills</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-success mt-0.5" />
-                    <span>Excellent communication and teamwork abilities</span>
-                  </li>
+                  {company.industry && (
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-success mt-0.5" />
+                      <span><strong>Industry:</strong> {company.industry}</span>
+                    </li>
+                  )}
+                  {company.min_gpa > 0 && (
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-success mt-0.5" />
+                      <span><strong>Minimum GPA:</strong> {company.min_gpa}</span>
+                    </li>
+                  )}
                 </ul>
               </CardContent>
             </Card>
@@ -240,8 +273,9 @@ const CompanyDetails = () => {
                       <GraduationCap className="w-4 h-4" />
                       <span className="text-sm">Min. GPA</span>
                     </div>
-                    <span className="font-semibold">{company.minGpa}</span>
+                    <span className="font-semibold">{company.min_gpa}</span>
                   </div>
+
                   <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="w-4 h-4" />
@@ -253,10 +287,25 @@ const CompanyDetails = () => {
                   </div>
                 </div>
 
+                {(company as any).detailsFile ? (
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 rounded-xl"
+                    onClick={handleDownloadDetails}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Details PDF
+                  </Button>
+                ) : (
+                  <div className="p-3 rounded-xl bg-muted/30 text-muted-foreground text-sm text-center">
+                    No additional file uploaded
+                  </div>
+                )}
+
                 {!isEligible && !isPlaced && (
                   <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
                     <p className="text-sm text-destructive font-medium">
-                      ⚠️ You need a minimum GPA of {company.minGpa} to apply for this position.
+                      ⚠️ You need a minimum GPA of {company.min_gpa} to apply for this position.
                     </p>
                   </div>
                 )}

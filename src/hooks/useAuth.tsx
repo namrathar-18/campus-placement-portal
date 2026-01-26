@@ -35,8 +35,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const extractPayload = (resp: any) => {
   if (!resp) return null;
   // Typical shape: { success: true, data: { ...user } }
-  if (resp.data) return resp.data;
-  // Fallback if payload is already the user object
+  if (resp && typeof resp === 'object') {
+    // If it has a 'data' property with user info, return it
+    if (resp.data && typeof resp.data === 'object' && resp.data.id) {
+      return resp.data;
+    }
+    // If it's already the user object (has id property), return as-is
+    if (resp.id) return resp;
+  }
+  // Fallback
   return resp;
 };
 
@@ -62,11 +69,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await api.get('/auth/me');
         const payload = extractPayload(response);
-        setUser(payload as AuthUser | null);
+        if (payload && payload.id) {
+          setUser(payload as AuthUser);
+        } else {
+          console.warn('Invalid user payload received:', payload);
+          setUser(null);
+          localStorage.removeItem('token');
+        }
       } catch (error) {
         console.error('Error fetching user:', error);
         // Set user to null on auth fail - React Router will redirect via isAuthenticated
         setUser(null);
+        localStorage.removeItem('token');
       } finally {
         setIsLoading(false);
       }
@@ -83,9 +97,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await api.get('/auth/me');
       const payload = extractPayload(response);
-      setUser(payload as AuthUser | null);
+      if (payload && payload.id) {
+        setUser(payload as AuthUser);
+      } else {
+        console.warn('Invalid user payload received:', payload);
+        setUser(null);
+        localStorage.removeItem('token');
+      }
     } catch (error) {
       console.error('Error refreshing user:', error);
+      setUser(null);
+      localStorage.removeItem('token');
     }
   };
 

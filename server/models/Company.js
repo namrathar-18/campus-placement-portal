@@ -22,7 +22,7 @@ const companySchema = new mongoose.Schema({
   },
   package: {
     type: Number,
-    required: true
+    required: false
   },
   salary: {
     type: String
@@ -64,6 +64,11 @@ const companySchema = new mongoose.Schema({
   openings: {
     type: Number,
     default: 0
+  },
+  // Base64-encoded PDF details file
+  detailsFile: {
+    type: String,
+    default: ''
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

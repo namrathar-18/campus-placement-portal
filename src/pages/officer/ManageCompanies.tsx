@@ -25,8 +25,6 @@ const ManageCompanies = () => {
     name: '',
     role: '',
     salary: '',
-    package: '',
-    qualifications: '',
     minGpa: '',
     description: '',
     industry: '',
@@ -34,6 +32,7 @@ const ManageCompanies = () => {
     deadline: '',
     location: '',
     jobType: 'full-time' as 'full-time' | 'internship' | 'both',
+    detailsFile: '' as string,
   });
 
   const filteredCompanies = companies.filter((company) => {
@@ -48,8 +47,6 @@ const ManageCompanies = () => {
         name: company.name,
         role: company.roles?.[0] || '',
         salary: company.salary || '',
-        package: company.package?.toString() || '',
-        qualifications: (company.requirements || []).join(', '),
         minGpa: (company.min_gpa ?? '').toString(),
         description: company.description,
         industry: company.industry || '',
@@ -57,6 +54,7 @@ const ManageCompanies = () => {
         deadline: company.deadline ? company.deadline.toString().substring(0,10) : '',
         location: company.location || '',
         jobType: company.job_type || 'full-time',
+        detailsFile: (company as any).detailsFile || '',
       });
     } else {
       setEditingCompany(null);
@@ -64,8 +62,6 @@ const ManageCompanies = () => {
         name: '',
         role: '',
         salary: '',
-        package: '',
-        qualifications: '',
         minGpa: '',
         description: '',
         industry: '',
@@ -73,6 +69,7 @@ const ManageCompanies = () => {
         deadline: '',
         location: '',
         jobType: 'full-time',
+        detailsFile: '',
       });
     }
     setIsDialogOpen(true);
@@ -85,15 +82,14 @@ const ManageCompanies = () => {
       description: formData.description,
       industry: formData.industry,
       location: formData.location,
-      package: parseFloat(formData.package || '0'),
       salary: formData.salary,
       min_gpa: parseFloat(formData.minGpa || '0'),
       eligibility: formData.eligibility,
       deadline: formData.deadline,
       roles: formData.role ? [formData.role] : [],
-      requirements: formData.qualifications ? formData.qualifications.split(',').map(r => r.trim()).filter(Boolean) : [],
       job_type: formData.jobType,
       status: 'active',
+      detailsFile: formData.detailsFile,
     };
 
     try {
@@ -181,23 +177,20 @@ const ManageCompanies = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Salary</Label>
-                    <Input
-                      value={formData.salary}
-                      onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                      placeholder="e.g., ₹12 LPA"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Package (number)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      value={formData.package}
-                      onChange={(e) => setFormData({ ...formData, package: e.target.value })}
-                      required
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <Input
+                        className="pl-8"
+                        value={formData.salary}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                          const formatted = value ? parseFloat(value).toLocaleString('en-IN') : '';
+                          setFormData({ ...formData, salary: formatted });
+                        }}
+                        placeholder="12,00,000"
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Minimum GPA</Label>
@@ -255,12 +248,28 @@ const ManageCompanies = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Requirements (comma separated)</Label>
+                  <Label>Upload Details (PDF)</Label>
                   <Input
-                    value={formData.qualifications}
-                    onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                    required
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (file.type !== 'application/pdf') {
+                          toast({ title: 'Error', description: 'Please upload a PDF file', variant: 'destructive' });
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setFormData({ ...formData, detailsFile: reader.result as string });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
                   />
+                  {formData.detailsFile && (
+                    <p className="text-xs text-muted-foreground">✓ File uploaded</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Job Description</Label>
@@ -313,7 +322,7 @@ const ManageCompanies = () => {
                       <h3 className="font-semibold text-lg">{company.name}</h3>
                       <p className="text-muted-foreground">{company.roles?.[0] || 'Role'}</p>
                       <div className="flex items-center gap-4 mt-1 text-sm">
-                        <span className="text-success font-medium">{company.salary || `₹${company.package?.toLocaleString?.() || 'TBD'}`}</span>
+                        <span className="text-success font-medium">₹{company.salary || company.package?.toLocaleString?.('en-IN') || 'TBD'}</span>
                         <span className="text-muted-foreground">Min GPA: {company.min_gpa ?? 'N/A'}</span>
                         <span className="text-muted-foreground">{company.location}</span>
                       </div>

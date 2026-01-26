@@ -100,16 +100,18 @@ const Navbar = () => {
               </SheetContent>
             </Sheet>
 
-            <Link to={user?.role === 'student' ? '/student/notifications' : '/officer/notifications'}>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
+            {user?.role === 'student' && (
+              <Link to="/student/notifications">
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+            )}
             
             {/* Desktop User Info */}
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-700">
@@ -120,10 +122,9 @@ const Navbar = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={async () => {
-                await signOut();
-                // Give React time to update state before navigating
-                setTimeout(() => navigate('/login', { replace: true }), 0);
+              onClick={() => {
+                signOut();
+                window.location.href = '/login';
               }}
             >
               <LogOut className="w-5 h-5" />

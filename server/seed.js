@@ -20,14 +20,14 @@ const seedPlacementOfficer = async () => {
     // Create placement officer
     const officer = await User.create({
       email: 'placement@gmail.com',
-      password: 'placement',
+      password: 'password',
       name: 'Placement Officer',
       role: 'placement_officer'
     });
 
     console.log('Placement officer created successfully');
     console.log('Email: placement@gmail.com');
-    console.log('Password: placement');
+    console.log('Password: password');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error.message);

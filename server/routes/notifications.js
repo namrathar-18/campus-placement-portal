@@ -13,7 +13,8 @@ router.get('/', protect, async (req, res) => {
       $or: [
         { targetRole: 'all' },
         { targetRole: req.user.role },
-        { userId: req.user._id }
+        { userId: req.user._id },
+        { createdBy: req.user._id } // Officers can see notifications they created
       ]
     }).sort({ createdAt: -1 });
 
@@ -28,7 +29,10 @@ router.get('/', protect, async (req, res) => {
 // @access  Private/Placement Officer
 router.post('/', protect, authorize('placement_officer', 'admin'), async (req, res) => {
   try {
-    const notification = await Notification.create(req.body);
+    const notification = await Notification.create({
+      ...req.body,
+      createdBy: req.user._id
+    });
     res.status(201).json({ success: true, data: notification });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

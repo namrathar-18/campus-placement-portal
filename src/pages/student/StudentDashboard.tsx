@@ -397,12 +397,9 @@ const StudentDashboard = () => {
             <p className="text-base sm:text-lg text-muted-foreground mb-6">
               You got placed at <span className="font-semibold text-primary">{getPlacedCompany()}</span>! All other company applications are marked as already placed.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button className="w-full sm:w-auto bg-success hover:bg-success/90" onClick={dismissCelebration}>
-                Celebrate!
-              </Button>
+            <div className="flex items-center justify-center">
               <Button variant="outline" className="w-full sm:w-auto" onClick={dismissCelebration}>
-                Continue to dashboard
+                Go to dashboard
               </Button>
             </div>
           </div>

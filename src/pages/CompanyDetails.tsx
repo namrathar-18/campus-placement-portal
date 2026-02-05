@@ -5,7 +5,7 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Calendar, Briefcase, IndianRupee, GraduationCap, Clock, FileText, CheckCircle, Ban, CheckCircle2, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Briefcase, IndianRupee, GraduationCap, Clock, FileText, CheckCircle, Ban, CheckCircle2, Download, Loader2, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const CompanyDetails = () => {
@@ -311,6 +311,16 @@ const CompanyDetails = () => {
                 )}
 
                 {getActionButton()}
+
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 rounded-xl"
+                  disabled={!isEligible}
+                  onClick={() => window.open('https://resume-analyzer-job-matcher.streamlit.app/', '_blank')}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Check if your resume fits with this listing
+                </Button>
 
                 <p className="text-xs text-center text-muted-foreground">
                   By applying, you agree to share your profile with {company.name}

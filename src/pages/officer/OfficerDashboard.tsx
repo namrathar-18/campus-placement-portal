@@ -96,7 +96,9 @@ const OfficerDashboard = () => {
                   {companies?.slice(0, 4).map((company) => (
                     <div key={company._id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold">{company.name.charAt(0)}</div>
+                        <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg ring-2 ring-white">
+                          {company.name.charAt(0)}
+                        </div>
                         <div>
                           <h3 className="font-semibold">{company.name}</h3>
                           <p className="text-sm text-muted-foreground">{company.roles?.[0] || 'Position'}</p>

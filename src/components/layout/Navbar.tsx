@@ -52,7 +52,7 @@ const Navbar = () => {
             <img 
               src={christLogo} 
               alt="Christ University Logo" 
-              className="h-12 w-auto object-contain"
+              className="h-12 w-auto object-contain rounded-xl bg-white p-1 shadow-lg"
             />
           </Link>
 

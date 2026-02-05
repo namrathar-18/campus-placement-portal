@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <rect width="200" height="200" fill="white"/>
+  <rect width="200" height="200" rx="80" ry="80" fill="white"/>
   <circle cx="100" cy="100" r="95" fill="none" stroke="#B8860B" stroke-width="3"/>
   <text x="100" y="30" text-anchor="middle" font-size="10" fill="#B8860B" font-family="serif">EXCELLENCE</text>
   <text x="100" y="180" text-anchor="middle" font-size="10" fill="#B8860B" font-family="serif">CHRIST</text>

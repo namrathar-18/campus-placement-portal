@@ -191,7 +191,7 @@ const CompanyDetails = () => {
             <Card className="animate-fade-in rounded-2xl">
               <CardContent className="p-8">
                 <div className="flex items-start gap-6">
-                  <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-3xl shadow-lg">
+                  <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-3xl shadow-lg ring-4 ring-white">
                     {company.name.charAt(0)}
                   </div>
                   <div className="flex-1">

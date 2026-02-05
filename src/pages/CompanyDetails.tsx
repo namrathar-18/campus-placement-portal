@@ -42,6 +42,7 @@ const CompanyDetails = () => {
   const studentId = user?.id || '';
   const isEligible = userGpa >= (company.min_gpa || 0);
   const isPlaced = user?.isPlaced ?? false;
+  const isExpired = new Date(company.deadline) < new Date();
   const studentApplications = applications.filter(app => app.studentId?._id === studentId);
   const hasApplied = studentApplications.some(app => app.companyId?._id === id);
 
@@ -92,6 +93,15 @@ const CompanyDetails = () => {
       return;
     }
 
+    if (isExpired) {
+      toast({
+        title: 'Application Deadline Passed',
+        description: 'The application deadline for this company has passed.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (hasApplied) {
       toast({
         title: 'Already Applied',
@@ -126,6 +136,20 @@ const CompanyDetails = () => {
         >
           <Ban className="w-5 h-5" />
           Already Placed
+        </Button>
+      );
+    }
+
+    if (isExpired) {
+      return (
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full gap-2 rounded-xl"
+          disabled
+        >
+          <Ban className="w-5 h-5" />
+          Deadline Expired
         </Button>
       );
     }
@@ -315,7 +339,7 @@ const CompanyDetails = () => {
                 <Button
                   variant="outline"
                   className="w-full gap-2 rounded-xl"
-                  disabled={!isEligible}
+                  disabled={!isEligible || isExpired}
                   onClick={() => window.open('https://resume-analyzer-job-matcher.streamlit.app/', '_blank')}
                 >
                   <ExternalLink className="w-4 h-4" />

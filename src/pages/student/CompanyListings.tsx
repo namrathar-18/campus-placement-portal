@@ -61,6 +61,18 @@ const CompanyListings = () => {
       return;
     }
 
+    const company = companies?.find((c) => c._id === companyId);
+    const isExpired = company && new Date(company.deadline) < new Date();
+
+    if (isExpired) {
+      toast({
+        title: 'Application Deadline Passed',
+        description: 'The application deadline for this company has passed.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (hasApplied(companyId)) {
       toast({
         title: 'Already Applied',

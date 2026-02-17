@@ -1,10 +1,12 @@
 export type UserRole = 'student' | 'placement_officer' | 'admin';
+export type Gender = 'male' | 'female';
 
 export interface User {
   id: string;
   email: string;
   role: UserRole;
   name: string;
+  gender?: Gender;
   registerNumber?: string;
   phone?: string;
   department?: string;

@@ -18,14 +18,21 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name, role, gender } = req.body;
 
     // Validate student email domain
     const userRole = role || 'student';
+    const normalizedGender = typeof gender === 'string' ? gender.toLowerCase().trim() : '';
     if (userRole === 'student' && !email.endsWith('@mca.christuniversity.in')) {
       return res.status(400).json({ 
         success: false, 
         message: 'Students must register with @mca.christuniversity.in email address' 
+      });
+    }
+    if (userRole === 'student' && !['male', 'female'].includes(normalizedGender)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Gender is required and must be either male or female',
       });
     }
 
@@ -40,7 +47,8 @@ router.post('/register', async (req, res) => {
       email,
       password,
       name,
-      role: userRole
+      role: userRole,
+      gender: userRole === 'student' ? normalizedGender : undefined
     });
 
     if (user) {
@@ -51,6 +59,7 @@ router.post('/register', async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          gender: user.gender,
           token: generateToken(user._id),
         },
       });
@@ -86,6 +95,7 @@ router.post('/login', async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          gender: user.gender,
           registerNumber: user.registerNumber,
           phone: user.phone,
           department: user.department,
@@ -133,6 +143,7 @@ router.get('/me', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        gender: user.gender,
         registerNumber: user.registerNumber,
         phone: user.phone,
         department: user.department,

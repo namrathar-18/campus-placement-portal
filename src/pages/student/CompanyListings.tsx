@@ -61,6 +61,18 @@ const CompanyListings = () => {
       return;
     }
 
+    const company = companies?.find((c) => c._id === companyId);
+    const isExpired = company && new Date(company.deadline) < new Date();
+
+    if (isExpired) {
+      toast({
+        title: 'Application Deadline Passed',
+        description: 'The application deadline for this company has passed.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (hasApplied(companyId)) {
       toast({
         title: 'Already Applied',
@@ -192,7 +204,7 @@ const CompanyListings = () => {
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
+                    <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg ring-3 ring-white">
                       {company.name.charAt(0)}
                     </div>
                     <Badge

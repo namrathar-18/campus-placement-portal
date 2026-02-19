@@ -114,7 +114,7 @@ const Applications = () => {
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
+                          <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-lg ring-2 ring-white">
                             {application.companyId.name.charAt(0)}
                           </div>
                           <div>

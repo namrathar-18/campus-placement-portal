@@ -83,7 +83,7 @@ const CompanyCard = ({
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
+            <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg ring-3 ring-white">
               {company.name.charAt(0)}
             </div>
             <div>

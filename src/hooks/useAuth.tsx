@@ -2,12 +2,14 @@ import { useState, useEffect, useRef, createContext, useContext, ReactNode } fro
 import api from '@/lib/api';
 
 type UserRole = 'student' | 'placement_officer' | 'admin';
+type Gender = 'male' | 'female';
 
 interface AuthUser {
   id: string;
   email: string;
   role: UserRole;
   name: string;
+  gender?: Gender;
   registerNumber?: string;
   phone?: string;
   department?: string;
@@ -23,7 +25,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, name: string, gender: Gender) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserData: (updates: Partial<AuthUser>) => void;
@@ -131,9 +133,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string, gender: Gender) => {
     try {
-      const response = await api.post('/auth/register', { email, password, name });
+      const response = await api.post('/auth/register', { email, password, name, gender });
       const payload = extractPayload(response) as any;
       const { token, ...userData } = payload || {};
       

@@ -1,80 +1,27 @@
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useApplications, useUpdateApplication, Application } from '@/hooks/useApplications';
-import { CheckCircle, Clock, XCircle, Send, FileText } from 'lucide-react';
+import { useUsers, useUpdateUser } from '@/hooks/useUsers';
+import { CheckCircle, Clock, XCircle, Users, Send, FileText, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ManageApplications = () => {
   const { toast } = useToast();
   const { data: applications = [] } = useApplications();
   const updateApplication = useUpdateApplication();
+  const { data: users = [] } = useUsers();
+  const updateUser = useUpdateUser();
   const [activeTab, setActiveTab] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
-  const [placementFilter, setPlacementFilter] = useState<'all' | 'placed' | 'unplaced'>('all');
-
-  const isStudentPlaced = (studentId: string): boolean => {
-    return applications.some(
-      app => app.studentId?._id === studentId && app.status === 'approved'
-    );
-  };
-
-  const matchesSearch = (app: Application) => {
-    const haystack = `
-      ${app.studentId?.name || ''}
-      ${app.studentId?.registerNumber || ''}
-      ${app.studentId?.department || ''}
-      ${(app.studentId as any)?.section || ''}
-      ${app.companyId?.name || ''}
-    `.toLowerCase();
-    return haystack.includes(searchTerm.toLowerCase().trim());
-  };
-
-  const matchesDepartment = (app: Application) => {
-    if (departmentFilter === 'all') return true;
-    return (app.studentId?.department || '').toLowerCase() === departmentFilter.toLowerCase();
-  };
-
-  const matchesPlacement = (app: Application) => {
-    if (placementFilter === 'all') return true;
-    const placed = isStudentPlaced(app.studentId?._id || '');
-    return placementFilter === 'placed' ? placed : !placed;
-  };
+  const [gpaEdits, setGpaEdits] = useState<Record<string, string>>({});
 
   const getFilteredApplications = (status: string): Application[] => {
-    let filtered = applications.filter((app) => matchesSearch(app) && matchesDepartment(app) && matchesPlacement(app));
-
-    if (status !== 'all') {
-      filtered = filtered.filter((app) => app.status === status);
-      if (status === 'rejected') {
-        filtered = filtered.filter(app => !isStudentPlaced(app.studentId?._id || ''));
-      }
-    }
-
-    return filtered;
-  };
-
-  // Group applications by student
-  const groupApplicationsByStudent = (apps: Application[]) => {
-    const grouped = apps.reduce((acc, app) => {
-      const studentId = app.studentId?._id;
-      if (!studentId) return acc;
-      
-      if (!acc[studentId]) {
-        acc[studentId] = {
-          student: app.studentId,
-          applications: []
-        };
-      }
-      acc[studentId].applications.push(app);
-      return acc;
-    }, {} as Record<string, { student: any; applications: Application[] }>);
-    
-    return Object.values(grouped);
+    if (status === 'all') return applications;
+    return applications.filter((app) => app.status === status);
   };
 
   const handleStatusChange = async (applicationId: string, newStatus: Application['status']) => {
@@ -103,6 +50,21 @@ const ManageApplications = () => {
     }
   };
 
+  const handleGpaUpdate = async (studentId: string) => {
+    const value = gpaEdits[studentId];
+    const parsed = Number(value);
+    if (Number.isNaN(parsed) || parsed < 0 || parsed > 10) {
+      toast({ title: 'Invalid GPA', description: 'Enter a value between 0 and 10.', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updateUser.mutateAsync({ id: studentId, gpa: parsed });
+      toast({ title: 'GPA Updated', description: 'Student GPA has been updated.' });
+    } catch (error: any) {
+      toast({ title: 'Update failed', description: error?.message || 'Could not update GPA.', variant: 'destructive' });
+    }
+  };
+
   const getStatusConfig = (status: Application['status']) => {
     switch (status) {
       case 'pending':
@@ -116,35 +78,13 @@ const ManageApplications = () => {
     }
   };
 
-  // Count unique students by status
-  const getUniqueStudentCount = (status: Application['status']) => {
-    let filtered = applications.filter(a => a.status === status);
-    
-    // Exclude placed students from rejected count
-    if (status === 'rejected') {
-      filtered = filtered.filter(a => !isStudentPlaced(a.studentId?._id || ''));
-    }
-    
-    return new Set(
-      filtered
-        .map(a => a.studentId?._id)
-        .filter(Boolean)
-    ).size;
-  };
-
   const statusCounts = {
-    all: groupApplicationsByStudent(applications).length,
-    approved: getUniqueStudentCount('approved'),
-    rejected: getUniqueStudentCount('rejected'),
+    all: applications.length,
+    pending: applications.filter((a) => a.status === 'pending').length,
+    under_review: applications.filter((a) => a.status === 'under_review').length,
+    approved: applications.filter((a) => a.status === 'approved').length,
+    rejected: applications.filter((a) => a.status === 'rejected').length,
   };
-
-  const departmentOptions = Array.from(
-    new Set(
-      applications
-        .map(app => app.studentId?.department)
-        .filter(Boolean)
-    )
-  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -159,42 +99,9 @@ const ManageApplications = () => {
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Search by student, register, company..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="rounded-xl"
-            />
-          </div>
-          <Select value={departmentFilter} onValueChange={(value) => setDepartmentFilter(value)}>
-            <SelectTrigger className="rounded-xl">
-              <SelectValue placeholder="Department" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
-              {departmentOptions.map((dept) => (
-                <SelectItem key={dept} value={dept || 'unknown'}>{dept}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={placementFilter} onValueChange={(value: 'all' | 'placed' | 'unplaced') => setPlacementFilter(value)}>
-            <SelectTrigger className="rounded-xl">
-              <SelectValue placeholder="Placement" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Students</SelectItem>
-              <SelectItem value="placed">Placed Only</SelectItem>
-              <SelectItem value="unplaced">Unplaced Only</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-8">
-          {(['approved', 'rejected'] as const).map((status, index) => {
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          {(['pending', 'under_review', 'approved', 'rejected'] as const).map((status, index) => {
             const config = getStatusConfig(status);
             const Icon = config.icon;
             return (
@@ -221,112 +128,79 @@ const ManageApplications = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="flex-wrap h-auto gap-2 bg-muted/50 p-2 rounded-xl">
                 <TabsTrigger value="all" className="rounded-lg">All ({statusCounts.all})</TabsTrigger>
+                <TabsTrigger value="pending" className="rounded-lg">Pending ({statusCounts.pending})</TabsTrigger>
+                <TabsTrigger value="under_review" className="rounded-lg">Under Review ({statusCounts.under_review})</TabsTrigger>
                 <TabsTrigger value="approved" className="rounded-lg">Approved ({statusCounts.approved})</TabsTrigger>
                 <TabsTrigger value="rejected" className="rounded-lg">Rejected ({statusCounts.rejected})</TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {groupApplicationsByStudent(getFilteredApplications(activeTab)).map((group, groupIndex) => {
-                const studentPlaced = isStudentPlaced(group.student._id);
+            <div className="space-y-4">
+              {getFilteredApplications(activeTab).map((application, index) => {
+                const config = getStatusConfig(application.status);
+                const Icon = config.icon;
+                const student = users.find(u => u._id === application.studentId?._id);
                 
                 return (
                   <div
-                    key={group.student._id}
-                    className="p-6 rounded-2xl bg-muted/20 border border-border/50 animate-slide-up"
-                    style={{ animationDelay: `${groupIndex * 50}ms` }}
+                    key={application._id}
+                    className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors animate-slide-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Student Header */}
-                    <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border/50">
-                      <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
-                        {group.student.name?.charAt(0) || '?'}
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg ring-2 ring-white">
+                        {application.studentId?.name?.charAt(0) || '?'}
                       </div>
-                      <div className="flex-1">
+                      <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold">{group.student.name || 'Student'}</h3>
-                          {studentPlaced && (
-                            <Badge className="bg-success/10 text-success border-success/30">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Placed
-                            </Badge>
-                          )}
+                          <h3 className="font-semibold">{application.studentId?.name || 'Student'}</h3>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {group.student.email} • {group.student.department}
+                          Applied to <span className="font-medium text-foreground">{application.companyId?.name || 'Company'}</span>
                         </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
-                          {group.applications.length} {group.applications.length === 1 ? 'Application' : 'Applications'}
+                        <p className="text-xs text-muted-foreground">
+                          {application.appliedDate ? new Date(application.appliedDate).toLocaleDateString() : ''}
                         </p>
                       </div>
                     </div>
 
-                    {/* Applications List */}
-                    <div className="space-y-3">
-                      {group.applications.map((application, appIndex) => {
-                        const config = getStatusConfig(application.status);
-                        const isPlacedElsewhere = studentPlaced && application.status !== 'approved';
-                        const displayStatus = isPlacedElsewhere
-                          ? { icon: CheckCircle, label: 'Already Placed', color: 'bg-success/10 text-success' }
-                          : config;
-                        const Icon = displayStatus.icon;
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">GPA</span>
+                        <Input
+                          className="w-20"
+                          value={gpaEdits[application.studentId._id] ?? (student?.gpa?.toString() || '')}
+                          placeholder="0-10"
+                          onChange={(e) => setGpaEdits({ ...gpaEdits, [application.studentId._id]: e.target.value })}
+                        />
+                        <Button size="sm" variant="outline" onClick={() => handleGpaUpdate(application.studentId._id)}>
+                          Save
+                        </Button>
+                      </div>
+
+                      <Badge className={`gap-1.5 ${config.color}`}>
+                        <Icon className="w-3.5 h-3.5" />
+                        {config.label}
+                      </Badge>
+
+                      <Select
+                        value={application.status}
+                        onValueChange={(value: Application['status']) =>
+                          handleStatusChange(application._id, value)
+                        }
                         
-                        return (
-                          <div
-                            key={application._id}
-                            className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-border/30"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                {application.companyId?.name?.charAt(0) || '?'}
-                              </div>
-                              <div>
-                                <h4 className="font-medium">{application.companyId?.name || 'Company'}</h4>
-                                <p className="text-xs text-muted-foreground">
-                                  Applied: {application.appliedDate ? new Date(application.appliedDate).toLocaleDateString() : 'N/A'}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <Badge className={`gap-1.5 ${displayStatus.color}`}>
-                                <Icon className="w-3.5 h-3.5" />
-                                {displayStatus.label}
-                              </Badge>
-
-                              {isPlacedElsewhere ? (
-                                <div className="px-3 py-2 rounded-lg bg-muted text-sm text-muted-foreground">
-                                  Already placed
-                                </div>
-                              ) : (
-                                <>
-                                  <Select
-                                    value={application.status}
-                                    onValueChange={(value: Application['status']) =>
-                                      handleStatusChange(application._id, value)
-                                    }
-                                  >
-                                    <SelectTrigger className="w-40 rounded-xl">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="pending">Pending</SelectItem>
-                                      <SelectItem value="under_review">Under Review</SelectItem>
-                                      <SelectItem value="approved">Approved</SelectItem>
-                                      <SelectItem value="rejected">Rejected</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </>
-                              )}
-                              {isPlacedElsewhere && (
-                                <span className="text-xs text-muted-foreground italic">Already placed with another company</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                      >
+                        <SelectTrigger className="w-40 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="under_review">Under Review</SelectItem>
+                          <SelectItem value="approved">Approved</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 );

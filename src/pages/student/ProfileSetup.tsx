@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload, FileText, Loader2, Camera, X } from 'lucide-react';
@@ -32,7 +33,7 @@ const ProfileSetup = () => {
     registerNumber: user?.registerNumber || '',
     phone: user?.phone || '',
     department: user?.department || '',
-    section: user?.section || '',
+    section: user?.section === 'A' || user?.section === 'B' ? user.section : '',
     gpa: user?.gpa?.toString() || '',
   });
 
@@ -63,6 +64,10 @@ const ProfileSetup = () => {
       toast({ title: 'Error', description: 'Section is required', variant: 'destructive' });
       return false;
     }
+    if (profileData.section !== 'A' && profileData.section !== 'B') {
+      toast({ title: 'Error', description: 'Section must be either A or B', variant: 'destructive' });
+      return false;
+    }
     const gpaValue = parseFloat(profileData.gpa);
     if (!profileData.gpa || isNaN(gpaValue) || gpaValue < 0 || gpaValue > 10) {
       toast({ title: 'Error', description: 'GPA must be between 0 and 10', variant: 'destructive' });
@@ -82,7 +87,7 @@ const ProfileSetup = () => {
         registerNumber: profileData.registerNumber,
         phone: profileData.phone,
         department: profileData.department,
-        section: profileData.section,
+        section: profileData.section as 'A' | 'B',
         gpa: parseFloat(profileData.gpa),
       };
 
@@ -365,13 +370,18 @@ const ProfileSetup = () => {
                     <Label htmlFor="section">
                       Section <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="section"
-                      placeholder="e.g., A"
+                    <Select
                       value={profileData.section}
-                      onChange={(e) => setProfileData({ ...profileData, section: e.target.value })}
-                      required
-                    />
+                      onValueChange={(value) => setProfileData({ ...profileData, section: value })}
+                    >
+                      <SelectTrigger id="section">
+                        <SelectValue placeholder="Select section" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A">A</SelectItem>
+                        <SelectItem value="B">B</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* GPA */}

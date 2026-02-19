@@ -6,6 +6,7 @@ export interface BasicUser {
   name: string;
   email: string;
   role: 'student' | 'placement_officer' | 'admin';
+  gender?: 'male' | 'female';
   gpa?: number;
   registerNumber?: string;
   department?: string;

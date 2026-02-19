@@ -24,6 +24,13 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'placement_officer', 'admin'],
     default: 'student'
   },
+  gender: {
+    type: String,
+    enum: ['male', 'female'],
+    required: function() {
+      return this.role === 'student';
+    }
+  },
   registerNumber: {
     type: String,
     sparse: true

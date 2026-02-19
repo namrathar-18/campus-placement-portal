@@ -3,33 +3,53 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useApplications, Application } from '@/hooks/useApplications';
-import { FileText, Loader2, Building2, Clock, CheckCircle, XCircle, Users } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { FileText, Loader2, Building2, Clock, CheckCircle, XCircle, Users, Award } from 'lucide-react';
 
 const statusConfig = {
   pending: { label: 'Pending', color: 'bg-muted text-muted-foreground', icon: Clock },
   under_review: { label: 'Under Review', color: 'bg-accent/10 text-accent', icon: Users },
   approved: { label: 'Approved', color: 'bg-success/10 text-success', icon: CheckCircle },
   rejected: { label: 'Rejected', color: 'bg-destructive/10 text-destructive', icon: XCircle },
+  already_placed: { label: 'Already Placed', color: 'bg-primary/10 text-primary', icon: Award },
 };
 
 const Applications = () => {
   const { data: applications, isLoading } = useApplications();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
+
+  // Helper to determine if application should show 'Already Placed'
+  const getDisplayStatus = (app: Application) => {
+    if (user?.isPlaced && app.status !== 'approved') {
+      return 'already_placed';
+    }
+    return app.status;
+  };
 
   const getFilteredApplications = (status: string): Application[] => {
     if (!applications) return [];
-    // Filter out applications with null/missing companyId
-    const validApplications = applications.filter(app => app.companyId && app.companyId.name);
+    // Filter out applications with null/missing companyId and those that should show 'already_placed'
+    const validApplications = applications.filter(app => {
+      if (!app.companyId || !app.companyId.name) return false;
+      // Don't show non-approved applications if user is already placed
+      if (user?.isPlaced && app.status !== 'approved') return false;
+      return true;
+    });
     if (status === 'all') return validApplications;
     return validApplications.filter((app) => app.status === status);
   };
 
   const statusCounts = {
-    all: applications?.filter(app => app.companyId && app.companyId.name).length || 0,
-    pending: applications?.filter((a) => a.status === 'pending' && a.companyId && a.companyId.name).length || 0,
-    under_review: applications?.filter((a) => a.status === 'under_review' && a.companyId && a.companyId.name).length || 0,
+    all: applications?.filter(app => {
+      if (!app.companyId || !app.companyId.name) return false;
+      if (user?.isPlaced && app.status !== 'approved') return false;
+      return true;
+    }).length || 0,
+    pending: applications?.filter((a) => a.status === 'pending' && !user?.isPlaced && a.companyId && a.companyId.name).length || 0,
+    under_review: applications?.filter((a) => a.status === 'under_review' && !user?.isPlaced && a.companyId && a.companyId.name).length || 0,
     approved: applications?.filter((a) => a.status === 'approved' && a.companyId && a.companyId.name).length || 0,
-    rejected: applications?.filter((a) => a.status === 'rejected' && a.companyId && a.companyId.name).length || 0,
+    rejected: applications?.filter((a) => a.status === 'rejected' && !user?.isPlaced && a.companyId && a.companyId.name).length || 0,
   };
 
   if (isLoading) {
@@ -76,7 +96,8 @@ const Applications = () => {
           <TabsContent value={activeTab}>
             <div className="space-y-4">
               {getFilteredApplications(activeTab).map((application, index) => {
-                const config = statusConfig[application.status as keyof typeof statusConfig];
+                const displayStatus = getDisplayStatus(application);
+                const config = statusConfig[displayStatus as keyof typeof statusConfig];
                 const StatusIcon = config.icon;
                 
                 // Skip if company data is missing

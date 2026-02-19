@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNotifications, useCreateNotification, useDeleteNotification } from '@/hooks/useNotifications';
-import { Loader2, Plus, Trash2, Bell } from 'lucide-react';
+import { Loader2, Plus, Trash2, Bell, Search, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ManageNotifications = () => {
@@ -15,6 +15,9 @@ const ManageNotifications = () => {
   const { data: notifications = [], isLoading } = useNotifications();
   const createNotification = useCreateNotification();
   const deleteNotification = useDeleteNotification();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'info' | 'warning' | 'success' | 'error'>('all');
+  const [targetFilter, setTargetFilter] = useState<'all' | 'student' | 'placement_officer'>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -68,6 +71,14 @@ const ManageNotifications = () => {
     }
   };
 
+  const filteredNotifications = notifications.filter((notification) => {
+    const haystack = `${notification.title} ${notification.message}`.toLowerCase();
+    const matchesSearch = haystack.includes(searchTerm.toLowerCase().trim());
+    const matchesType = typeFilter === 'all' || notification.type === typeFilter;
+    const matchesTarget = targetFilter === 'all' || notification.targetRole === targetFilter;
+    return matchesSearch && matchesType && matchesTarget;
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -80,6 +91,39 @@ const ManageNotifications = () => {
             <p className="text-muted-foreground">
               Create and manage announcements for students
             </p>
+          </div>
+          <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
+            <div className="flex items-center gap-2 w-full lg:w-64">
+              <Search className="w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search title or message"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+            <Select value={typeFilter} onValueChange={(v: 'all' | 'info' | 'warning' | 'success' | 'error') => setTypeFilter(v)}>
+              <SelectTrigger className="rounded-xl">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="warning">Warning</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={targetFilter} onValueChange={(v: 'all' | 'student' | 'placement_officer') => setTargetFilter(v)}>
+              <SelectTrigger className="rounded-xl">
+                <SelectValue placeholder="Audience" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="student">Students</SelectItem>
+                <SelectItem value="placement_officer">Officers</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -173,9 +217,9 @@ const ManageNotifications = () => {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : notifications.length > 0 ? (
+        ) : filteredNotifications.length > 0 ? (
           <div className="space-y-4">
-            {notifications.map((notification, index) => (
+            {filteredNotifications.map((notification, index) => (
               <div
                 key={notification._id}
                 className="relative animate-slide-up"

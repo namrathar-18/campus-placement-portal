@@ -1,5 +1,6 @@
 import express from 'express';
 import Application from '../models/Application.js';
+import User from '../models/User.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -16,7 +17,7 @@ router.get('/', protect, async (req, res) => {
     }
 
     const applications = await Application.find(query)
-      .populate('studentId', 'name email registerNumber department')
+      .populate('studentId', 'name email registerNumber department isPlaced')
       .populate('companyId', 'name package location deadline')
       .sort({ appliedDate: -1 });
 
@@ -32,7 +33,7 @@ router.get('/', protect, async (req, res) => {
 router.get('/:id', protect, async (req, res) => {
   try {
     const application = await Application.findById(req.params.id)
-      .populate('studentId', 'name email registerNumber department')
+      .populate('studentId', 'name email registerNumber department isPlaced')
       .populate('companyId', 'name package location deadline');
 
     if (!application) {
@@ -55,6 +56,15 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private/Student
 router.post('/', protect, authorize('student'), async (req, res) => {
   try {
+    // Check if student is already placed
+    const student = await User.findById(req.user._id);
+    if (student.isPlaced) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'You are already placed and cannot apply to other companies' 
+      });
+    }
+
     const application = await Application.create({
       ...req.body,
       studentId: req.user._id
@@ -89,6 +99,17 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
+    // Check if student is already placed in another company
+    if (req.user.role === 'placement_officer' && req.body.status) {
+      const student = await User.findById(application.studentId);
+      if (student.isPlaced) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Student is already placed in another company. Status cannot be changed.' 
+        });
+      }
+    }
+
     const updatedApplication = await Application.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -96,6 +117,21 @@ router.put('/:id', protect, async (req, res) => {
     )
     .populate('studentId', 'name email registerNumber department')
     .populate('companyId', 'name package location deadline');
+
+    // If status changed to approved, mark student as placed and reject all other applications
+    if (req.body.status === 'approved' && application.status !== 'approved') {
+      await User.findByIdAndUpdate(application.studentId, { isPlaced: true });
+      
+      // Automatically reject all other pending/under_review applications for this student
+      await Application.updateMany(
+        { 
+          studentId: application.studentId, 
+          _id: { $ne: req.params.id },
+          status: { $in: ['pending', 'under_review'] }
+        },
+        { status: 'rejected' }
+      );
+    }
 
     res.json({ success: true, data: updatedApplication });
   } catch (error) {

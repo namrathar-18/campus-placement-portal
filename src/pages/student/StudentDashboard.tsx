@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import StatsCard from '@/components/cards/StatsCard';
-import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell, Edit2, X, Upload, Camera } from 'lucide-react';
+import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell, Edit2, X, Upload, Camera, PartyPopper } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -25,6 +25,8 @@ const StudentDashboard = () => {
   const location = useLocation();
 
   const { toast } = useToast();
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebrationKey = user?.id ? `placementCelebrated:${user.id}` : null;
   const [resumeUrl, setResumeUrl] = useState<string | undefined>(user?.resumeUrl);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(user?.photoUrl);
   const [uploading, setUploading] = useState(false);
@@ -60,6 +62,16 @@ const StudentDashboard = () => {
     }
   }, [user?.photoUrl]);
 
+  const dismissCelebration = () => {
+    setShowCelebration(false);
+  };
+
+  // Get the company name where student is placed
+  const getPlacedCompany = () => {
+    const approvedApp = applications?.find(app => app.status === 'approved');
+    return approvedApp?.companyId?.name || 'a company';
+  };
+
   // Scroll to notifications section if hash is present
   useEffect(() => {
     if (location.hash === '#notifications') {
@@ -72,6 +84,17 @@ const StudentDashboard = () => {
       }, 100);
     }
   }, [location.hash]);
+
+  // Show one-time celebration overlay for placed students after sign-in
+  useEffect(() => {
+    if (user?.isPlaced && celebrationKey) {
+      const alreadyShown = sessionStorage.getItem(celebrationKey);
+      if (!alreadyShown) {
+        setShowCelebration(true);
+        sessionStorage.setItem(celebrationKey, 'true');
+      }
+    }
+  }, [user?.isPlaced, celebrationKey]);
 
   const onViewResume = () => {
     if (!resumeUrl) return;
@@ -353,7 +376,36 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {showCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-primary/80 via-background to-success/80 backdrop-blur-md animate-fade-in">
+          <div
+            className="absolute inset-0 pointer-events-none opacity-60"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.2) 0, transparent 25%),\
+                 radial-gradient(circle at 80% 30%, rgba(255,255,255,0.16) 0, transparent 22%),\
+                 radial-gradient(circle at 30% 80%, rgba(255,255,255,0.18) 0, transparent 20%)',
+              backgroundSize: '200px 200px'
+            }}
+          />
+          <div className="relative z-10 text-center px-6 max-w-xl">
+            <div className="mx-auto mb-6 h-24 w-24 rounded-full bg-background/70 border border-primary/40 flex items-center justify-center shadow-2xl">
+              <PartyPopper className="w-12 h-12 text-primary" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-heading font-bold text-foreground mb-3">Congratulations!</h2>
+            <p className="text-base sm:text-lg text-muted-foreground mb-6">
+              You got placed at <span className="font-semibold text-primary">{getPlacedCompany()}</span>! All other company applications are marked as already placed.
+            </p>
+            <div className="flex items-center justify-center">
+              <Button variant="outline" className="w-full sm:w-auto" onClick={dismissCelebration}>
+                Go to dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8 animate-fade-in">

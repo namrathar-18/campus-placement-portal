@@ -9,9 +9,6 @@ const companySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  logoUrl: {
-    type: String
-  },
   industry: {
     type: String,
     required: true

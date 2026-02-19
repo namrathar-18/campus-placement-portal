@@ -4,12 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Loader2 } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
@@ -17,7 +16,6 @@ import api from '@/lib/api';
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
-const genderSchema = z.enum(['male', 'female']);
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -33,7 +31,7 @@ const AuthPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ email: '', password: '', name: '', gender: '' as '' | 'male' | 'female' });
+  const [signupData, setSignupData] = useState({ email: '', password: '', name: '' });
 
   useEffect(() => {
     // Only redirect if authenticated AND not currently loading
@@ -42,7 +40,7 @@ const AuthPage = () => {
         navigate('/officer/dashboard', { replace: true });
       } else {
         // Check if student has completed profile setup
-        if (!user.registerNumber || !user.phone || !user.department || !user.gpa) {
+        if (!user.registerNumber || !user.phone || !user.department || !user.section || !user.gender || !user.gpa) {
           navigate('/student/profile-setup', { replace: true });
         } else {
           navigate('/student/dashboard', { replace: true });
@@ -96,13 +94,11 @@ const AuthPage = () => {
       emailSchema.parse(signupData.email);
       passwordSchema.parse(signupData.password);
       nameSchema.parse(signupData.name);
-      genderSchema.parse(signupData.gender);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const validationMessage = signupData.gender === '' ? 'Please select gender' : error.errors[0].message;
         toast({
           title: 'Validation Error',
-          description: validationMessage,
+          description: error.errors[0].message,
           variant: 'destructive',
         });
         setIsLoading(false);
@@ -110,7 +106,7 @@ const AuthPage = () => {
       }
     }
 
-    const { error } = await signUp(signupData.email, signupData.password, signupData.name, signupData.gender);
+    const { error } = await signUp(signupData.email, signupData.password, signupData.name);
     
     if (error) {
       let message = error.message;
@@ -343,21 +339,6 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-gender">Gender</Label>
-                  <Select
-                    value={signupData.gender}
-                    onValueChange={(value: 'male' | 'female') => setSignupData({ ...signupData, gender: value })}
-                  >
-                    <SelectTrigger id="signup-gender">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
                   {isLoading ? (

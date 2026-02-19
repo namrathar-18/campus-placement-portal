@@ -29,13 +29,6 @@ router.post('/register', async (req, res) => {
         message: 'Students must register with @mca.christuniversity.in email address' 
       });
     }
-    if (userRole === 'student' && !['male', 'female'].includes(normalizedGender)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Gender is required and must be either male or female',
-      });
-    }
-
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -48,7 +41,7 @@ router.post('/register', async (req, res) => {
       password,
       name,
       role: userRole,
-      gender: userRole === 'student' ? normalizedGender : undefined
+      gender: userRole === 'student' && ['male', 'female'].includes(normalizedGender) ? normalizedGender : undefined
     });
 
     if (user) {

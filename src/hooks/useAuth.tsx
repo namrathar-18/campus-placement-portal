@@ -25,7 +25,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, name: string, gender: Gender) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserData: (updates: Partial<AuthUser>) => void;
@@ -133,9 +133,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, gender: Gender) => {
+  const signUp = async (email: string, password: string, name: string) => {
     try {
-      const response = await api.post('/auth/register', { email, password, name, gender });
+      const response = await api.post('/auth/register', { email, password, name });
       const payload = extractPayload(response) as any;
       const { token, ...userData } = payload || {};
       

@@ -26,10 +26,7 @@ const userSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ['male', 'female'],
-    required: function() {
-      return this.role === 'student';
-    }
+    enum: ['male', 'female']
   },
   registerNumber: {
     type: String,

@@ -34,6 +34,7 @@ const ProfileSetup = () => {
     phone: user?.phone || '',
     department: user?.department || '',
     section: user?.section === 'A' || user?.section === 'B' ? user.section : '',
+    gender: user?.gender === 'male' || user?.gender === 'female' ? user.gender : '',
     gpa: user?.gpa?.toString() || '',
   });
 
@@ -42,7 +43,7 @@ const ProfileSetup = () => {
       navigate('/login');
     }
     // If user already has complete profile, redirect to dashboard
-    if (user?.registerNumber && user?.phone && user?.department && user?.gpa) {
+    if (user?.registerNumber && user?.phone && user?.department && user?.section && user?.gender && user?.gpa) {
       navigate('/student/dashboard');
     }
   }, [isAuthenticated, user, navigate]);
@@ -68,6 +69,10 @@ const ProfileSetup = () => {
       toast({ title: 'Error', description: 'Section must be either A or B', variant: 'destructive' });
       return false;
     }
+    if (profileData.gender !== 'male' && profileData.gender !== 'female') {
+      toast({ title: 'Error', description: 'Gender is required', variant: 'destructive' });
+      return false;
+    }
     const gpaValue = parseFloat(profileData.gpa);
     if (!profileData.gpa || isNaN(gpaValue) || gpaValue < 0 || gpaValue > 10) {
       toast({ title: 'Error', description: 'GPA must be between 0 and 10', variant: 'destructive' });
@@ -88,6 +93,7 @@ const ProfileSetup = () => {
         phone: profileData.phone,
         department: profileData.department,
         section: profileData.section as 'A' | 'B',
+        gender: profileData.gender as 'male' | 'female',
         gpa: parseFloat(profileData.gpa),
       };
 
@@ -380,6 +386,27 @@ const ProfileSetup = () => {
                       <SelectContent>
                         <SelectItem value="A">A</SelectItem>
                         <SelectItem value="B">B</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Gender */}
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">
+                      Gender <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={profileData.gender}
+                      onValueChange={(value: 'male' | 'female') =>
+                        setProfileData({ ...profileData, gender: value })
+                      }
+                    >
+                      <SelectTrigger id="gender">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

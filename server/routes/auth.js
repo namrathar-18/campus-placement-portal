@@ -5,6 +5,10 @@ import User from '../models/User.js';
 import { sendPasswordResetEmail } from '../config/email.js';
 
 const router = express.Router();
+const studentEmailDomain = '@mca.christuniversity.in';
+
+const isStudentEmail = (email) =>
+  typeof email === 'string' && email.toLowerCase().endsWith(studentEmailDomain);
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -22,12 +26,26 @@ router.post('/register', async (req, res) => {
 
     const userRole = role || 'student';
     
-    // For students, registerNumber is required
+    // For students, registerNumber and email are required
     if (userRole === 'student') {
       if (!registerNumber) {
         return res.status(400).json({ 
           success: false, 
           message: 'Register number is required for students' 
+        });
+      }
+
+      if (!email) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Email is required for students' 
+        });
+      }
+
+      if (!isStudentEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: `Please use your ${studentEmailDomain} email address`
         });
       }
       
@@ -39,6 +57,11 @@ router.post('/register', async (req, res) => {
           message: 'This register number is already registered' 
         });
       }
+
+      const existingEmail = await User.findOne({ email: email.toLowerCase() });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Email is already registered' });
+      }
     } else {
       // For officers/admin, email is required
       if (!email) {
@@ -48,7 +71,7 @@ router.post('/register', async (req, res) => {
         });
       }
       
-      const userExists = await User.findOne({ email });
+      const userExists = await User.findOne({ email: email.toLowerCase() });
       if (userExists) {
         return res.status(400).json({ success: false, message: 'User already exists' });
       }
@@ -56,7 +79,7 @@ router.post('/register', async (req, res) => {
 
     // Create user
     const user = await User.create({
-      email: userRole === 'student' ? undefined : email,
+      email: email ? email.toLowerCase() : undefined,
       password,
       name,
       role: userRole,
@@ -95,7 +118,7 @@ router.post('/login', async (req, res) => {
       user = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
     } else if (email) {
       // Officer/admin login with email
-      user = await User.findOne({ email });
+      user = await User.findOne({ email: email.toLowerCase() });
     } else {
       return res.status(400).json({ 
         success: false, 

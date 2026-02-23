@@ -70,6 +70,7 @@ async function signupStudents() {
       const response = await axios.post(API_URL, {
         name: student.name,
         email: student.email,
+        registerNumber: student.id,
         password: student.id, // Register number as password
         gender: student.gender.toLowerCase(),
         role: 'student',

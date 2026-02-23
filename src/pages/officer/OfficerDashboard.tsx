@@ -121,7 +121,7 @@ const OfficerDashboard = () => {
 
     const roleMap = approvedApplications.reduce<Record<string, Set<string>>>((acc, application) => {
       const company = companyById.get(application.companyId._id);
-      const companyRoles = company?.roles?.length ? company.roles : [company?.role || 'Other'];
+      const companyRoles = company?.roles?.length ? company.roles : ['Other'];
       const studentKey = application.studentId?._id || application._id;
 
       if (!studentKey) {
@@ -147,6 +147,22 @@ const OfficerDashboard = () => {
       .filter((item) => item.value > 0)
       .sort((a, b) => b.value - a.value);
   }, [applications, companies]);
+  const genderWisePlaced = useMemo(() => {
+    const groupedByGender = students.reduce<Record<string, number>>((acc, student) => {
+      if (!student.isPlaced) {
+        return acc;
+      }
+
+      const gender = (student.gender || 'unspecified').trim() || 'unspecified';
+      const normalizedGender = gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
+      acc[normalizedGender] = (acc[normalizedGender] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(groupedByGender)
+      .map(([gender, value]) => ({ gender, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [students]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -308,6 +324,39 @@ const OfficerDashboard = () => {
                   ) : (
                     <p className="text-sm text-muted-foreground py-4">
                       No role-wise placement data yet.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg">Gender-wise Placed Analytics</CardTitle>
+                  <Badge variant="outline" className="text-xs">{genderWisePlaced.length} Groups</Badge>
+                </CardHeader>
+                <CardContent>
+                  {genderWisePlaced.length > 0 ? (
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={genderWisePlaced}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="gender" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px',
+                            }}
+                          />
+                          <Legend />
+                          <Bar dataKey="value" name="Placed Students" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground py-4">
+                      No gender-wise placement data yet.
                     </p>
                   )}
                 </CardContent>

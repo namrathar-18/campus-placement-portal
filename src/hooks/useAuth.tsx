@@ -24,8 +24,8 @@ interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, name: string, gender: Gender) => Promise<{ error: Error | null }>;
+  signIn: (identifier: string, password: string, isRegisterNumber?: boolean) => Promise<{ error: Error | null }>;
+  signUp: (emailOrRegisterNumber: string, password: string, name: string, isRegisterNumber?: boolean) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserData: (updates: Partial<AuthUser>) => void;
@@ -137,11 +137,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : prev));
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (identifier: string, password: string, isRegisterNumber: boolean = false) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const payload = extractPayload(response) as any;
-      const { token, ...userData } = payload || {};
+      const payload = isRegisterNumber 
+        ? { registerNumber: identifier, password }
+        : { email: identifier, password };
+      
+      const response = await api.post('/auth/login', payload);
+      const data = extractPayload(response) as any;
+      const { token, ...userData } = data || {};
       
       localStorage.setItem('token', token);
       setUser(userData);
@@ -154,11 +158,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, gender: Gender) => {
+  const signUp = async (emailOrRegisterNumber: string, password: string, name: string, isRegisterNumber: boolean = false) => {
     try {
-      const response = await api.post('/auth/register', { email, password, name, gender });
-      const payload = extractPayload(response) as any;
-      const { token, ...userData } = payload || {};
+      const payload = isRegisterNumber
+        ? { registerNumber: emailOrRegisterNumber, password, name }
+        : { email: emailOrRegisterNumber, password, name };
+      
+      const response = await api.post('/auth/register', payload);
+      const data = extractPayload(response) as any;
+      const { token, ...userData } = data || {};
       
       localStorage.setItem('token', token);
       setUser(userData);

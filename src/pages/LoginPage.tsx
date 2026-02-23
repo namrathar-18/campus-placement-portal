@@ -11,36 +11,39 @@ import christLogo from '@/assets/christ-university-logo.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signIn } = useAuth();
   const { toast } = useToast();
   const [credentials, setCredentials] = useState({ id: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [userType, setUserType] = useState<'student' | 'officer'>('student');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Check if placement officer credentials
-    const isOfficer = credentials.id === 'placement' && credentials.password === 'placement';
-    
-    const success = login(
-      isOfficer ? 'placement_officer' : 'student',
-      credentials
-    );
-
-    if (success) {
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back!`,
-      });
-      navigate(isOfficer ? '/officer/dashboard' : '/student/dashboard');
-    } else {
+    try {
+      // Determine if using registerNumber or email based on userType
+      const isRegisterNumber = userType === 'student';
+      
+      const { error } = await signIn(credentials.id, credentials.password, isRegisterNumber);
+      
+      if (error) {
+        toast({
+          title: 'Login Failed',
+          description: error.message || 'Please check your credentials and try again.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Login Successful',
+          description: 'Welcome back!',
+        });
+        // Navigation will be handled by the useAuth hook based on role
+      }
+    } catch (error) {
       toast({
         title: 'Login Failed',
-        description: 'Please check your credentials and try again.',
+        description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
     }
@@ -65,7 +68,7 @@ const LoginPage = () => {
             <img 
               src={christLogo} 
               alt="Christ University Logo" 
-              className="h-16 w-auto object-contain"
+              className="h-16 w-auto object-contain bg-white rounded-lg p-1"
             />
           </div>
           <CardTitle className="text-2xl font-heading">Christ University</CardTitle>
@@ -75,12 +78,42 @@ const LoginPage = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="id">User ID / Register Number</Label>
+              <Label>Login As</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={userType === 'student' ? 'default' : 'outline'}
+                  className="flex-1"
+                  onClick={() => {
+                    setUserType('student');
+                    setCredentials({ id: '', password: '' });
+                  }}
+                >
+                  Student
+                </Button>
+                <Button
+                  type="button"
+                  variant={userType === 'officer' ? 'default' : 'outline'}
+                  className="flex-1"
+                  onClick={() => {
+                    setUserType('officer');
+                    setCredentials({ id: '', password: '' });
+                  }}
+                >
+                  Placement Officer
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="id">
+                {userType === 'student' ? 'Register Number' : 'Email / User ID'}
+              </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="id"
-                  placeholder="Enter your ID"
+                  placeholder={userType === 'student' ? 'Enter your register number' : 'Enter your email or ID'}
                   value={credentials.id}
                   onChange={(e) => setCredentials({ ...credentials, id: e.target.value })}
                   className="pl-10"
@@ -112,10 +145,10 @@ const LoginPage = () => {
 
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground text-center">
-              <strong>Placement Officer:</strong> Use ID "placement" & password "placement"
+              <strong>Students:</strong> Login with your register number
             </p>
             <p className="text-sm text-muted-foreground text-center mt-1">
-              <strong>Students:</strong> Use your register number
+              <strong>Placement Officers:</strong> Login with your email/ID
             </p>
           </div>
         </CardContent>

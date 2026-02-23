@@ -6,10 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Company } from '@/types';
 import { Plus, Pencil, Trash2, Building2, Search, Loader2, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany, useBootstrapCompanies } from '@/hooks/useCompanies';
+import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany, useBootstrapCompanies, type Company, type CompanyInsert } from '@/hooks/useCompanies';
 
 const ManageCompanies = () => {
   const { toast } = useToast();
@@ -78,11 +77,13 @@ const ManageCompanies = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
+    const packageValue = parseFloat(formData.salary.replace(/,/g, '')) || 0;
+    const payload: CompanyInsert = {
       name: formData.name,
       description: formData.description,
       industry: formData.industry,
       location: formData.location,
+      package: packageValue,
       salary: formData.salary,
       min_gpa: parseFloat(formData.minGpa || '0'),
       eligibility: formData.eligibility,
@@ -90,7 +91,7 @@ const ManageCompanies = () => {
       roles: formData.role ? [formData.role] : [],
       job_type: formData.jobType,
       status: 'active',
-      detailsFile: formData.detailsFile,
+      ...(formData.detailsFile ? { detailsFile: formData.detailsFile } : {}),
     };
 
     try {
@@ -98,7 +99,7 @@ const ManageCompanies = () => {
         await updateCompany.mutateAsync({ id: editingCompany._id, ...payload });
         toast({ title: 'Company Updated', description: `${formData.name} has been updated.` });
       } else {
-        await createCompany.mutateAsync(payload as any);
+        await createCompany.mutateAsync(payload);
         toast({ title: 'Company Added', description: `${formData.name} has been added.` });
       }
       setIsDialogOpen(false);
@@ -337,7 +338,7 @@ const ManageCompanies = () => {
         <div className="space-y-4">
           {filteredCompanies.map((company, index) => (
             <Card
-              key={company._id || company.id}
+              key={company._id}
               className="animate-slide-up hover:shadow-card-hover transition-all"
               style={{ animationDelay: `${index * 50}ms` }}
             >
@@ -368,7 +369,7 @@ const ManageCompanies = () => {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => handleDelete(company._id || company.id)}
+                      onClick={() => handleDelete(company._id)}
                       className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                     >
                       <Trash2 className="w-4 h-4" />

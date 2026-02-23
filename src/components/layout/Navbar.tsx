@@ -32,6 +32,15 @@ const Navbar = () => {
         { to: '/student/stats', label: 'Placement Stats' },
       ];
     }
+    if (user?.role === 'student_representative') {
+      return [
+        { to: '/representative/dashboard', label: 'Dashboard' },
+        { to: '/representative/students', label: 'Students' },
+        { to: '/representative/applications', label: 'Applications' },
+        { to: '/representative/reminders', label: 'Reminders' },
+        { to: '/representative/report', label: 'Reports' },
+      ];
+    }
     if (user?.role === 'placement_officer') {
       return [
         { to: '/officer/dashboard', label: 'Dashboard' },
@@ -43,17 +52,23 @@ const Navbar = () => {
     return [];
   };
 
+  const getDashboardPath = () => {
+    if (user?.role === 'student') return '/student/dashboard';
+    if (user?.role === 'placement_officer') return '/officer/dashboard';
+    return '/';
+  };
+
   const links = getNavLinks();
 
   return (
     <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to={getDashboardPath()} className="flex items-center gap-3">
             <img 
               src={christLogo} 
               alt="Christ University Logo" 
-              className="h-12 w-auto object-contain rounded-xl bg-white p-1 shadow-lg"
+              className="h-12 w-auto object-contain rounded-lg bg-white p-1 shadow-lg"
             />
           </Link>
 
@@ -83,7 +98,7 @@ const Navbar = () => {
                 <div className="flex flex-col gap-4 mt-6">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
                     <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{user?.name}</span>
+                    <span className="text-sm font-medium text-foreground">{user?.name}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     {links.map((link) => (
@@ -115,9 +130,9 @@ const Navbar = () => {
             )}
             
             {/* Desktop User Info */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-700">
-              <User className="w-4 h-4 text-white" />
-              <span className="text-sm font-medium text-white">{user?.name}</span>
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">{user?.name}</span>
             </div>
             
             <Button

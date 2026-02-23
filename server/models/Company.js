@@ -9,9 +9,6 @@ const companySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  logoUrl: {
-    type: String
-  },
   industry: {
     type: String,
     required: true
@@ -73,6 +70,39 @@ const companySchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+  alumni: {
+    type: [{
+      name: {
+        type: String,
+        required: true
+      },
+      position: {
+        type: String,
+        required: true
+      },
+      email: {
+        type: String,
+        required: true
+      },
+      linkedin: {
+        type: String
+      },
+      batchYear: {
+        type: Number
+      },
+      department: {
+        type: String
+      },
+      yearsAtCompany: {
+        type: Number
+      },
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    }],
+    default: []
   }
 }, {
   timestamps: true

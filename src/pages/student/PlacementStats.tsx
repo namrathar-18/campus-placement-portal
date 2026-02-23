@@ -1,13 +1,48 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatsCard from '@/components/cards/StatsCard';
-import { mockStats, monthlyPlacementData, companyWiseData } from '@/data/mockData';
 import { Users, UserCheck, Building2, TrendingUp, IndianRupee, Award } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
 const PlacementStats = () => {
+  const pastBatchStats = {
+    totalStudents: 120,
+    placedStudents: 75,
+    companiesVisited: 15,
+    averagePackage: '10 LPA',
+    topRecruiter: 'Simplify3x',
+  };
+
+  const unplacedStudents = pastBatchStats.totalStudents - pastBatchStats.placedStudents;
+  const placementRate = Math.round((pastBatchStats.placedStudents / pastBatchStats.totalStudents) * 100);
+
+  const monthlyPlacementData = [
+    { month: 'Aug', placed: 8, target: 12 },
+    { month: 'Sep', placed: 18, target: 22 },
+    { month: 'Oct', placed: 30, target: 36 },
+    { month: 'Nov', placed: 46, target: 50 },
+    { month: 'Dec', placed: 62, target: 66 },
+    { month: 'Jan', placed: pastBatchStats.placedStudents, target: 80 },
+  ];
+
+  const companyWiseData = [
+    { company: 'Simplify3x', offers: 18 },
+    { company: 'TCS', offers: 14 },
+    { company: 'Infosys', offers: 12 },
+    { company: 'Wipro', offers: 10 },
+    { company: 'Accenture', offers: 11 },
+    { company: 'Cognizant', offers: 10 },
+  ];
+
   const placementRatio = [
-    { name: 'Placed', value: mockStats.placedStudents, color: 'hsl(207, 31%, 32%)' }, /* #456882 */
-    { name: 'Unplaced', value: mockStats.unplacedStudents, color: 'hsl(207, 50%, 28%)' }, /* #234C6A */
+    { name: 'Placed', value: pastBatchStats.placedStudents, color: 'hsl(207, 31%, 32%)' }, /* #456882 */
+    { name: 'Unplaced', value: unplacedStudents, color: 'hsl(207, 50%, 28%)' }, /* #234C6A */
+  ];
+  const roleBasedPlacementData = [
+    { role: 'Software Engineer', placed: 30 },
+    { role: 'Analyst', placed: 15 },
+    { role: 'Associate Developer', placed: 12 },
+    { role: 'QA Engineer', placed: 10 },
+    { role: 'DevOps Engineer', placed: 8 },
   ];
 
   return (
@@ -16,10 +51,10 @@ const PlacementStats = () => {
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
-            Placement Statistics
+            Past Batch Placement Statistics
           </h1>
           <p className="text-muted-foreground">
-            Comprehensive overview of campus placement performance
+            Placement outcomes from the previous graduating batch
           </p>
         </div>
 
@@ -27,25 +62,25 @@ const PlacementStats = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
             <StatsCard
-              title="Total Students"
-              value={mockStats.totalStudents}
+              title="Batch Strength"
+              value={pastBatchStats.totalStudents}
               icon={Users}
             />
           </div>
           <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
             <StatsCard
               title="Students Placed"
-              value={mockStats.placedStudents}
+              value={pastBatchStats.placedStudents}
               icon={UserCheck}
               variant="success"
-              trend="+15% from last year"
+              trend="Past batch result"
               trendUp
             />
           </div>
           <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
             <StatsCard
-              title="Companies Visited"
-              value={mockStats.companiesVisited}
+              title="Recruiters Visited"
+              value={pastBatchStats.companiesVisited}
               icon={Building2}
               variant="primary"
             />
@@ -53,7 +88,7 @@ const PlacementStats = () => {
           <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
             <StatsCard
               title="Average Package"
-              value={mockStats.averageSalary}
+              value={pastBatchStats.averagePackage}
               icon={IndianRupee}
               variant="warning"
             />
@@ -61,14 +96,14 @@ const PlacementStats = () => {
           <div className="animate-slide-up" style={{ animationDelay: '400ms' }}>
             <StatsCard
               title="Top Recruiter"
-              value={mockStats.topCompany}
+              value={pastBatchStats.topRecruiter}
               icon={Award}
             />
           </div>
           <div className="animate-slide-up" style={{ animationDelay: '500ms' }}>
             <StatsCard
               title="Placement Rate"
-              value={`${Math.round((mockStats.placedStudents / mockStats.totalStudents) * 100)}%`}
+              value={`${placementRate}%`}
               icon={TrendingUp}
               variant="success"
             />
@@ -80,7 +115,7 @@ const PlacementStats = () => {
           {/* Placement Trend */}
           <Card className="animate-slide-up" style={{ animationDelay: '600ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Monthly Placement Trend</CardTitle>
+              <CardTitle className="text-lg">Past Batch Placement Trend</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
@@ -119,7 +154,7 @@ const PlacementStats = () => {
           {/* Company-wise Stats */}
           <Card className="animate-slide-up" style={{ animationDelay: '700ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Company-wise Offers</CardTitle>
+              <CardTitle className="text-lg">Top Recruiters by Offers</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
@@ -143,9 +178,9 @@ const PlacementStats = () => {
           </Card>
 
           {/* Placement Ratio */}
-          <Card className="lg:col-span-2 animate-slide-up" style={{ animationDelay: '800ms' }}>
+          <Card className="animate-slide-up" style={{ animationDelay: '800ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Placed vs Unplaced</CardTitle>
+              <CardTitle className="text-lg">Past Batch Placed vs Unplaced</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row items-center justify-center gap-8">
@@ -187,6 +222,32 @@ const PlacementStats = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Role-based Placement Stats */}
+          <Card className="animate-slide-up" style={{ animationDelay: '900ms' }}>
+            <CardHeader>
+              <CardTitle className="text-lg">Role-based Placement Stats</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={roleBasedPlacementData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis dataKey="role" type="category" stroke="hsl(var(--muted-foreground))" width={120} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Bar dataKey="placed" fill="hsl(207, 50%, 28%)" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>

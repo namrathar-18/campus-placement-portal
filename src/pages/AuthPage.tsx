@@ -4,12 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Loader2, GraduationCap } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
@@ -17,7 +16,6 @@ import api from '@/lib/api';
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
-const genderSchema = z.enum(['male', 'female']);
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -32,17 +30,19 @@ const AuthPage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ email: '', password: '', name: '', gender: '' as '' | 'male' | 'female' });
+  const [loginData, setLoginData] = useState({ identifier: '', password: '' });
+  const [signupData, setSignupData] = useState({ registerNumber: '', password: '', name: '' });
 
   useEffect(() => {
     // Only redirect if authenticated AND not currently loading
     if (isAuthenticated && user && !authLoading) {
       if (user.role === 'placement_officer') {
         navigate('/officer/dashboard', { replace: true });
+      } else if (user.role === 'student_representative') {
+        navigate('/representative/dashboard', { replace: true });
       } else {
         // Check if student has completed profile setup
-        if (!user.registerNumber || !user.phone || !user.department || !user.gpa) {
+        if (!user.registerNumber || !user.phone || !user.department || !user.section || !user.gender || !user.gpa) {
           navigate('/student/profile-setup', { replace: true });
         } else {
           navigate('/student/dashboard', { replace: true });
@@ -56,7 +56,6 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      emailSchema.parse(loginData.email);
       passwordSchema.parse(loginData.password);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -70,7 +69,8 @@ const AuthPage = () => {
       }
     }
 
-    const { error } = await signIn(loginData.email, loginData.password);
+    // Always use register number for students
+    const { error } = await signIn(loginData.identifier, loginData.password, true);
     
     if (error) {
       toast({
@@ -93,16 +93,21 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      emailSchema.parse(signupData.email);
       passwordSchema.parse(signupData.password);
       nameSchema.parse(signupData.name);
-      genderSchema.parse(signupData.gender);
+      
+      if (!signupData.registerNumber || signupData.registerNumber.length < 5) {
+        throw new z.ZodError([{
+          code: 'custom',
+          path: ['registerNumber'],
+          message: 'Please enter a valid register number'
+        }]);
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const validationMessage = signupData.gender === '' ? 'Please select gender' : error.errors[0].message;
         toast({
           title: 'Validation Error',
-          description: validationMessage,
+          description: error.errors[0].message,
           variant: 'destructive',
         });
         setIsLoading(false);
@@ -110,12 +115,12 @@ const AuthPage = () => {
       }
     }
 
-    const { error } = await signUp(signupData.email, signupData.password, signupData.name, signupData.gender);
+    const { error } = await signUp(signupData.registerNumber, signupData.password, signupData.name, true);
     
     if (error) {
       let message = error.message;
       if (error.message.includes('already registered')) {
-        message = 'This email is already registered. Please login instead.';
+        message = 'This register number is already registered. Please login instead.';
       }
       toast({
         title: 'Signup Failed',
@@ -230,7 +235,11 @@ const AuthPage = () => {
       <Card className="w-full max-w-md shadow-2xl border-border/50">
         <CardHeader className="text-center pb-6">
           <div className="flex flex-col items-center gap-4 mb-4">
-            <img src={christLogo} alt="Christ University" className="h-16 w-auto" />
+            <img src={christLogo} alt="Christ University" className="h-16 w-auto bg-white rounded-lg p-1" />
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-8 h-8 text-primary" />
+              <span className="text-xl font-heading font-bold gradient-text">Campus Placement Portal</span>
+            </div>
           </div>
           <CardTitle className="text-xl">Welcome to Campus Placement Portal</CardTitle>
           <CardDescription>Christ (Deemed to be University) Placement Portal</CardDescription>
@@ -245,15 +254,15 @@ const AuthPage = () => {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
+                  <Label htmlFor="login-identifier">Register Number</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="your.email@christuniversity.in"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      id="login-identifier"
+                      type="text"
+                      placeholder="Enter your register number"
+                      value={loginData.identifier}
+                      onChange={(e) => setLoginData({ ...loginData, identifier: e.target.value.toUpperCase() })}
                       className="pl-10"
                       required
                     />
@@ -315,15 +324,15 @@ const AuthPage = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-registerNumber">Register Number</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="your.email@christuniversity.in"
-                      value={signupData.email}
-                      onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                      id="signup-registerNumber"
+                      type="text"
+                      placeholder="Enter your register number"
+                      value={signupData.registerNumber}
+                      onChange={(e) => setSignupData({ ...signupData, registerNumber: e.target.value.toUpperCase() })}
                       className="pl-10"
                       required
                     />
@@ -343,21 +352,6 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-gender">Gender</Label>
-                  <Select
-                    value={signupData.gender}
-                    onValueChange={(value: 'male' | 'female') => setSignupData({ ...signupData, gender: value })}
-                  >
-                    <SelectTrigger id="signup-gender">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
                   {isLoading ? (

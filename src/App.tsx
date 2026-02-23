@@ -17,6 +17,11 @@ import OfficerDashboard from "./pages/officer/OfficerDashboard";
 import ManageCompanies from "./pages/officer/ManageCompanies";
 import ManageApplications from "./pages/officer/ManageApplications";
 import ManageNotifications from "./pages/officer/ManageNotifications";
+import RepresentativeDashboard from "./pages/representative/RepresentativeDashboard";
+import ManageStudents from "./pages/representative/ManageStudents";
+import SendReminders from "./pages/representative/SendReminders";
+import PlacementReport from "./pages/representative/PlacementReport";
+import ViewApplications from "./pages/representative/ViewApplications";
 import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
 import NotFound from "./pages/NotFound";
@@ -65,6 +70,13 @@ const AppContent = () => {
             <Route path="/officer/companies" element={<ManageCompanies />} />
             <Route path="/officer/applications" element={<ManageApplications />} />
             <Route path="/officer/notifications" element={<ManageNotifications />} />
+            
+            {/* Student Representative Routes */}
+            <Route path="/representative/dashboard" element={<RepresentativeDashboard />} />
+            <Route path="/representative/students" element={<ManageStudents />} />
+            <Route path="/representative/applications" element={<ViewApplications />} />
+            <Route path="/representative/reminders" element={<SendReminders />} />
+            <Route path="/representative/report" element={<PlacementReport />} />
             
             {/* Company Details */}
             <Route path="/company/:id" element={<CompanyDetails />} />

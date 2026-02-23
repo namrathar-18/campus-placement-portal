@@ -23,17 +23,10 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'student_representative', 'placement_officer', 'admin'],
     default: 'student'
   },
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
   gender: {
     type: String,
     enum: ['male', 'female']
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+  },
   isRepresentative: {
     type: Boolean,
     default: false
@@ -42,13 +35,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['class_representative', 'department_representative', 'placement_coordinator'],
     sparse: true
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
   },
   registerNumber: {
     type: String,

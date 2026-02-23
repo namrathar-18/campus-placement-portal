@@ -18,38 +18,9 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    const { email, password, name, role, gender } = req.body;
-=======
-    const { email, password, name, role, registerNumber } = req.body;
->>>>>>> Stashed changes
-
-    const userRole = role || 'student';
-<<<<<<< Updated upstream
-    const normalizedGender = typeof gender === 'string' ? gender.toLowerCase().trim() : '';
-    if (userRole === 'student' && !email.endsWith('@mca.christuniversity.in')) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Students must register with @mca.christuniversity.in email address' 
-      });
-    }
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ success: false, message: 'User already exists' });
-=======
-=======
     const { email, password, name, role, registerNumber } = req.body;
 
     const userRole = role || 'student';
->>>>>>> Stashed changes
-=======
-    const { email, password, name, role, registerNumber } = req.body;
-
-    const userRole = role || 'student';
->>>>>>> Stashed changes
     
     // For students, registerNumber is required
     if (userRole === 'student') {
@@ -81,13 +52,6 @@ router.post('/register', async (req, res) => {
       if (userExists) {
         return res.status(400).json({ success: false, message: 'User already exists' });
       }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     }
 
     // Create user
@@ -96,19 +60,7 @@ router.post('/register', async (req, res) => {
       password,
       name,
       role: userRole,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      gender: userRole === 'student' && ['male', 'female'].includes(normalizedGender) ? normalizedGender : undefined
-=======
       registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
-=======
-      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
-=======
-      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
     });
 
     if (user) {

@@ -7,9 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Company } from '@/types';
-import { Plus, Pencil, Trash2, Building2, Search, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Search, Loader2, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany } from '@/hooks/useCompanies';
+import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany, useBootstrapCompanies } from '@/hooks/useCompanies';
 
 const ManageCompanies = () => {
   const { toast } = useToast();
@@ -17,6 +17,7 @@ const ManageCompanies = () => {
   const createCompany = useCreateCompany();
   const updateCompany = useUpdateCompany();
   const deleteCompany = useDeleteCompany();
+  const bootstrapCompanies = useBootstrapCompanies();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -115,6 +116,23 @@ const ManageCompanies = () => {
     }
   };
 
+  const handleBootstrap = async () => {
+    try {
+      const response = await bootstrapCompanies.mutateAsync();
+      const synced = response?.data?.total ?? 0;
+      toast({
+        title: 'Companies Synced',
+        description: `${synced} default companies synced to MongoDB.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Sync failed',
+        description: error?.message || 'Could not sync default companies.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -136,13 +154,23 @@ const ManageCompanies = () => {
               Add, edit, or remove company listings
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="hero" className="gap-2" onClick={() => handleOpenDialog()}>
-                <Plus className="w-4 h-4" />
-                Add Company
-              </Button>
-            </DialogTrigger>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleBootstrap}
+              disabled={bootstrapCompanies.isPending}
+            >
+              {bootstrapCompanies.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              Sync Default Companies
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="hero" className="gap-2" onClick={() => handleOpenDialog()}>
+                  <Plus className="w-4 h-4" />
+                  Add Company
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
@@ -290,7 +318,8 @@ const ManageCompanies = () => {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Search */}

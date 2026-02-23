@@ -49,6 +49,26 @@ const extractPayload = (resp: any) => {
   return resp;
 };
 
+const bootstrapDefaultCompaniesIfNeeded = async (user: { id: string; role: UserRole } | null) => {
+  if (!user || (user.role !== 'placement_officer' && user.role !== 'admin')) {
+    return;
+  }
+
+  const bootstrapKey = `companiesBootstrapSynced:${user.id}`;
+  const alreadySynced = localStorage.getItem(bootstrapKey) === 'true';
+
+  if (alreadySynced) {
+    return;
+  }
+
+  try {
+    await api.post('/companies/bootstrap-defaults');
+    localStorage.setItem(bootstrapKey, 'true');
+  } catch (error) {
+    console.error('Auto company bootstrap failed:', error);
+  }
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -125,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       localStorage.setItem('token', token);
       setUser(userData);
+      await bootstrapDefaultCompaniesIfNeeded(userData);
       
       return { error: null };
     } catch (error: any) {

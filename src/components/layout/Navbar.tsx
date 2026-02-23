@@ -27,6 +27,7 @@ const Navbar = () => {
       return [
         { to: '/student/dashboard', label: 'Dashboard' },
         { to: '/student/companies', label: 'Companies' },
+        { to: '/student/alumni-connect', label: 'Alumni Connect' },
         { to: '/student/applications', label: 'My Applications' },
         { to: '/student/stats', label: 'Placement Stats' },
       ];

@@ -87,3 +87,17 @@ export const useDeleteCompany = () => {
     },
   });
 };
+
+export const useBootstrapCompanies = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/companies/bootstrap-defaults');
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+    },
+  });
+};

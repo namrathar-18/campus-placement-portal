@@ -12,6 +12,7 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import CompanyListings from "./pages/student/CompanyListings";
 import Applications from "./pages/student/Applications";
 import PlacementStats from "./pages/student/PlacementStats";
+import AlumniConnect from "./pages/student/AlumniConnect";
 import OfficerDashboard from "./pages/officer/OfficerDashboard";
 import ManageCompanies from "./pages/officer/ManageCompanies";
 import ManageApplications from "./pages/officer/ManageApplications";
@@ -54,6 +55,7 @@ const AppContent = () => {
             <Route path="/student/profile-setup" element={<ProfileSetup />} />
             <Route path="/student/dashboard" element={<StudentDashboard />} />
             <Route path="/student/companies" element={<CompanyListings />} />
+            <Route path="/student/alumni-connect" element={<AlumniConnect />} />
             <Route path="/student/applications" element={<Applications />} />
             <Route path="/student/stats" element={<PlacementStats />} />
             <Route path="/student/notifications" element={<StudentNotifications />} />

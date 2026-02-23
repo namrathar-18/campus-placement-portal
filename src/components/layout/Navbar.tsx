@@ -31,6 +31,15 @@ const Navbar = () => {
         { to: '/student/stats', label: 'Placement Stats' },
       ];
     }
+    if (user?.role === 'student_representative') {
+      return [
+        { to: '/representative/dashboard', label: 'Dashboard' },
+        { to: '/representative/students', label: 'Students' },
+        { to: '/representative/applications', label: 'Applications' },
+        { to: '/representative/reminders', label: 'Reminders' },
+        { to: '/representative/report', label: 'Reports' },
+      ];
+    }
     if (user?.role === 'placement_officer') {
       return [
         { to: '/officer/dashboard', label: 'Dashboard' },

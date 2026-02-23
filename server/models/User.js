@@ -5,10 +5,9 @@ import crypto from 'crypto';
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true,
-    unique: true,
     lowercase: true,
-    trim: true
+    trim: true,
+    sparse: true
   },
   password: {
     type: String,
@@ -24,13 +23,27 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'student_representative', 'placement_officer', 'admin'],
     default: 'student'
   },
+<<<<<<< Updated upstream
   gender: {
     type: String,
     enum: ['male', 'female']
+=======
+  isRepresentative: {
+    type: Boolean,
+    default: false
+  },
+  representativeDesignation: {
+    type: String,
+    enum: ['class_representative', 'department_representative', 'placement_coordinator'],
+    sparse: true
+>>>>>>> Stashed changes
   },
   registerNumber: {
     type: String,
-    sparse: true
+    unique: true,
+    sparse: true,
+    uppercase: true,
+    trim: true
   },
   phone: {
     type: String

@@ -18,10 +18,14 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
+<<<<<<< Updated upstream
     const { email, password, name, role, gender } = req.body;
+=======
+    const { email, password, name, role, registerNumber } = req.body;
+>>>>>>> Stashed changes
 
-    // Validate student email domain
     const userRole = role || 'student';
+<<<<<<< Updated upstream
     const normalizedGender = typeof gender === 'string' ? gender.toLowerCase().trim() : '';
     if (userRole === 'student' && !email.endsWith('@mca.christuniversity.in')) {
       return res.status(400).json({ 
@@ -33,15 +37,52 @@ router.post('/register', async (req, res) => {
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ success: false, message: 'User already exists' });
+=======
+    
+    // For students, registerNumber is required
+    if (userRole === 'student') {
+      if (!registerNumber) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Register number is required for students' 
+        });
+      }
+      
+      // Check if registerNumber already exists
+      const existingUser = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
+      if (existingUser) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'This register number is already registered' 
+        });
+      }
+    } else {
+      // For officers/admin, email is required
+      if (!email) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Email is required for placement officers' 
+        });
+      }
+      
+      const userExists = await User.findOne({ email });
+      if (userExists) {
+        return res.status(400).json({ success: false, message: 'User already exists' });
+      }
+>>>>>>> Stashed changes
     }
 
     // Create user
     const user = await User.create({
-      email,
+      email: userRole === 'student' ? undefined : email,
       password,
       name,
       role: userRole,
+<<<<<<< Updated upstream
       gender: userRole === 'student' && ['male', 'female'].includes(normalizedGender) ? normalizedGender : undefined
+=======
+      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
+>>>>>>> Stashed changes
     });
 
     if (user) {
@@ -67,16 +108,20 @@ router.post('/register', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, registerNumber } = req.body;
 
-    // Check for user
-    const user = await User.findOne({ email });
-
-    // Validate student email domain on login
-    if (user && user.role === 'student' && !email.endsWith('@mca.christuniversity.in')) {
-      return res.status(401).json({ 
+    // Check for user - students use registerNumber, officers use email
+    let user;
+    if (registerNumber) {
+      // Student login with register number
+      user = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
+    } else if (email) {
+      // Officer/admin login with email
+      user = await User.findOne({ email });
+    } else {
+      return res.status(400).json({ 
         success: false, 
-        message: 'Students must login with @mca.christuniversity.in email address' 
+        message: 'Please provide register number or email' 
       });
     }
 

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Loader2, GraduationCap } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
@@ -226,7 +226,11 @@ const AuthPage = () => {
       <Card className="w-full max-w-md shadow-2xl border-border/50">
         <CardHeader className="text-center pb-6">
           <div className="flex flex-col items-center gap-4 mb-4">
-            <img src={christLogo} alt="Christ University" className="h-16 w-auto" />
+            <img src={christLogo} alt="Christ University" className="h-16 w-auto bg-white rounded-lg p-1" />
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-8 h-8 text-primary" />
+              <span className="text-xl font-heading font-bold gradient-text">Campus Placement Portal</span>
+            </div>
           </div>
           <CardTitle className="text-xl">Welcome to Campus Placement Portal</CardTitle>
           <CardDescription>Christ (Deemed to be University) Placement Portal</CardDescription>

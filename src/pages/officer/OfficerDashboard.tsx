@@ -121,7 +121,7 @@ const OfficerDashboard = () => {
 
     const roleMap = approvedApplications.reduce<Record<string, Set<string>>>((acc, application) => {
       const company = companyById.get(application.companyId._id);
-      const companyRoles = company?.roles?.length ? company.roles : [company?.role || 'Other'];
+      const companyRoles = company?.roles?.length ? company.roles : ['Other'];
       const studentKey = application.studentId?._id || application._id;
 
       if (!studentKey) {

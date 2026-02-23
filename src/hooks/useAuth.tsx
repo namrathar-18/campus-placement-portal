@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, createContext, useContext, ReactNode } from 'react';
 import api from '@/lib/api';
 
-type UserRole = 'student' | 'placement_officer' | 'admin';
+type UserRole = 'student' | 'student_representative' | 'placement_officer' | 'admin';
 type Gender = 'male' | 'female';
 
 interface AuthUser {
@@ -50,7 +50,7 @@ const extractPayload = (resp: any) => {
 };
 
 const bootstrapDefaultCompaniesIfNeeded = async (user: { id: string; role: UserRole } | null) => {
-  if (!user || (user.role !== 'placement_officer' && user.role !== 'admin')) {
+  if (!user || (user.role !== 'placement_officer' && user.role !== 'student_representative' && user.role !== 'admin')) {
     return;
   }
 

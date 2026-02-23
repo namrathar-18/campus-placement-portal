@@ -40,10 +40,8 @@ const AuthPage = () => {
   useEffect(() => {
     // Only redirect if authenticated AND not currently loading
     if (isAuthenticated && user && !authLoading) {
-      if (user.role === 'placement_officer') {
+      if (user.role === 'placement_officer' || user.role === 'student_representative') {
         navigate('/officer/dashboard', { replace: true });
-      } else if (user.role === 'student_representative') {
-        navigate('/representative/dashboard', { replace: true });
       } else {
         // Check if student has completed profile setup
         if (!user.registerNumber || !user.phone || !user.department || !user.section || !user.gender || !user.gpa) {

@@ -32,16 +32,7 @@ const Navbar = () => {
         { to: '/student/stats', label: 'Placement Stats' },
       ];
     }
-    if (user?.role === 'student_representative') {
-      return [
-        { to: '/representative/dashboard', label: 'Dashboard' },
-        { to: '/representative/students', label: 'Students' },
-        { to: '/representative/applications', label: 'Applications' },
-        { to: '/representative/reminders', label: 'Reminders' },
-        { to: '/representative/report', label: 'Reports' },
-      ];
-    }
-    if (user?.role === 'placement_officer') {
+    if (user?.role === 'placement_officer' || user?.role === 'student_representative') {
       return [
         { to: '/officer/dashboard', label: 'Dashboard' },
         { to: '/officer/companies', label: 'Manage Companies' },
@@ -54,7 +45,7 @@ const Navbar = () => {
 
   const getDashboardPath = () => {
     if (user?.role === 'student') return '/student/dashboard';
-    if (user?.role === 'placement_officer') return '/officer/dashboard';
+    if (user?.role === 'placement_officer' || user?.role === 'student_representative') return '/officer/dashboard';
     return '/';
   };
 

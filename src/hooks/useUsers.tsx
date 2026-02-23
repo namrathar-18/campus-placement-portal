@@ -5,7 +5,7 @@ export interface BasicUser {
   _id: string;
   name: string;
   email: string;
-  role: 'student' | 'placement_officer' | 'admin';
+  role: 'student' | 'student_representative' | 'placement_officer' | 'admin';
   gender?: 'male' | 'female';
   gpa?: number;
   registerNumber?: string;

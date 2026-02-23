@@ -25,10 +25,13 @@ const userSchema = new mongoose.Schema({
   },
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   gender: {
     type: String,
     enum: ['male', 'female']
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   isRepresentative: {
@@ -40,6 +43,9 @@ const userSchema = new mongoose.Schema({
     enum: ['class_representative', 'department_representative', 'placement_coordinator'],
     sparse: true
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

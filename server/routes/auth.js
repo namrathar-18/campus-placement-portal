@@ -19,6 +19,7 @@ const generateToken = (id) => {
 router.post('/register', async (req, res) => {
   try {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     const { email, password, name, role, gender } = req.body;
 =======
     const { email, password, name, role, registerNumber } = req.body;
@@ -38,6 +39,11 @@ router.post('/register', async (req, res) => {
     if (userExists) {
       return res.status(400).json({ success: false, message: 'User already exists' });
 =======
+=======
+    const { email, password, name, role, registerNumber } = req.body;
+
+    const userRole = role || 'student';
+>>>>>>> Stashed changes
     
     // For students, registerNumber is required
     if (userRole === 'student') {
@@ -69,6 +75,9 @@ router.post('/register', async (req, res) => {
       if (userExists) {
         return res.status(400).json({ success: false, message: 'User already exists' });
       }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -79,7 +88,11 @@ router.post('/register', async (req, res) => {
       name,
       role: userRole,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       gender: userRole === 'student' && ['male', 'female'].includes(normalizedGender) ? normalizedGender : undefined
+=======
+      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
+>>>>>>> Stashed changes
 =======
       registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
 >>>>>>> Stashed changes

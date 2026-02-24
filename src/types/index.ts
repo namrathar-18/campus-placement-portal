@@ -1,8 +1,12 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 export type UserRole = 'student' | 'placement_officer' | 'admin';
 export type Gender = 'male' | 'female';
+=======
+export type UserRole = 'student' | 'student_representative' | 'placement_officer' | 'admin';
+>>>>>>> Stashed changes
 =======
 export type UserRole = 'student' | 'student_representative' | 'placement_officer' | 'admin';
 >>>>>>> Stashed changes

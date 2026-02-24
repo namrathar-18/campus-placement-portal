@@ -16,6 +16,7 @@ import AlumniConnect from "./pages/student/AlumniConnect";
 import OfficerDashboard from "./pages/officer/OfficerDashboard";
 import ManageCompanies from "./pages/officer/ManageCompanies";
 import ManageApplications from "./pages/officer/ManageApplications";
+import CompanyApplications from "./pages/officer/CompanyApplications";
 import ManageNotifications from "./pages/officer/ManageNotifications";
 import RepresentativeDashboard from "./pages/representative/RepresentativeDashboard";
 import ManageStudents from "./pages/representative/ManageStudents";
@@ -69,6 +70,7 @@ const AppContent = () => {
             <Route path="/officer/dashboard" element={<OfficerDashboard />} />
             <Route path="/officer/companies" element={<ManageCompanies />} />
             <Route path="/officer/applications" element={<ManageApplications />} />
+            <Route path="/officer/applications/:companyId" element={<CompanyApplications />} />
             <Route path="/officer/notifications" element={<ManageNotifications />} />
             
             {/* Student Representative Routes */}

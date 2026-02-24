@@ -26,6 +26,8 @@ const CompanyListings = () => {
 
   const userGpa = user?.gpa || 0;
   const isPlaced = user?.isPlaced || false;
+  const hasApprovedApplication = (myApplications || []).some((app) => app.status === 'approved');
+  const isPlacementLocked = isPlaced || hasApprovedApplication;
 
   const filteredCompanies = companies?.filter((company) => {
     const searchTarget = `${company.name} ${(company.roles || []).join(' ')} ${company.industry || ''}`.toLowerCase();
@@ -61,7 +63,7 @@ const CompanyListings = () => {
       return;
     }
 
-    if (isPlaced) {
+    if (isPlacementLocked) {
       toast({
         title: 'Already Placed! 🎉',
         description: 'You have already been placed and cannot apply to other companies.',
@@ -131,7 +133,7 @@ const CompanyListings = () => {
         </div>
 
         {/* Placed Student Banner */}
-        {isPlaced && (
+        {isPlacementLocked && (
           <div className="mb-6 p-4 rounded-2xl bg-success/10 border border-success/30 flex items-center gap-4 animate-slide-up">
             <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-success" />
@@ -192,7 +194,7 @@ const CompanyListings = () => {
                 Your GPA: {userGpa || 'N/A'}
               </Badge>
             )}
-            {isPlaced && (
+            {isPlacementLocked && (
               <Badge className="bg-success/10 text-success border-success/30">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Placed
@@ -267,14 +269,14 @@ const CompanyListings = () => {
                       <Button
                         size="sm"
                         variant={applied ? 'outline' : 'hero'}
-                        disabled={!isEligible || isPlaced || applied || isExpired || isApplyingCurrent}
+                        disabled={!isEligible || isPlacementLocked || applied || isExpired || isApplyingCurrent}
                         onClick={() => handleApply(company._id)}
                       >
                         {isApplyingCurrent ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : applied ? (
                           'Applied'
-                        ) : isPlaced ? (
+                        ) : isPlacementLocked ? (
                           'Placed'
                         ) : isExpired ? (
                           'Expired'

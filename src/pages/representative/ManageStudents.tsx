@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -52,6 +52,30 @@ const ManageStudents = () => {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  const formatStatusLabel = (status: string) => {
+    if (!status) return 'Pending';
+    return status
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  };
+
+  const groupedStudents = useMemo(() => {
+    return filteredStudents.reduce<Record<string, Student[]>>((acc, student) => {
+      const section = (student.section || 'Unassigned').trim() || 'Unassigned';
+      if (!acc[section]) {
+        acc[section] = [];
+      }
+      acc[section].push(student);
+      return acc;
+    }, {});
+  }, [filteredStudents]);
+
+  const sectionKeys = useMemo(
+    () => Object.keys(groupedStudents).sort((a, b) => a.localeCompare(b)),
+    [groupedStudents]
+  );
 
   useEffect(() => {
     fetchStudents();
@@ -191,79 +215,87 @@ const ManageStudents = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Register Number</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Section</TableHead>
-                  <TableHead>GPA</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      No students found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredStudents.map((student) => (
-                    <TableRow key={student._id}>
-                      <TableCell className="font-medium">
-                        {student.registerNumber}
-                      </TableCell>
-                      <TableCell>{student.name}</TableCell>
-                      <TableCell>{student.section || 'N/A'}</TableCell>
-                      <TableCell>{student.gpa ? student.gpa.toFixed(2) : 'N/A'}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={student.isPlaced ? 'default' : 'secondary'}
-                          className={student.isPlaced ? 'bg-green-600' : ''}
-                        >
-                          {student.isPlaced ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Placed
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Unplaced
-                            </>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => viewStudentDetails(student._id)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={student.isPlaced ? 'destructive' : 'default'}
-                            onClick={() =>
-                              updatePlacementStatus(student._id, !student.isPlaced)
-                            }
-                          >
-                            {student.isPlaced ? 'Mark Unplaced' : 'Mark Placed'}
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          {filteredStudents.length === 0 ? (
+            <div className="rounded-md border p-8 text-center text-muted-foreground">
+              No students found
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {sectionKeys.map((section) => (
+                <div key={section} className="rounded-md border">
+                  <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
+                    <p className="font-semibold">Section {section}</p>
+                    <Badge variant="outline">{groupedStudents[section].length} Students</Badge>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Register Number</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>GPA</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {groupedStudents[section].map((student) => (
+                        <TableRow key={student._id}>
+                          <TableCell className="font-medium">{student.registerNumber}</TableCell>
+                          <TableCell>
+                            <button
+                              type="button"
+                              onClick={() => viewStudentDetails(student._id)}
+                              className="text-left font-medium text-primary hover:underline"
+                            >
+                              {student.name}
+                            </button>
+                          </TableCell>
+                          <TableCell>{student.gpa ? student.gpa.toFixed(2) : 'N/A'}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={student.isPlaced ? 'default' : 'secondary'}
+                              className={student.isPlaced ? 'bg-green-600' : ''}
+                            >
+                              {student.isPlaced ? (
+                                <>
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Placed
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="h-3 w-3 mr-1" />
+                                  Unplaced
+                                </>
+                              )}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => viewStudentDetails(student._id)}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={student.isPlaced ? 'destructive' : 'default'}
+                                onClick={() => updatePlacementStatus(student._id, !student.isPlaced)}
+                              >
+                                {student.isPlaced ? 'Mark Unplaced' : 'Mark Placed'}
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-4 text-sm text-muted-foreground">
             Showing {filteredStudents.length} of {students.length} students
@@ -326,6 +358,35 @@ const ManageStudents = () => {
                 </div>
               </div>
 
+              {/* Pending Companies */}
+              <div>
+                <h3 className="font-semibold mb-3">Pending Company List</h3>
+                {selectedStudent.applications?.filter((app: any) => app.status === 'pending' || app.status === 'under_review').length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedStudent.applications
+                      .filter((app: any) => app.status === 'pending' || app.status === 'under_review')
+                      .map((app: any) => (
+                        <div key={app._id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{app.companyId?.name || 'Unknown Company'}</h4>
+                              <p className="text-sm text-muted-foreground mt-1">{app.companyId?.location || 'Location N/A'}</p>
+                            </div>
+                            <Badge variant="secondary">
+                              {formatStatusLabel(app.status)}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Applied: {new Date(app.appliedDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No pending companies for this student.</p>
+                )}
+              </div>
+
               {/* Applications */}
               <div>
                 <h3 className="font-semibold mb-3">Applications History</h3>
@@ -352,7 +413,7 @@ const ManageStudents = () => {
                                 : 'secondary'
                             }
                           >
-                            {app.status}
+                            {formatStatusLabel(app.status)}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">

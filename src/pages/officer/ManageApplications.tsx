@@ -1,69 +1,15 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useApplications, useUpdateApplication, Application } from '@/hooks/useApplications';
-import { useUsers, useUpdateUser } from '@/hooks/useUsers';
-import { CheckCircle, Clock, XCircle, Users, Send, FileText, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { useApplications, Application } from '@/hooks/useApplications';
+import { CheckCircle, Clock, XCircle, Send, FileText, ChevronRight, Search } from 'lucide-react';
 
 const ManageApplications = () => {
-  const { toast } = useToast();
+  const navigate = useNavigate();
   const { data: applications = [] } = useApplications();
-  const updateApplication = useUpdateApplication();
-  const { data: users = [] } = useUsers();
-  const updateUser = useUpdateUser();
-  const [activeTab, setActiveTab] = useState('all');
-  const [gpaEdits, setGpaEdits] = useState<Record<string, string>>({});
-
-  const getFilteredApplications = (status: string): Application[] => {
-    if (status === 'all') return applications;
-    return applications.filter((app) => app.status === status);
-  };
-
-  const handleStatusChange = async (applicationId: string, newStatus: Application['status']) => {
-    const application = applications.find(app => app._id === applicationId);
-
-    try {
-      await updateApplication.mutateAsync({ id: applicationId, status: newStatus });
-
-      if (newStatus === 'approved') {
-        toast({
-          title: '🎉 Application Approved',
-          description: `${application?.studentId?.name || 'Student'} has been approved.`,
-        });
-      } else {
-        toast({
-          title: 'Status Updated',
-          description: `Application status updated to ${newStatus}`,
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: 'Update Failed',
-        description: error?.message || 'Could not update status.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleGpaUpdate = async (studentId: string) => {
-    const value = gpaEdits[studentId];
-    const parsed = Number(value);
-    if (Number.isNaN(parsed) || parsed < 0 || parsed > 10) {
-      toast({ title: 'Invalid GPA', description: 'Enter a value between 0 and 10.', variant: 'destructive' });
-      return;
-    }
-    try {
-      await updateUser.mutateAsync({ id: studentId, gpa: parsed });
-      toast({ title: 'GPA Updated', description: 'Student GPA has been updated.' });
-    } catch (error: any) {
-      toast({ title: 'Update failed', description: error?.message || 'Could not update GPA.', variant: 'destructive' });
-    }
-  };
+  const [searchTerm, setSearchTerm] = useState('');
 
   const getStatusConfig = (status: Application['status']) => {
     switch (status) {
@@ -78,13 +24,55 @@ const ManageApplications = () => {
     }
   };
 
-  const statusCounts = {
-    all: applications.length,
-    pending: applications.filter((a) => a.status === 'pending').length,
-    under_review: applications.filter((a) => a.status === 'under_review').length,
-    approved: applications.filter((a) => a.status === 'approved').length,
-    rejected: applications.filter((a) => a.status === 'rejected').length,
+  const formatStatusLabel = (value: string) =>
+    value
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+
+  const getUniqueStudentCount = (status?: Application['status']) => {
+    const studentIds = new Set(
+      applications
+        .filter((application) => (status ? application.status === status : true))
+        .map((application) => application.studentId?._id)
+        .filter(Boolean)
+    );
+
+    return studentIds.size;
   };
+
+  const statusCounts = {
+    all: getUniqueStudentCount(),
+    pending: getUniqueStudentCount('pending'),
+    under_review: getUniqueStudentCount('under_review'),
+    approved: getUniqueStudentCount('approved'),
+    rejected: getUniqueStudentCount('rejected'),
+  };
+
+  const groupedByCompany = useMemo(() => {
+    const grouped = applications.reduce<Record<string, Application[]>>((acc, application) => {
+      const companyId = application.companyId?._id || application._id;
+      if (!acc[companyId]) {
+        acc[companyId] = [];
+      }
+      acc[companyId].push(application);
+      return acc;
+    }, {});
+
+    return Object.values(grouped).sort((a, b) => {
+      const companyA = a[0]?.companyId?.name || '';
+      const companyB = b[0]?.companyId?.name || '';
+      return companyA.localeCompare(companyB);
+    });
+  }, [applications]);
+
+  const filteredCompanies = useMemo(() => {
+    if (!searchTerm.trim()) return groupedByCompany;
+    return groupedByCompany.filter((companyApps) => {
+      const name = companyApps[0]?.companyId?.name || '';
+      return name.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [groupedByCompany, searchTerm]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,103 +103,78 @@ const ManageApplications = () => {
                     <Icon className="w-5 h-5" />
                   </div>
                   <p className="text-3xl font-bold">{statusCounts[status]}</p>
-                  <p className="text-sm text-muted-foreground capitalize">{status}</p>
+                  <p className="text-sm text-muted-foreground">{formatStatusLabel(status)}</p>
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Applications Table */}
+        {/* Company Cards */}
         <Card className="animate-slide-up rounded-2xl" style={{ animationDelay: '250ms' }}>
-          <CardHeader>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="flex-wrap h-auto gap-2 bg-muted/50 p-2 rounded-xl">
-                <TabsTrigger value="all" className="rounded-lg">All ({statusCounts.all})</TabsTrigger>
-                <TabsTrigger value="pending" className="rounded-lg">Pending ({statusCounts.pending})</TabsTrigger>
-                <TabsTrigger value="under_review" className="rounded-lg">Under Review ({statusCounts.under_review})</TabsTrigger>
-                <TabsTrigger value="approved" className="rounded-lg">Approved ({statusCounts.approved})</TabsTrigger>
-                <TabsTrigger value="rejected" className="rounded-lg">Rejected ({statusCounts.rejected})</TabsTrigger>
-              </TabsList>
-            </Tabs>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle>Company Application Tracking</CardTitle>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search companies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 rounded-xl"
+              />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {getFilteredApplications(activeTab).map((application, index) => {
-                const config = getStatusConfig(application.status);
-                const Icon = config.icon;
-                const student = users.find(u => u._id === application.studentId?._id);
-                
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredCompanies.map((companyApplications, index) => {
+                const firstApplication = companyApplications[0];
+                const companyId = firstApplication.companyId?._id || firstApplication._id;
+                const applicationTotal = companyApplications.length;
+                const pendingTotal = companyApplications.filter((application) => application.status === 'pending').length;
+                const reviewTotal = companyApplications.filter((application) => application.status === 'under_review').length;
+                const approvedTotal = companyApplications.filter((application) => application.status === 'approved').length;
+                const rejectedTotal = companyApplications.filter((application) => application.status === 'rejected').length;
+
                 return (
                   <div
-                    key={application._id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors animate-slide-up"
+                    key={companyId}
+                    className="rounded-xl border bg-muted/20 animate-slide-up p-5 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all duration-200"
                     style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => navigate(`/officer/applications/${companyId}`)}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg ring-2 ring-white">
-                        {application.studentId?.name?.charAt(0) || '?'}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{application.studentId?.name || 'Student'}</h3>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg ring-2 ring-white">
+                          {firstApplication.companyId?.name?.charAt(0) || '?'}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          Applied to <span className="font-medium text-foreground">{application.companyId?.name || 'Company'}</span>
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {application.appliedDate ? new Date(application.appliedDate).toLocaleDateString() : ''}
-                        </p>
+                        <div>
+                          <p className="font-semibold text-lg">{firstApplication.companyId?.name || 'Company'}</p>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {applicationTotal} application{applicationTotal !== 1 ? 's' : ''}
+                          </p>
+                        </div>
                       </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">GPA</span>
-                        <Input
-                          className="w-20"
-                          value={gpaEdits[application.studentId._id] ?? (student?.gpa?.toString() || '')}
-                          placeholder="0-10"
-                          onChange={(e) => setGpaEdits({ ...gpaEdits, [application.studentId._id]: e.target.value })}
-                        />
-                        <Button size="sm" variant="outline" onClick={() => handleGpaUpdate(application.studentId._id)}>
-                          Save
-                        </Button>
-                      </div>
-
-                      <Badge className={`gap-1.5 ${config.color}`}>
-                        <Icon className="w-3.5 h-3.5" />
-                        {config.label}
-                      </Badge>
-
-                      <Select
-                        value={application.status}
-                        onValueChange={(value: Application['status']) =>
-                          handleStatusChange(application._id, value)
-                        }
-                        
-                      >
-                        <SelectTrigger className="w-40 rounded-xl">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="under_review">Under Review</SelectItem>
-                          <SelectItem value="approved">Approved</SelectItem>
-                          <SelectItem value="rejected">Rejected</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Badge variant="outline" className="text-xs">Pending: {pendingTotal}</Badge>
+                      <Badge variant="outline" className="text-xs">Under Review: {reviewTotal}</Badge>
+                      <Badge variant="outline" className="text-xs">Approved: {approvedTotal}</Badge>
+                      <Badge variant="outline" className="text-xs">Rejected: {rejectedTotal}</Badge>
                     </div>
                   </div>
                 );
               })}
 
-              {getFilteredApplications(activeTab).length === 0 && (
-                <div className="text-center py-16">
+              {filteredCompanies.length === 0 && (
+                <div className="col-span-full text-center py-16">
                   <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">No applications found</h3>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    {searchTerm ? 'No matching companies' : 'No applications found'}
+                  </h3>
                   <p className="text-muted-foreground">
-                    No applications in this category
+                    {searchTerm ? `No companies match "${searchTerm}"` : 'No applications in this category'}
                   </p>
                 </div>
               )}

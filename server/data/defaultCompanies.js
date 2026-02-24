@@ -1,373 +1,648 @@
-const companyDescriptions = {
-  'Google': {
-    description: `Google is seeking talented Software Engineers to join our innovative teams. You will work on critical projects that impact billions of users worldwide, building next-generation technologies that change how people connect, explore, and interact with information.
-
-Required Skills: Strong foundation in Data Structures, Algorithms, and Object-Oriented Programming. Proficiency in one or more of: Java, Python, C++, or Go. Understanding of system design, distributed systems, and scalability concepts.
-
-Responsibilities:
-- Design, develop, test, deploy, maintain, and improve software
-- Work on problems of moderate-to-high complexity
-- Collaborate with cross-functional teams to define and build new features
-- Participate in design reviews and code reviews
-- Optimize application performance and scalability
-
-Tech Stack: Java, Python, C++, Go, Kubernetes, TensorFlow, Angular/React, Google Cloud Platform
-
-Preferred: Experience with web technologies (JavaScript/TypeScript), machine learning frameworks, or open-source contributions.`,
-    eligibility: `Computer Science or related degree. Minimum 7.5 GPA. Strong coding and problem-solving skills. Experience with data structures and algorithms.`,
-  },
-  'Microsoft': {
-    description: `Microsoft is hiring Software Engineers to create innovative solutions that empower every person and organization on the planet to achieve more. You'll work on cutting-edge products including Azure, Office 365, Windows, and AI platforms.
-
-Required Skills: Strong programming fundamentals in C#, Java, Python, or JavaScript. Knowledge of cloud computing, software engineering principles, and agile methodologies. Understanding of RESTful APIs and microservices architecture.
-
-Responsibilities:
-- Design and implement scalable cloud-based solutions
-- Write clean, maintainable, and efficient code
-- Collaborate with PM and design teams to deliver features
-- Debug issues and implement automated testing
-- Contribute to technical specifications and architecture decisions
-
-Tech Stack: C#, .NET Core, Azure, TypeScript, React, SQL Server, Docker, Kubernetes
-
-Preferred: Contributions to open-source projects, experience with Azure or AWS, knowledge of DevOps practices.`,
-    eligibility: `BE/B.Tech in Computer Science or related field. Minimum 7.5 GPA. Strong analytical and problem-solving abilities.`,
-  },
-  'Amazon': {
-    description: `Amazon is looking for Backend Engineers to build highly scalable distributed systems for e-commerce, AWS, and logistics platforms. Join us to work on challenging problems at unprecedented scale.
-
-Required Skills: Proficiency in Java, Python, or C++. Strong understanding of object-oriented design, data structures, and algorithms. Experience with relational and NoSQL databases. Knowledge of distributed systems and scalability patterns.
-
-Responsibilities:
-- Design and build robust, scalable backend services
-- Write high-quality, well-tested code
-- Optimize database queries and system performance
-- Participate in on-call rotations and production support
-- Collaborate with teams across Amazon's global engineering community
-
-Tech Stack: Java, Python, AWS (EC2, S3, Lambda, DynamoDB), Redis, MySQL, Kafka, Docker
-
-Preferred: Experience with AWS services, microservices architecture, or high-traffic production systems.`,
-    eligibility: `B.Tech/BE in Computer Science. Minimum 7.0 GPA. Strong coding skills and system design knowledge.`,
-  },
-  'Flipkart': {
-    description: `Flipkart is seeking SDE I engineers to build India's leading e-commerce platform. Work on large-scale distributed systems, real-time data pipelines, and customer-facing applications.
-
-Required Skills: Strong programming skills in Java or Python. Understanding of RESTful services, databases (MySQL, MongoDB), and caching mechanisms. Knowledge of data structures, algorithms, and design patterns.
-
-Responsibilities:
-- Develop features for supply chain, payments, or marketplace platforms
-- Build scalable microservices and APIs
-- Implement monitoring and alerting systems
-- Optimize application performance and user experience
-- Work in agile teams with product and design
-
-Tech Stack: Java, Spring Boot, Python, Kafka, Redis, MySQL, MongoDB, Kubernetes, React
-
-Preferred: Experience with Spring Framework, Kafka, or large-scale web applications.`,
-    eligibility: `BE/B.Tech in Computer Science or related discipline. Minimum 7.0 GPA. Strong problem-solving skills.`,
-  },
-  'Razorpay': {
-    description: `Razorpay is hiring Backend Engineers to build India's most developer-friendly payment solutions. Work on payment gateways, banking integrations, fraud detection, and real-time transaction processing.
-
-Required Skills: Proficiency in Java, Python, or Go. Strong understanding of databases (PostgreSQL, MySQL), caching (Redis), and message queues. Knowledge of API design, security best practices, and financial systems.
-
-Responsibilities:
-- Design and build payment processing systems
-- Implement fraud detection and security mechanisms
-- Integrate with banking and payment partners
-- Ensure 99.99% uptime and handle high transaction volumes
-- Write comprehensive tests and documentation
-
-Tech Stack: Java, Python, Go, PostgreSQL, Redis, Kafka, Kubernetes, AWS
-
-Preferred: Understanding of payment systems, PCI compliance, or experience with fintech applications.`,
-    eligibility: `B.Tech/BE in Computer Science. Minimum 7.0 GPA. Strong analytical and coding skills. Interest in fintech.`,
-  },
-  'Swiggy': {
-    description: `Swiggy is looking for Backend Engineers to power India's largest food delivery platform. Build systems handling millions of orders, real-time location tracking, and logistics optimization.
-
-Required Skills: Strong programming in Java, Python, or Node.js. Experience with databases, REST APIs, and cloud platforms. Understanding of distributed systems and real-time data processing.
-
-Responsibilities:
-- Develop microservices for ordering, delivery, and payments
-- Build real-time tracking and notification systems
-- Optimize delivery algorithms and routing logic
-- Ensure system reliability during peak traffic
-- Collaborate with product teams on feature development
-
-Tech Stack: Java, Python, Node.js, MySQL, Redis, Kafka, AWS, Kubernetes, React
-
-Preferred: Experience with location-based services, real-time systems, or high-availability architectures.`,
-    eligibility: `BE/B.Tech in Computer Science. Minimum 6.8 GPA. Strong problem-solving and coding abilities.`,
-  },
-  'Zoho': {
-    description: `Zoho is hiring Product Engineers to build SaaS applications used by millions of businesses worldwide. Work on CRM, email, collaboration tools, and productivity software with minimal supervision.
-
-Required Skills: Strong programming in Java, JavaScript, or Python. Understanding of full-stack development, databases, and web technologies. Ability to own features end-to-end.
-
-Responsibilities:
-- Design and implement product features independently
-- Write scalable and maintainable code
-- Optimize application performance
-- Debug and fix production issues
-- Contribute to product architecture and technical decisions
-
-Tech Stack: Java, JavaScript, HTML/CSS, MySQL, PostgreSQL, Redis, Linux
-
-Preferred: Full-stack development experience, ownership mentality, self-driven learning.`,
-    eligibility: `BE/B.Tech in Computer Science. Minimum 6.5 GPA. Strong fundamentals and passion for building products.`,
-  },
-  'Freshworks': {
-    description: `Freshworks is seeking Full Stack Engineers to build modern SaaS products for customer engagement. Work on both frontend (React) and backend (Ruby/Node.js) to deliver delightful user experiences.
-
-Required Skills: Proficiency in JavaScript/TypeScript and React. Backend experience with Node.js, Ruby, or Python. Understanding of databases, REST APIs, and cloud deployment.
-
-Responsibilities:
-- Build responsive web applications with React
-- Develop scalable backend services and APIs
-- Implement real-time features and integrations
-- Write automated tests and maintain code quality
-- Participate in product planning and agile ceremonies
-
-Tech Stack: React, Node.js, Ruby on Rails, PostgreSQL, Redis, AWS, Docker, TypeScript
-
-Preferred: Experience with modern JavaScript frameworks, GraphQL, or SaaS product development.`,
-    eligibility: `B.Tech/BE in Computer Science. Minimum 6.8 GPA. Full-stack development skills preferred.`,
-  },
-  'TCS': {
-    description: `Tata Consultancy Services is hiring Software Engineers for client projects across banking, insurance, retail, and technology domains. Work on enterprise applications, digital transformation, and emerging technologies.
-
-Required Skills: Programming knowledge in Java, Python, or C++. Understanding of software development lifecycle, testing, and documentation. Willingness to learn new technologies and work in teams.
-
-Responsibilities:
-- Develop and maintain enterprise applications
-- Write clean code following best practices
-- Participate in requirements gathering and design discussions
-- Debug issues and provide production support
-- Collaborate with offshore and onsite teams
-
-Tech Stack: Java, Spring, Python, Oracle/SQL Server, Angular/React, Jenkins, Git
-
-Preferred: Knowledge of Agile methodologies, cloud platforms, or internship experience.`,
-    eligibility: `BE/B.Tech/MCA in Computer Science or related field. Minimum 6.5 GPA. No active backlogs.`,
-  },
-  'Infosys': {
-    description: `Infosys is recruiting Systems Engineers to work on digital transformation projects for global clients. Training provided in latest technologies including cloud, AI/ML, and full-stack development.
-
-Required Skills: Basic programming in any language (Java, Python, C++). Strong analytical and problem-solving skills. Good communication and teamwork abilities.
-
-Responsibilities:
-- Undergo comprehensive technical training program
-- Develop software solutions based on client requirements
-- Test and debug applications
-- Document technical specifications
-- Support production systems and resolve issues
-
-Tech Stack: Java, Python, Spring Boot, Angular, MySQL, AWS/Azure, Jenkins
-
-Preferred: Academic projects, certifications, or coding competition participation.`,
-    eligibility: `BE/B.Tech in any engineering discipline. Minimum 6.0 GPA throughout academics. No current arrears.`,
-  },
-  'Wipro': {
-    description: `Wipro is hiring Project Engineers for software development and application maintenance projects. Work across domains including BFSI, healthcare, retail, and manufacturing.
-
-Required Skills: Programming fundamentals in Java, Python, or .NET. Understanding of databases and web technologies. Ability to learn quickly and adapt to project needs.
-
-Responsibilities:
-- Design, code, and test software modules
-- Participate in code reviews and knowledge sharing
-- Create and maintain technical documentation
-- Provide application support and troubleshooting
-- Work in global delivery model with diverse teams
-
-Tech Stack: Java, Python, .NET, SQL, JavaScript, Oracle, AWS, Git
-
-Preferred: Internship experience, academic projects, or online course certifications.`,
-    eligibility: `B.E/B.Tech in Computer Science or IT. Minimum 6.0 GPA. Strong academic record with no backlogs.`,
-  },
-  'Accenture': {
-    description: `Accenture is seeking Associate Software Engineers for technology consulting and digital transformation projects. Work on cloud migration, application development, and automation initiatives.
-
-Required Skills: Programming knowledge in Java, Python, or JavaScript. Understanding of cloud platforms (AWS/Azure). Problem-solving and analytical thinking abilities.
-
-Responsibilities:
-- Develop and deploy cloud-based solutions
-- Implement automation scripts and workflows
-- Support application migration to cloud platforms
-- Create technical documentation and user guides
-- Participate in client meetings and project planning
-
-Tech Stack: Java, Python, AWS, Azure, Docker, Kubernetes, Terraform, Spring Boot
-
-Preferred: Cloud certifications (AWS/Azure), DevOps knowledge, or consulting interest.`,
-    eligibility: `BE/B.Tech in Computer Science or related field. Minimum 6.5 GPA. Strong communication skills.`,
-  },
-  'Cognizant': {
-    description: `Cognizant is hiring Programmer Analysts to work on enterprise application development and quality engineering projects for Fortune 500 clients.
-
-Required Skills: Programming in Java, Python, or .NET. Understanding of software testing concepts. Knowledge of SQL and web technologies.
-
-Responsibilities:
-- Develop and test software applications
-- Write automation scripts for testing
-- Analyze requirements and design solutions
-- Debug and fix defects in applications
-- Collaborate with global teams across time zones
-
-Tech Stack: Java, Selenium, Python, SQL, JavaScript, Jenkins, JUnit, TestNG
-
-Preferred: Knowledge of automation testing, Agile methodologies, or ISTQB certification.`,
-    eligibility: `BE/B.Tech/MCA in Computer Science or IT. Minimum 6.0 GPA. Good analytical and communication skills.`,
-  },
-  'LTIMindtree': {
-    description: `LTIMindtree is recruiting Software Engineers for digital engineering and enterprise solutions. Work on cloud-native applications, microservices, and modernization projects.
-
-Required Skills: Strong Java or Python programming. Understanding of object-oriented design and databases. Knowledge of web frameworks and REST APIs.
-
-Responsibilities:
-- Design and develop microservices applications
-- Build RESTful APIs and integrate with databases
-- Write unit tests and integration tests
-- Deploy applications on cloud platforms
-- Participate in agile sprints and daily standups
-
-Tech Stack: Java, Spring Boot, Python, React, MySQL, MongoDB, Docker, Kubernetes, AWS
-
-Preferred: Experience with Spring ecosystem, Docker, or API development.`,
-    eligibility: `B.Tech/BE in Computer Science or IT. Minimum 6.5 GPA. Strong technical and problem-solving skills.`,
-  },
-  'Oracle': {
-    description: `Oracle is hiring Software Engineers to work on enterprise cloud applications, database technologies, and SaaS platforms. Build solutions powering mission-critical business systems worldwide.
-
-Required Skills: Strong programming in Java, Python, or C++. Understanding of databases, SQL, and data modeling. Knowledge of distributed systems and cloud architecture.
-
-Responsibilities:
-- Develop features for Oracle Cloud Infrastructure
-- Build database tools and management applications
-- Optimize query performance and scalability
-- Implement security and compliance features
-- Contribute to technical design and architecture
-
-Tech Stack: Java, Python, Oracle Database, PL/SQL, Kubernetes, Linux, REST APIs
-
-Preferred: Database internals knowledge, cloud platform experience, or systems programming.`,
-    eligibility: `BE/B.Tech in Computer Science. Minimum 7.0 GPA. Strong fundamentals in databases and algorithms.`,
-  },
-  'Zomato': {
-    description: `Zomato is seeking Backend Engineers to build food delivery and restaurant discovery platforms. Work on real-time systems, recommendation engines, and logistics optimization.
-
-Required Skills: Proficiency in Java, Python, or Go. Experience with databases and caching systems. Understanding of microservices and distributed architectures.
-
-Responsibilities:
-- Develop scalable backend services for food delivery
-- Build restaurant recommendation algorithms
-- Implement real-time order tracking systems
-- Optimize delivery assignment and routing
-- Ensure high availability during peak hours
-
-Tech Stack: Java, Python, Go, PostgreSQL, Redis, Kafka, Kubernetes, AWS
-
-Preferred: Experience with location-based systems, recommendation engines, or high-scale applications.`,
-    eligibility: `BE/B.Tech in Computer Science. Minimum 6.5 GPA. Strong problem-solving and coding skills.`,
-  },
-  'Paytm': {
-    description: `Paytm is hiring Software Development Engineers to build payment, banking, and commerce platforms. Work on wallet systems, merchant solutions, and financial services.
-
-Required Skills: Strong programming in Java or Python. Knowledge of databases, APIs, and security practices. Understanding of payment systems and transaction processing.
-
-Responsibilities:
-- Develop payment processing and wallet features
-- Implement merchant onboarding and KYC systems
-- Build fraud detection and risk management tools
-- Ensure PCI-DSS compliance and security standards
-- Optimize transaction success rates
-
-Tech Stack: Java, Python, MySQL, Redis, Kafka, AWS, Spring Boot, React
-
-Preferred: Fintech domain knowledge, security awareness, or payment gateway experience.`,
-    eligibility: `B.Tech/BE in Computer Science or IT. Minimum 6.8 GPA. Interest in financial technology.`,
-  },
-  'PhonePe': {
-    description: `PhonePe is looking for Backend Engineers to build India's leading digital payments platform. Work on UPI trans actions, merchant solutions, and financial services at massive scale.
-
-Required Skills: Proficiency in Java, Kotlin, or Go. Strong understanding of databases and distributed systems. Knowledge of payment protocols and security.
-
-Responsibilities:
-- Develop high-throughput payment processing systems
-- Build merchant and consumer-facing APIs
-- Implement security and fraud prevention measures
-- Ensure 99.99% uptime for payment services
-- Collaborate with product teams on new features
-
-Tech Stack: Java, Kotlin, MySQL, Cassandra, Redis, Kafka, Kubernetes, AWS
-
-Preferred: Experience with payment systems, UPI, or high-availability distributed systems.`,
-    eligibility: `BE/B.Tech in Computer Science. Minimum 6.8 GPA. Strong system design and coding abilities.`,
-  },
-  'Groww': {
-    description: `Groww is hiring Backend Engineers to build investment and trading platforms. Work on stock trading systems, mutual fund platforms, and real-time market data processing.
-
-Required Skills: Strong programming in Java, Python, or Go. Understanding of databases and distributed systems. Knowledge of financial markets and trading concepts.
-
-Responsibilities:
-- Develop trading and investment platform features
-- Build real-time market data processing systems
-- Implement order management and portfolio tracking
-- Ensure regulatory compliance and security
-- Optimize system performance and latency
-
-Tech Stack: Java, Python, PostgreSQL, Redis, Kafka, Kubernetes, AWS
-
-Preferred: Interest in financial markets, low-latency systems, or trading platform experience.`,
-    eligibility: `BE/B.Tech in Computer Science. Minimum 7.0 GPA. Strong algorithms and system design skills.`,
-  },
-  'CRED': {
-    description: `CRED is seeking Mobile Engineers (Android) to build premium credit card and payment experiences. Work on consumer-facing apps with focus on design, performance, and user delight.
-
-Required Skills: Strong Android development with Kotlin. Understanding of Android SDK, Jetpack components, and Material Design. Knowledge of REST APIs and mobile architecture patterns.
-
-Responsibilities:
-- Build beautiful and performant Android applications
-- Implement complex animations and custom views
-- Integrate with backend APIs and third-party SDKs
-- Optimize app performance and battery usage
-- Write automated tests and maintain code quality
-
-Tech Stack: Kotlin, Android SDK, Jetpack, Coroutines, Retrofit, Room, Firebase
-
-Preferred: Published apps on Play Store, experience with MVVM/MVI, or design sensibility.`,
-    eligibility: `BE/B.Tech in Computer Science. Minimum 7.0 GPA. Strong Android development skills and portfolio.`,
-  },
+const companyHiringFocus = {
+  'Anuki Technologies': 'Build backend services for workflow automation, candidate scoring, and recruiter analytics dashboards.',
+  'Google': 'Work on large-scale distributed systems for search, ads, and cloud-native developer platforms.',
+  'Microsoft': 'Contribute to Azure and M365 services with focus on reliability, observability, and platform scale.',
+  'Amazon': 'Develop core backend services for commerce and cloud workloads with high throughput and low latency.',
+  'Flipkart': 'Deliver features across catalog, checkout, and supply chain systems in a microservices ecosystem.',
+  'Razorpay': 'Build secure payment APIs, merchant onboarding flows, and transaction reconciliation pipelines.',
+  'Swiggy': 'Improve order lifecycle, dispatch, and partner integrations for real-time logistics systems.',
+  'Zoho': 'Develop end-to-end SaaS product modules used by business users across CRM and productivity tools.',
+  'Freshworks': 'Ship full-stack customer experience features with scalable APIs and responsive web interfaces.',
+  'TCS': 'Support enterprise client projects across development, integration, quality, and production support.',
+  'Infosys': 'Join structured engineering projects with training-first model in full-stack and digital transformation.',
+  'Wipro': 'Work on delivery projects for application enhancement, testing, and production incident resolution.',
+  'Accenture': 'Build modernization and cloud migration solutions for global consulting engagements.',
+  'Cognizant': 'Contribute to software delivery and QA automation streams for enterprise products.',
+  'LTIMindtree': 'Develop APIs and cloud-native integrations for modernization programs across domains.',
+  'Oracle': 'Engineer enterprise cloud and database platform capabilities with performance-focused design.',
+  'Zomato': 'Build low-latency backend systems for order orchestration and restaurant discovery journeys.',
+  'Paytm': 'Develop payments and merchant platform services with transaction reliability and fraud controls.',
+  'PhonePe': 'Build UPI and merchant payment backend services focused on security, resilience, and latency.',
+  'Groww': 'Develop investment platform APIs for order routing, portfolio services, and market data workflows.',
+};
+
+const companyTechStack = {
+  'Anuki Technologies': 'Node.js, TypeScript, PostgreSQL, Redis, Docker, AWS',
+  'Google': 'Java/C++, Go, Python, Kubernetes, gRPC, BigQuery',
+  'Microsoft': 'C#, .NET, TypeScript, Azure, Cosmos DB, Kubernetes',
+  'Amazon': 'Java, Python, AWS, DynamoDB, SQS/SNS, Kafka',
+  'Flipkart': 'Java, Spring Boot, MySQL, Kafka, Redis, React',
+  'Razorpay': 'Java/Go, PostgreSQL, Redis, Kafka, Kubernetes',
+  'Swiggy': 'Java, Node.js, MySQL, Redis, Kafka, AWS',
+  'Zoho': 'Java, JavaScript, SQL, Linux, distributed web services',
+  'Freshworks': 'React, TypeScript, Node.js, PostgreSQL, Redis, AWS',
+  'TCS': 'Java/Python, SQL, REST APIs, Git, CI/CD',
+  'Infosys': 'Java, Spring Boot, SQL, cloud fundamentals, testing tools',
+  'Wipro': 'Java/.NET/Python, SQL, service integration, test automation',
+  'Accenture': 'Java, Python, cloud services, APIs, DevOps pipelines',
+  'Cognizant': 'Java/.NET, SQL, Selenium, REST services, CI tooling',
+  'LTIMindtree': 'Java, Spring, React, Docker, Kubernetes, AWS',
+  'Oracle': 'Java, SQL/PLSQL, OCI, Linux, distributed systems',
+  'Zomato': 'Java/Go, PostgreSQL, Redis, Kafka, containerized deployments',
+  'Paytm': 'Java, Spring Boot, MySQL, Redis, event-driven systems',
+  'PhonePe': 'Java/Kotlin, MySQL/Cassandra, Redis, Kafka, Kubernetes',
+  'Groww': 'Java/Python, PostgreSQL, Redis, Kafka, low-latency services',
+};
+
+const buildRealisticDescription = (company) => {
+  const focus = companyHiringFocus[company.name] || `Build and maintain core ${company.industry} products.`;
+  const stack = companyTechStack[company.name] || 'Programming language, SQL/NoSQL, APIs, cloud basics';
+  const documents = (company.requirements || []).join(', ');
+
+  return `Job Title: ${company.role}
+Company: ${company.name}
+Location: ${company.location}
+
+Role Summary:
+${company.name} is hiring for the ${company.role} role. ${focus}
+
+Key Responsibilities:
+- Design, develop, test, and deploy production-ready modules.
+- Build secure and scalable REST/gRPC APIs and backend workflows.
+- Write clean, maintainable code with unit/integration tests.
+- Debug production issues, monitor service health, and improve reliability.
+- Collaborate with product, QA, and DevOps teams for sprint delivery.
+
+Required Skills:
+- Strong fundamentals in data structures, algorithms, OOP, DBMS, OS, and computer networks.
+- Hands-on coding in one or more backend-focused languages.
+- Good understanding of API design, SQL queries, and performance tuning.
+- Familiarity with Git workflows and agile development practices.
+
+Preferred Skills:
+- Exposure to cloud services, CI/CD, observability, and microservices.
+- Internship, capstone, or open-source contributions in relevant domains.
+- Strong communication and documentation skills.
+
+Tech Stack (indicative):
+${stack}
+
+Eligibility:
+${company.eligibility}
+
+Selection Process:
+Online assessment (coding + aptitude) -> technical interviews -> HR discussion.
+
+Important:
+Only candidates meeting the minimum GPA (${company.min_gpa}) and document requirements will be shortlisted.`;
+};
+
+const escapePdfText = (text) =>
+  String(text)
+    .replace(/\\/g, '\\\\')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)');
+
+const wrapLine = (text, maxChars = 88) => {
+  const words = String(text || '').split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = '';
+
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length <= maxChars) {
+      current = candidate;
+    } else {
+      if (current) lines.push(current);
+      current = word;
+    }
+  }
+
+  if (current) lines.push(current);
+  return lines.length ? lines : [''];
+};
+
+const createCompanyDetailsPdfDataUri = (company) => {
+  const summary = buildRealisticDescription(company);
+  const lines = [];
+
+  lines.push(`${company.name} - Campus Placement Details`);
+  lines.push('');
+  lines.push(`Role: ${company.role}`);
+  lines.push(`Location: ${company.location}`);
+  lines.push(`Salary: INR ${company.salary} CTC`);
+  lines.push(`Minimum GPA: ${company.min_gpa}`);
+  lines.push(`Openings: ${company.openings}`);
+  lines.push('');
+  lines.push('Job Description:');
+  for (const paragraph of summary.split('\n')) {
+    const wrapped = wrapLine(paragraph, 88);
+    for (const wrappedLine of wrapped) {
+      lines.push(wrappedLine);
+    }
+  }
+
+  const maxLines = 46;
+  const printableLines = lines.slice(0, maxLines);
+  const contentCommands = [];
+  contentCommands.push('BT');
+  contentCommands.push('/F1 11 Tf');
+  contentCommands.push('50 760 Td');
+
+  printableLines.forEach((line, index) => {
+    if (index === 0) {
+      contentCommands.push(`(${escapePdfText(line)}) Tj`);
+    } else {
+      contentCommands.push('0 -15 Td');
+      contentCommands.push(`(${escapePdfText(line)}) Tj`);
+    }
+  });
+
+  contentCommands.push('ET');
+  const streamContent = `${contentCommands.join('\n')}\n`;
+
+  const objects = [
+    '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
+    '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
+    '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n',
+    '4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n',
+    `5 0 obj\n<< /Length ${Buffer.byteLength(streamContent, 'utf8')} >>\nstream\n${streamContent}endstream\nendobj\n`,
+  ];
+
+  let pdf = '%PDF-1.4\n';
+  const offsets = [0];
+
+  for (const obj of objects) {
+    offsets.push(Buffer.byteLength(pdf, 'utf8'));
+    pdf += obj;
+  }
+
+  const xrefStart = Buffer.byteLength(pdf, 'utf8');
+  pdf += `xref\n0 ${objects.length + 1}\n`;
+  pdf += '0000000000 65535 f \n';
+
+  for (let i = 1; i <= objects.length; i += 1) {
+    pdf += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
+  }
+
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
+
+  return `data:application/pdf;base64,${Buffer.from(pdf, 'utf8').toString('base64')}`;
 };
 
 export const defaultCompanies = [
-  { name: 'Google', role: 'Software Engineer', salary: '24,00,000', industry: 'Product', location: 'Bengaluru', min_gpa: 7.5 },
-  { name: 'Microsoft', role: 'Software Engineer', salary: '20,00,000', industry: 'Product', location: 'Hyderabad', min_gpa: 7.5 },
-  { name: 'Amazon', role: 'Backend Engineer', salary: '18,00,000', industry: 'E-commerce and Cloud', location: 'Hyderabad', min_gpa: 7.0 },
-  { name: 'Flipkart', role: 'SDE I', salary: '16,00,000', industry: 'E-commerce', location: 'Bengaluru', min_gpa: 7.0 },
-  { name: 'Razorpay', role: 'Backend Engineer', salary: '14,00,000', industry: 'FinTech', location: 'Bengaluru', min_gpa: 7.0 },
-  { name: 'Swiggy', role: 'Backend Engineer', salary: '11,00,000', industry: 'FoodTech', location: 'Bengaluru', min_gpa: 6.8 },
-  { name: 'Zoho', role: 'Product Engineer', salary: '10,00,000', industry: 'SaaS', location: 'Chennai', min_gpa: 6.5 },
-  { name: 'Freshworks', role: 'Full Stack Engineer', salary: '12,00,000', industry: 'SaaS', location: 'Chennai', min_gpa: 6.8 },
-  { name: 'TCS', role: 'Software Engineer', salary: '7,00,000', industry: 'IT Services', location: 'Bengaluru', min_gpa: 6.5 },
-  { name: 'Infosys', role: 'Systems Engineer', salary: '6,50,000', industry: 'IT Services', location: 'Mysuru', min_gpa: 6.0 },
-  { name: 'Wipro', role: 'Project Engineer', salary: '6,00,000', industry: 'IT Services', location: 'Hyderabad', min_gpa: 6.0 },
-  { name: 'Accenture', role: 'Associate Software Engineer', salary: '8,00,000', industry: 'Consulting', location: 'Pune', min_gpa: 6.5 },
-  { name: 'Cognizant', role: 'Programmer Analyst', salary: '6,50,000', industry: 'IT Services', location: 'Chennai', min_gpa: 6.0 },
-  { name: 'LTIMindtree', role: 'Software Engineer', salary: '7,20,000', industry: 'IT Services', location: 'Mumbai', min_gpa: 6.5 },
-  { name: 'Oracle', role: 'Software Engineer', salary: '13,00,000', industry: 'Enterprise Software', location: 'Bengaluru', min_gpa: 7.0 },
-  { name: 'Zomato', role: 'Backend Engineer', salary: '10,50,000', industry: 'FoodTech', location: 'Gurugram', min_gpa: 6.5 },
-  { name: 'Paytm', role: 'Software Development Engineer', salary: '11,00,000', industry: 'FinTech', location: 'Noida', min_gpa: 6.8 },
-  { name: 'PhonePe', role: 'Backend Engineer', salary: '12,00,000', industry: 'FinTech', location: 'Bengaluru', min_gpa: 6.8 },
-  { name: 'Groww', role: 'Backend Engineer', salary: '13,00,000', industry: 'FinTech', location: 'Bengaluru', min_gpa: 7.0 },
-  { name: 'CRED', role: 'Android Developer', salary: '15,00,000', industry: 'FinTech', location: 'Bengaluru', min_gpa: 7.0 },
+  {
+    name: 'Anuki Technologies',
+    role: 'Software Engineer - Backend',
+    salary: '12,00,000',
+    industry: 'Product Engineering',
+    location: 'Bengaluru',
+    min_gpa: 7.0,
+    description:
+      'Anuki Technologies is hiring backend engineers to build high-availability APIs for HR tech and workflow automation products. You will design services, implement secure authentication, and optimize database-heavy workloads for enterprise customers.',
+    eligibility:
+      'B.E./B.Tech/MCA in Computer Science, IT, or related discipline with minimum 7.0 GPA. Strong DSA, SQL, and API fundamentals required.',
+    requirements: [
+      'Updated resume (PDF)',
+      'Government photo ID proof (Aadhaar/PAN)',
+      'Latest semester marksheets',
+      'Consolidated transcript',
+      'Portfolio or GitHub profile link'
+    ],
+    deadline: '2026-04-10',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 8,
+  },
+  {
+    name: 'Google',
+    role: 'Software Engineer',
+    salary: '24,00,000',
+    industry: 'Product',
+    location: 'Bengaluru',
+    min_gpa: 7.5,
+    description:
+      'Google is hiring software engineers to build large-scale systems across search, cloud, and productivity products. The role focuses on writing performant code, solving distributed systems problems, and shipping user-impactful features with strong engineering practices.',
+    eligibility:
+      'B.E./B.Tech in Computer Science or related field with minimum 7.5 GPA. Strong coding ability in Java/C++/Python and system design knowledge expected.',
+    requirements: [
+      'Updated resume (PDF)',
+      'Official transcript',
+      'Government ID proof',
+      '2 project write-ups',
+      'Coding profile links (LeetCode/Codeforces)'
+    ],
+    deadline: '2026-04-12',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 12,
+  },
+  {
+    name: 'Microsoft',
+    role: 'Software Engineer',
+    salary: '20,00,000',
+    industry: 'Product',
+    location: 'Hyderabad',
+    min_gpa: 7.5,
+    description:
+      'Microsoft is recruiting software engineers to work on cloud-native product features across Azure and M365 services. You will collaborate with cross-functional teams, build reliable APIs, and contribute to performance and observability improvements.',
+    eligibility:
+      'B.E./B.Tech/MCA with minimum 7.5 GPA. Strong OOP, DBMS, OS, and computer networks fundamentals required.',
+    requirements: [
+      'Resume (PDF)',
+      'All semester marksheets',
+      'Consolidated transcript',
+      'Photo ID proof',
+      'Internship or project certificate (if available)'
+    ],
+    deadline: '2026-04-14',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 10,
+  },
+  {
+    name: 'Amazon',
+    role: 'SDE I - Backend',
+    salary: '18,00,000',
+    industry: 'E-commerce and Cloud',
+    location: 'Hyderabad',
+    min_gpa: 7.0,
+    description:
+      'Amazon is hiring backend engineers for highly scalable services supporting e-commerce and cloud operations. You will design APIs, implement core business logic, and monitor systems in production with a focus on reliability and latency.',
+    eligibility:
+      'B.E./B.Tech in Computer Science or equivalent with 7.0 GPA and above. Good grasp of DSA, OOP, and low-level design needed.',
+    requirements: [
+      'Updated resume',
+      'Official transcripts',
+      'Government ID',
+      'NOC (if any internship overlap)',
+      'GitHub or project repository links'
+    ],
+    deadline: '2026-04-16',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 14,
+  },
+  {
+    name: 'Flipkart',
+    role: 'SDE I',
+    salary: '16,00,000',
+    industry: 'E-commerce',
+    location: 'Bengaluru',
+    min_gpa: 7.0,
+    description:
+      'Flipkart is looking for SDE I engineers to build transaction-safe services for catalog, checkout, and logistics domains. The role involves end-to-end feature ownership, code reviews, and writing robust, testable microservices.',
+    eligibility:
+      'B.E./B.Tech with minimum 7.0 GPA. Strong Java/Python coding and DB optimization skills required.',
+    requirements: [
+      'Resume (PDF)',
+      'Latest marksheets',
+      'Bonafide certificate',
+      'Government ID proof',
+      'Project demo links'
+    ],
+    deadline: '2026-04-18',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 9,
+  },
+  {
+    name: 'Razorpay',
+    role: 'Backend Engineer',
+    salary: '14,00,000',
+    industry: 'FinTech',
+    location: 'Bengaluru',
+    min_gpa: 7.0,
+    description:
+      'Razorpay is hiring backend engineers to build secure payment flows, reconciliation pipelines, and merchant onboarding APIs. You will work on high-throughput systems, fraud prevention integrations, and platform reliability.',
+    eligibility:
+      'B.E./B.Tech/MCA with 7.0 GPA or above. Proficiency in Java/Python/Go and strong SQL fundamentals required.',
+    requirements: [
+      'Resume',
+      'Government ID',
+      'Academic transcripts',
+      'Internship letters (if any)',
+      'Open-source contributions (optional)'
+    ],
+    deadline: '2026-04-20',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 8,
+  },
+  {
+    name: 'Swiggy',
+    role: 'Software Engineer - Platform',
+    salary: '11,00,000',
+    industry: 'FoodTech',
+    location: 'Bengaluru',
+    min_gpa: 6.8,
+    description:
+      'Swiggy seeks platform engineers to support order lifecycle, delivery tracking, and partner integrations. You will build APIs, optimize queue consumers, and improve system observability in a real-time production environment.',
+    eligibility:
+      'B.E./B.Tech with 6.8 GPA and above. Strong backend fundamentals, SQL, and problem-solving required.',
+    requirements: [
+      'Updated CV',
+      'Semester marksheets',
+      'ID proof',
+      'Two project abstracts',
+      'Any certification documents'
+    ],
+    deadline: '2026-04-22',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 7,
+  },
+  {
+    name: 'Zoho',
+    role: 'Product Engineer',
+    salary: '10,00,000',
+    industry: 'SaaS',
+    location: 'Chennai',
+    min_gpa: 6.5,
+    description:
+      'Zoho is hiring product engineers for SaaS platforms across CRM, mail, and collaboration suites. You will deliver full-stack features, debug production issues, and improve product quality through iterative releases.',
+    eligibility:
+      'B.E./B.Tech/MCA with minimum 6.5 GPA. Good understanding of Java/JavaScript and web application concepts expected.',
+    requirements: [
+      'Resume in PDF format',
+      'Consolidated marksheet',
+      'Government ID proof',
+      'Academic project report',
+      'Profile photo (passport size)'
+    ],
+    deadline: '2026-04-24',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 10,
+  },
+  {
+    name: 'Freshworks',
+    role: 'Full Stack Engineer',
+    salary: '12,00,000',
+    industry: 'SaaS',
+    location: 'Chennai',
+    min_gpa: 6.8,
+    description:
+      'Freshworks is looking for full stack engineers to build customer engagement features across web applications. You will work with React and backend services, write tests, and collaborate closely with product teams.',
+    eligibility:
+      'B.E./B.Tech with minimum 6.8 GPA. Experience with JavaScript/TypeScript, REST APIs, and relational databases preferred.',
+    requirements: [
+      'Updated resume',
+      'Latest transcripts',
+      'ID proof',
+      'Project portfolio links',
+      'Internship completion certificate (if any)'
+    ],
+    deadline: '2026-04-25',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 9,
+  },
+  {
+    name: 'TCS',
+    role: 'Software Engineer',
+    salary: '7,00,000',
+    industry: 'IT Services',
+    location: 'Bengaluru',
+    min_gpa: 6.5,
+    description:
+      'TCS is hiring software engineers for enterprise projects in banking, healthcare, and retail domains. You will be involved in module development, testing, maintenance, and structured delivery with global teams.',
+    eligibility:
+      'B.E./B.Tech/MCA with minimum 6.5 GPA and no active backlogs. Good communication and coding fundamentals required.',
+    requirements: [
+      'Resume',
+      'All semester marksheets',
+      'College ID copy',
+      'Government ID proof',
+      'Passport size photo'
+    ],
+    deadline: '2026-04-26',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 40,
+  },
+  {
+    name: 'Infosys',
+    role: 'Systems Engineer',
+    salary: '6,50,000',
+    industry: 'IT Services',
+    location: 'Mysuru',
+    min_gpa: 6.0,
+    description:
+      'Infosys is onboarding systems engineers for digital transformation engagements. The role includes software development, testing, and support activities after a structured training and onboarding program.',
+    eligibility:
+      'B.E./B.Tech in any circuit branch or CS/IT with minimum 6.0 GPA and no active arrears.',
+    requirements: [
+      'Updated CV',
+      'Academic transcript',
+      'Government ID',
+      'College bonafide letter',
+      'Any online certification proof (optional)'
+    ],
+    deadline: '2026-04-27',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 35,
+  },
+  {
+    name: 'Wipro',
+    role: 'Project Engineer',
+    salary: '6,00,000',
+    industry: 'IT Services',
+    location: 'Hyderabad',
+    min_gpa: 6.0,
+    description:
+      'Wipro is recruiting project engineers to contribute to software delivery and maintenance programs. You will work on coding tasks, bug fixes, production support, and quality improvements.',
+    eligibility:
+      'B.E./B.Tech with minimum 6.0 GPA, good communication skills, and willingness to work in project-based delivery model.',
+    requirements: [
+      'Resume PDF',
+      'Semester marksheets',
+      'Government ID proof',
+      'Address proof',
+      'Passport size photo'
+    ],
+    deadline: '2026-04-28',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 30,
+  },
+  {
+    name: 'Accenture',
+    role: 'Associate Software Engineer',
+    salary: '8,00,000',
+    industry: 'Consulting',
+    location: 'Pune',
+    min_gpa: 6.5,
+    description:
+      'Accenture is hiring associate software engineers for cloud migration and digital modernization projects. The role includes API development, automation scripting, and deployment support.',
+    eligibility:
+      'B.E./B.Tech/MCA with minimum 6.5 GPA. Strong communication, coding basics, and team collaboration expected.',
+    requirements: [
+      'Updated resume',
+      'Consolidated transcript',
+      'ID proof',
+      'Internship/project completion letters',
+      'Recent passport-size photo'
+    ],
+    deadline: '2026-04-29',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 22,
+  },
+  {
+    name: 'Cognizant',
+    role: 'Programmer Analyst',
+    salary: '6,50,000',
+    industry: 'IT Services',
+    location: 'Chennai',
+    min_gpa: 6.0,
+    description:
+      'Cognizant is seeking programmer analysts for software delivery and quality engineering tracks. You will write modules, execute test cases, and support enterprise-grade deployments.',
+    eligibility:
+      'B.E./B.Tech/MCA with minimum 6.0 GPA and basic understanding of Java/Python/.NET stack.',
+    requirements: [
+      'Resume',
+      'Official academic transcripts',
+      'Government photo ID',
+      'College ID copy',
+      'Any internship offer/relieving letters'
+    ],
+    deadline: '2026-04-30',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 25,
+  },
+  {
+    name: 'LTIMindtree',
+    role: 'Software Engineer',
+    salary: '7,20,000',
+    industry: 'IT Services',
+    location: 'Mumbai',
+    min_gpa: 6.5,
+    description:
+      'LTIMindtree is hiring software engineers for cloud-native and enterprise modernization engagements. You will build APIs, integrate services, and contribute to CI/CD based delivery pipelines.',
+    eligibility:
+      'B.E./B.Tech with minimum 6.5 GPA. Good programming and database fundamentals are mandatory.',
+    requirements: [
+      'Resume in PDF',
+      'All semester marksheets',
+      'Government ID proof',
+      'Address proof',
+      'Project summary document'
+    ],
+    deadline: '2026-05-01',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 18,
+  },
+  {
+    name: 'Oracle',
+    role: 'Software Engineer',
+    salary: '13,00,000',
+    industry: 'Enterprise Software',
+    location: 'Bengaluru',
+    min_gpa: 7.0,
+    description:
+      'Oracle is recruiting software engineers to build cloud and database platform capabilities for enterprise customers. The role includes backend feature development, query optimization, and reliability enhancements.',
+    eligibility:
+      'B.E./B.Tech with minimum 7.0 GPA and strong database, SQL, and Java fundamentals.',
+    requirements: [
+      'Updated CV',
+      'Academic transcript',
+      'Government ID proof',
+      'Database project documentation',
+      'Internship letter (if applicable)'
+    ],
+    deadline: '2026-05-02',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 11,
+  },
+  {
+    name: 'Zomato',
+    role: 'Backend Engineer',
+    salary: '10,50,000',
+    industry: 'FoodTech',
+    location: 'Gurugram',
+    min_gpa: 6.5,
+    description:
+      'Zomato is hiring backend engineers to support order orchestration, restaurant discovery, and fulfillment services. You will work on low-latency APIs and production-grade distributed components.',
+    eligibility:
+      'B.E./B.Tech/MCA with minimum 6.5 GPA and strong knowledge of APIs, DBMS, and distributed systems.',
+    requirements: [
+      'Resume (PDF)',
+      'Official transcripts',
+      'Government ID',
+      'Open-source/project links',
+      'Any internship certificates'
+    ],
+    deadline: '2026-05-03',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 10,
+  },
+  {
+    name: 'Paytm',
+    role: 'Software Development Engineer',
+    salary: '11,00,000',
+    industry: 'FinTech',
+    location: 'Noida',
+    min_gpa: 6.8,
+    description:
+      'Paytm is seeking SDEs for payment gateway and merchant platform teams. The role includes building secure services, improving transaction reliability, and implementing monitoring for high-volume systems.',
+    eligibility:
+      'B.E./B.Tech with minimum 6.8 GPA. Strong coding and API fundamentals required; fintech interest is preferred.',
+    requirements: [
+      'Updated resume',
+      'Consolidated marksheet',
+      'Government ID proof',
+      'KYC document copy',
+      'Project write-up or GitHub links'
+    ],
+    deadline: '2026-05-04',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 12,
+  },
+  {
+    name: 'PhonePe',
+    role: 'Backend Engineer',
+    salary: '12,00,000',
+    industry: 'FinTech',
+    location: 'Bengaluru',
+    min_gpa: 6.8,
+    description:
+      'PhonePe is hiring backend engineers for UPI and merchant payment infrastructure. You will work on secure transaction services, optimize latency, and build reliable integrations with partner systems.',
+    eligibility:
+      'B.E./B.Tech/MCA with 6.8 GPA and above. Strong Java/Kotlin/Go fundamentals and DBMS knowledge required.',
+    requirements: [
+      'Resume PDF',
+      'Latest academic transcript',
+      'Government ID proof',
+      'Address proof',
+      'Internship/experience documents (if any)'
+    ],
+    deadline: '2026-05-05',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 9,
+  },
+  {
+    name: 'Groww',
+    role: 'Backend Engineer',
+    salary: '13,00,000',
+    industry: 'FinTech',
+    location: 'Bengaluru',
+    min_gpa: 7.0,
+    description:
+      'Groww is looking for backend engineers to build investment and trading platform components. You will implement APIs for order flow, market data ingestion, and portfolio services with strong reliability standards.',
+    eligibility:
+      'B.E./B.Tech with minimum 7.0 GPA. Strong Java/Python backend skills, SQL, and data modeling knowledge expected.',
+    requirements: [
+      'Updated resume',
+      'Official transcript',
+      'Government ID',
+      'Finance or trading project summary (if any)',
+      'Coding profile links'
+    ],
+    deadline: '2026-05-06',
+    job_type: 'full-time',
+    status: 'active',
+    openings: 8,
+  },
 ].map((company) => ({
   ...company,
-  description: companyDescriptions[company.name]?.description || `${company.name} campus hiring drive for ${company.role}.`,
-  eligibility: companyDescriptions[company.name]?.eligibility || `Students with minimum ${company.min_gpa} GPA and relevant technical skills are eligible.`,
-  deadline: '2026-04-30',
-  job_type: 'full-time',
-  status: 'active',
-  openings: 10,
+  description: buildRealisticDescription(company),
+  detailsFile: createCompanyDetailsPdfDataUri(company),
 }));

@@ -5,9 +5,9 @@ import { protect, authorize } from '../middleware/auth.js';
 const router = express.Router();
 
 // @route   GET /api/users
-// @desc    Get all users (for admin/officers)
-// @access  Private/Officer
-router.get('/', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+// @desc    Get all users (for admin/officers/representatives)
+// @access  Private/Officer/Representative
+router.get('/', protect, authorize('placement_officer', 'student_representative', 'admin'), async (req, res) => {
   try {
     const users = await User.find().select('-password');
     res.json({ success: true, data: users });

@@ -92,30 +92,30 @@ const ManageNotifications = () => {
               Create and manage announcements for students
             </p>
           </div>
-          <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
-            <div className="flex items-center gap-2 w-full lg:w-64">
-              <Search className="w-4 h-4 text-muted-foreground" />
+          <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full lg:w-auto">
+            <div className="relative w-full sm:w-auto sm:min-w-[220px] lg:min-w-[280px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="Search title or message"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="rounded-xl"
+                className="pl-9 rounded-xl w-full"
               />
             </div>
             <Select value={typeFilter} onValueChange={(v: 'all' | 'info' | 'warning' | 'success' | 'error') => setTypeFilter(v)}>
-              <SelectTrigger className="rounded-xl">
+              <SelectTrigger className="rounded-xl w-full sm:w-[140px]">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="info">Information</SelectItem>
                 <SelectItem value="success">Success</SelectItem>
                 <SelectItem value="warning">Warning</SelectItem>
                 <SelectItem value="error">Error</SelectItem>
               </SelectContent>
             </Select>
             <Select value={targetFilter} onValueChange={(v: 'all' | 'student' | 'placement_officer') => setTargetFilter(v)}>
-              <SelectTrigger className="rounded-xl">
+              <SelectTrigger className="rounded-xl w-full sm:w-[140px]">
                 <SelectValue placeholder="Audience" />
               </SelectTrigger>
               <SelectContent>
@@ -161,6 +161,7 @@ const ManageNotifications = () => {
                       <SelectItem value="info">Information</SelectItem>
                       <SelectItem value="success">Success</SelectItem>
                       <SelectItem value="warning">Warning</SelectItem>
+                      <SelectItem value="error">Error</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

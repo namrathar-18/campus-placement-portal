@@ -44,6 +44,8 @@ const CompanyDetails = () => {
   const isPlaced = user?.isPlaced ?? false;
   const isExpired = new Date(company.deadline) < new Date();
   const studentApplications = applications.filter(app => app.studentId?._id === studentId);
+  const hasApprovedApplication = studentApplications.some(app => app.status === 'approved');
+  const isPlacementLocked = isPlaced || hasApprovedApplication;
   const hasApplied = studentApplications.some(app => app.companyId?._id === id);
 
   const handleDownloadDetails = () => {
@@ -84,7 +86,7 @@ const CompanyDetails = () => {
       return;
     }
 
-    if (isPlaced) {
+    if (isPlacementLocked) {
       toast({
         title: 'Already Placed! 🎉',
         description: 'You have already been placed and cannot apply to other companies.',
@@ -126,7 +128,7 @@ const CompanyDetails = () => {
   };
 
   const getActionButton = () => {
-    if (isPlaced) {
+    if (isPlacementLocked) {
       return (
         <Button
           variant="outline"
@@ -194,7 +196,7 @@ const CompanyDetails = () => {
         </Button>
 
         {/* Placed Student Banner */}
-        {isPlaced && (
+        {isPlacementLocked && (
           <div className="mb-6 p-4 rounded-2xl bg-success/10 border border-success/30 flex items-center gap-4 animate-slide-up">
             <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-success" />
@@ -247,7 +249,7 @@ const CompanyDetails = () => {
                 <CardTitle className="text-xl font-heading">Job Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-justify">
                   {company.description}
                 </p>
               </CardContent>

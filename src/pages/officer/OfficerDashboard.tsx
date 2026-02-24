@@ -8,8 +8,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import StatsCard from '@/components/cards/StatsCard';
-import { Building2, Users, UserCheck, UserX, Plus, ArrowRight, Clock, Loader2 } from 'lucide-react';
+import { Building2, Users, Plus, ArrowRight, Clock, Loader2 } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -60,7 +59,8 @@ const OfficerDashboard = () => {
 
     const groupedBySection = students.reduce<Record<string, { section: string; placed: number; unplaced: number; pending: number }>>(
       (acc, student) => {
-        const section = (student.section || 'Unassigned').trim() || 'Unassigned';
+        const section = (student.section || '').trim();
+        if (!section) return acc;
 
         if (!acc[section]) {
           acc[section] = { section, placed: 0, unplaced: 0, pending: 0 };
@@ -139,13 +139,18 @@ const OfficerDashboard = () => {
       return acc;
     }, {});
 
-    return Object.entries(roleMap)
+    const sorted = Object.entries(roleMap)
       .map(([role, studentIds]) => ({
         role,
         value: studentIds.size,
       }))
       .filter((item) => item.value > 0)
       .sort((a, b) => b.value - a.value);
+
+    if (sorted.length <= 6) return sorted;
+    const top5 = sorted.slice(0, 5);
+    const othersValue = sorted.slice(5).reduce((sum, item) => sum + item.value, 0);
+    return [...top5, { role: 'Others', value: othersValue }];
   }, [applications, companies]);
   const genderWisePlaced = useMemo(() => {
     const groupedByGender = students.reduce<Record<string, number>>((acc, student) => {
@@ -153,9 +158,11 @@ const OfficerDashboard = () => {
         return acc;
       }
 
-      const gender = (student.gender || 'unspecified').trim() || 'unspecified';
-      const normalizedGender = gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
-      acc[normalizedGender] = (acc[normalizedGender] || 0) + 1;
+      const gender = (student.gender || '').trim().toLowerCase();
+      if (gender === 'male' || gender === 'female') {
+        const normalizedGender = gender.charAt(0).toUpperCase() + gender.slice(1);
+        acc[normalizedGender] = (acc[normalizedGender] || 0) + 1;
+      }
       return acc;
     }, {});
 
@@ -172,13 +179,6 @@ const OfficerDashboard = () => {
             Welcome, {user?.name}! 
           </h1>
           <p className="text-muted-foreground">Manage campus placements and monitor student progress</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatsCard title="Total Students" value={statsLoading ? '-' : stats?.totalStudents || 0} icon={Users} />
-          <StatsCard title="Placed Students" value={statsLoading ? '-' : stats?.placedStudents || 0} icon={UserCheck} variant="success" />
-          <StatsCard title="Pending Applications" value={statsLoading ? '-' : pendingApplications} icon={UserX} variant="warning" />
-          <StatsCard title="Active Companies" value={companies?.length || 0} icon={Building2} variant="primary" />
         </div>
 
         <div className="grid lg:grid-cols-1 gap-8">
@@ -291,24 +291,23 @@ const OfficerDashboard = () => {
 
               <Card className="rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-lg">Role-wise Placed Analytics</CardTitle>
+                  <CardTitle className="text-lg">Top Roles - Placed Students</CardTitle>
                   <Badge variant="outline" className="text-xs">{roleWisePlaced.length} Roles</Badge>
                 </CardHeader>
                 <CardContent>
                   {roleWisePlaced.length > 0 ? (
                     <div className="h-72">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={roleWisePlaced}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis
+                        <BarChart data={roleWisePlaced} layout="vertical" margin={{ left: 10, right: 20 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                          <XAxis type="number" allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
+                          <YAxis
+                            type="category"
                             dataKey="role"
+                            width={160}
                             stroke="hsl(var(--muted-foreground))"
-                            interval={0}
-                            angle={-20}
-                            textAnchor="end"
-                            height={70}
+                            tick={{ fontSize: 12 }}
                           />
-                          <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
                           <Tooltip
                             contentStyle={{
                               backgroundColor: 'hsl(var(--card))',
@@ -316,8 +315,7 @@ const OfficerDashboard = () => {
                               borderRadius: '8px',
                             }}
                           />
-                          <Legend />
-                          <Bar dataKey="value" name="Placed Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="value" name="Placed Students" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} barSize={18} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -332,16 +330,25 @@ const OfficerDashboard = () => {
               <Card className="rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Gender-wise Placed Analytics</CardTitle>
-                  <Badge variant="outline" className="text-xs">{genderWisePlaced.length} Groups</Badge>
                 </CardHeader>
                 <CardContent>
                   {genderWisePlaced.length > 0 ? (
                     <div className="h-72">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={genderWisePlaced}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis dataKey="gender" stroke="hsl(var(--muted-foreground))" />
-                          <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
+                        <PieChart>
+                          <Pie
+                            data={genderWisePlaced}
+                            dataKey="value"
+                            nameKey="gender"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={95}
+                            paddingAngle={4}
+                          >
+                            <Cell fill="hsl(340 75% 55%)" />
+                            <Cell fill="hsl(210 80% 55%)" />
+                          </Pie>
                           <Tooltip
                             contentStyle={{
                               backgroundColor: 'hsl(var(--card))',
@@ -350,8 +357,7 @@ const OfficerDashboard = () => {
                             }}
                           />
                           <Legend />
-                          <Bar dataKey="value" name="Placed Students" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
+                        </PieChart>
                       </ResponsiveContainer>
                     </div>
                   ) : (

@@ -156,15 +156,6 @@ const ManageCompanies = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={handleBootstrap}
-              disabled={bootstrapCompanies.isPending}
-            >
-              {bootstrapCompanies.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-              Sync Default Companies
-            </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="hero" className="gap-2" onClick={() => handleOpenDialog()}>

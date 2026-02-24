@@ -58,7 +58,16 @@ router.post('/', protect, authorize('student'), async (req, res) => {
   try {
     // Check if student is already placed
     const student = await User.findById(req.user._id);
-    if (student.isPlaced) {
+    const hasApprovedApplication = await Application.exists({
+      studentId: req.user._id,
+      status: 'approved',
+    });
+
+    if (student.isPlaced || hasApprovedApplication) {
+      if (!student.isPlaced) {
+        await User.findByIdAndUpdate(req.user._id, { isPlaced: true });
+      }
+
       return res.status(400).json({ 
         success: false, 
         message: 'You are already placed and cannot apply to other companies' 
@@ -118,18 +127,16 @@ router.put('/:id', protect, async (req, res) => {
     .populate('studentId', 'name email registerNumber department')
     .populate('companyId', 'name package location deadline');
 
-    // If status changed to approved, mark student as placed and reject all other applications
+    // If status changed to approved, mark student as placed and remove all other applications
     if (req.body.status === 'approved' && application.status !== 'approved') {
       await User.findByIdAndUpdate(application.studentId, { isPlaced: true });
       
-      // Automatically reject all other pending/under_review applications for this student
-      await Application.updateMany(
+      // Keep only the approved application for this student
+      await Application.deleteMany(
         { 
           studentId: application.studentId, 
-          _id: { $ne: req.params.id },
-          status: { $in: ['pending', 'under_review'] }
-        },
-        { status: 'rejected' }
+          _id: { $ne: req.params.id }
+        }
       );
     }
 

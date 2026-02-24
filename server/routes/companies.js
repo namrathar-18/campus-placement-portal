@@ -55,6 +55,8 @@ router.post('/', protect, authorize('placement_officer', 'admin'), async (req, r
 // @access  Private/Placement Officer
 router.post('/bootstrap-defaults', protect, authorize('placement_officer', 'admin'), async (req, res) => {
   try {
+    const defaultCompanyNames = defaultCompanies.map((company) => company.name);
+
     const upsertOperations = defaultCompanies.map((company) => ({
       updateOne: {
         filter: { name: company.name },
@@ -69,6 +71,8 @@ router.post('/bootstrap-defaults', protect, authorize('placement_officer', 'admi
             deadline: company.deadline,
             role: company.role,
             roles: [company.role],
+            requirements: company.requirements || [],
+            detailsFile: company.detailsFile || '',
             job_type: company.job_type,
             status: company.status,
             openings: company.openings,
@@ -80,15 +84,17 @@ router.post('/bootstrap-defaults', protect, authorize('placement_officer', 'admi
     }));
 
     const result = await Company.bulkWrite(upsertOperations, { ordered: false });
+    const deleteResult = await Company.deleteMany({ name: { $nin: defaultCompanyNames } });
 
     return res.json({
       success: true,
-      message: 'Default companies synced to database successfully.',
+      message: 'Default companies synced to database successfully with exact canonical list.',
       data: {
         total: defaultCompanies.length,
         inserted: result.upsertedCount || 0,
         modified: result.modifiedCount || 0,
         matched: result.matchedCount || 0,
+        removedExtra: deleteResult.deletedCount || 0,
       },
     });
   } catch (error) {

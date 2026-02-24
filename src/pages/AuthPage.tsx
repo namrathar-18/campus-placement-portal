@@ -240,8 +240,16 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/10 px-4">
-      <Card className="w-full max-w-md shadow-2xl border-border/50">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Blurred background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-sm scale-105 brightness-[0.6]"
+        style={{ backgroundImage: `url('https://bangalorestudy.com/static/media/Central.85c63a34.jpg')` }}
+      />
+      {/* Overlay for additional dimming */}
+      <div className="absolute inset-0 bg-black/30" />
+      {/* Card content */}
+      <Card className="w-full max-w-md shadow-2xl border-border/50 relative z-10 bg-background/95 backdrop-blur-sm">
         <CardHeader className="text-center pb-6">
           <div className="flex flex-col items-center gap-4 mb-4">
             <img src={christLogo} alt="Christ University" className="h-16 w-auto bg-white rounded-lg p-1" />

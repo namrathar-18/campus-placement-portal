@@ -29,6 +29,8 @@ import { Search, Eye, CheckCircle, XCircle, Mail } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useApplications } from '@/hooks/useApplications';
+import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
 
 interface Student {
   _id: string;
@@ -52,6 +54,7 @@ const ManageStudents = () => {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { data: applications = [] } = useApplications();
 
   const formatStatusLabel = (status: string) => {
     if (!status) return 'Pending';
@@ -76,6 +79,30 @@ const ManageStudents = () => {
     () => Object.keys(groupedStudents).sort((a, b) => a.localeCompare(b)),
     [groupedStudents]
   );
+
+  const approvedCompanyByStudent = useMemo(() => {
+    return applications.reduce<Map<string, string>>((acc, application) => {
+      if (application.status !== 'approved') return acc;
+      const studentId = application.studentId?._id;
+      if (!studentId || acc.has(studentId)) return acc;
+      acc.set(studentId, application.companyId?.name || 'Approved Company');
+      return acc;
+    }, new Map<string, string>());
+  }, [applications]);
+
+  const placedOrApprovedStudents = useMemo(() => {
+    return students
+      .filter((student) => student.isPlaced || approvedCompanyByStudent.has(student._id))
+      .map((student) => ({
+        name: student.name,
+        registerNumber: student.registerNumber,
+        department: student.department,
+        section: student.section,
+        gpa: student.gpa,
+        isPlaced: student.isPlaced,
+        approvedCompany: approvedCompanyByStudent.get(student._id),
+      }));
+  }, [students, approvedCompanyByStudent]);
 
   useEffect(() => {
     fetchStudents();
@@ -160,6 +187,23 @@ const ManageStudents = () => {
     }
   };
 
+  const downloadPlacedApprovedPdf = () => {
+    if (placedOrApprovedStudents.length === 0) {
+      toast({
+        title: 'No data available',
+        description: 'No placed or approved students found to export.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    exportPlacedApprovedStudentsPdf(placedOrApprovedStudents, 'representative-placed-approved-students');
+    toast({
+      title: 'PDF exported',
+      description: `Downloaded ${placedOrApprovedStudents.length} students in PDF format.`,
+    });
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -212,6 +256,9 @@ const ManageStudents = () => {
                 <SelectItem value="unplaced">Unplaced</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={downloadPlacedApprovedPdf}>
+              Download Placed/Approved PDF
+            </Button>
           </div>
         </CardHeader>
         <CardContent>

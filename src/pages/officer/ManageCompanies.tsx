@@ -6,13 +6,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Building2, Search, Loader2, Database } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Search, Loader2, Database, FileDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany, useBootstrapCompanies, type Company, type CompanyInsert } from '@/hooks/useCompanies';
+import { useApplications } from '@/hooks/useApplications';
+import { exportCompanyStudentsPdf } from '@/lib/exportCompanyStudentsPdf';
 
 const ManageCompanies = () => {
   const { toast } = useToast();
   const { data: companies = [], isLoading } = useCompanies();
+  const { data: applications = [] } = useApplications();
   const createCompany = useCreateCompany();
   const updateCompany = useUpdateCompany();
   const deleteCompany = useDeleteCompany();
@@ -132,6 +135,59 @@ const ManageCompanies = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const downloadCompanyStudentsPdf = (company: Company, reportType: 'applied' | 'approved') => {
+    const companyApplications = applications.filter((application) => application.companyId?._id === company._id);
+    const filteredApplications = reportType === 'approved'
+      ? companyApplications.filter((application) => application.status === 'approved')
+      : companyApplications;
+
+    if (filteredApplications.length === 0) {
+      toast({
+        title: 'No data available',
+        description: `No ${reportType} students found for ${company.name}.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const uniqueStudentsMap = filteredApplications.reduce<Map<string, {
+      name: string;
+      registerNumber?: string;
+      department?: string;
+      email?: string;
+      status: string;
+      appliedDate?: string;
+    }>>((acc, application) => {
+      const studentId = application.studentId?._id;
+      if (!studentId || acc.has(studentId)) return acc;
+
+      const normalizedStatus = application.status
+        ? application.status.replace('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+        : 'N/A';
+
+      acc.set(studentId, {
+        name: application.studentId?.name || 'N/A',
+        registerNumber: application.studentId?.registerNumber,
+        department: application.studentId?.department,
+        email: application.studentId?.email,
+        status: normalizedStatus,
+        appliedDate: application.appliedDate ? new Date(application.appliedDate).toLocaleDateString() : undefined,
+      });
+      return acc;
+    }, new Map());
+
+    exportCompanyStudentsPdf({
+      companyName: company.name,
+      reportType,
+      students: Array.from(uniqueStudentsMap.values()),
+    });
+
+    toast({
+      title: 'PDF exported',
+      description: `${reportType === 'applied' ? 'Applied' : 'Approved'} students PDF downloaded for ${company.name}.`,
+    });
   };
 
   if (isLoading) {
@@ -350,6 +406,22 @@ const ManageCompanies = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadCompanyStudentsPdf(company, 'applied')}
+                    >
+                      <FileDown className="w-4 h-4 mr-1" />
+                      Applied PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadCompanyStudentsPdf(company, 'approved')}
+                    >
+                      <FileDown className="w-4 h-4 mr-1" />
+                      Approved PDF
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"

@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Building2, Users, Plus, ArrowRight, Clock, Loader2 } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
+import { useToast } from '@/hooks/use-toast';
 
 const PIE_COLORS = [
   'hsl(var(--primary))',
@@ -28,6 +30,7 @@ const OfficerDashboard = () => {
   const { data: stats, isLoading: statsLoading } = usePlacementStats();
   const { data: notifications } = useNotifications();
   const { data: users, isLoading: usersLoading } = useUsers();
+  const { toast } = useToast();
 
   if (authLoading) {
     return (
@@ -152,6 +155,46 @@ const OfficerDashboard = () => {
     const othersValue = sorted.slice(5).reduce((sum, item) => sum + item.value, 0);
     return [...top5, { role: 'Others', value: othersValue }];
   }, [applications, companies]);
+  const approvedCompanyByStudent = useMemo(() => {
+    return (applications || []).reduce<Map<string, string>>((acc, application) => {
+      if (application.status !== 'approved') return acc;
+      const studentId = application.studentId?._id;
+      if (!studentId || acc.has(studentId)) return acc;
+      acc.set(studentId, application.companyId?.name || 'Approved Company');
+      return acc;
+    }, new Map<string, string>());
+  }, [applications]);
+
+  const placedOrApprovedStudents = useMemo(() => {
+    return students
+      .filter((student) => student.isPlaced || approvedCompanyByStudent.has(student._id))
+      .map((student) => ({
+        name: student.name,
+        registerNumber: student.registerNumber,
+        department: student.department,
+        section: student.section,
+        gpa: student.gpa,
+        isPlaced: student.isPlaced,
+        approvedCompany: approvedCompanyByStudent.get(student._id),
+      }));
+  }, [students, approvedCompanyByStudent]);
+
+  const downloadPlacedApprovedPdf = () => {
+    if (placedOrApprovedStudents.length === 0) {
+      toast({
+        title: 'No data available',
+        description: 'No placed or approved students found to export.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    exportPlacedApprovedStudentsPdf(placedOrApprovedStudents, 'officer-placed-approved-students');
+    toast({
+      title: 'PDF exported',
+      description: `Downloaded ${placedOrApprovedStudents.length} students in PDF format.`,
+    });
+  };
   const genderWisePlaced = useMemo(() => {
     const groupedByGender = students.reduce<Record<string, number>>((acc, student) => {
       if (!student.isPlaced) {
@@ -186,7 +229,12 @@ const OfficerDashboard = () => {
             <Card className="rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">Student Statistics</CardTitle>
-                <Badge variant="outline" className="text-xs">Live</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">Live</Badge>
+                  <Button variant="outline" size="sm" onClick={downloadPlacedApprovedPdf}>
+                    Download Placed/Approved PDF
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

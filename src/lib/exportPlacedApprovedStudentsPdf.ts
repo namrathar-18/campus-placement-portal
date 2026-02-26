@@ -25,7 +25,7 @@ export const exportPlacedApprovedStudentsPdf = (
 
   autoTable(doc, {
     startY: 26,
-    head: [['#', 'Name', 'Register No', 'Department', 'Section', 'GPA', 'Status', 'Approved Company']],
+    head: [['#', 'Name', 'Register No', 'Department', 'Section', 'GPA', 'Status']],
     body: students.map((student, index) => [
       index + 1,
       student.name || 'N/A',
@@ -33,8 +33,7 @@ export const exportPlacedApprovedStudentsPdf = (
       student.department || 'N/A',
       student.section || 'N/A',
       typeof student.gpa === 'number' ? student.gpa.toFixed(2) : 'N/A',
-      student.isPlaced ? 'Placed' : 'Approved',
-      student.approvedCompany || 'N/A',
+      'Placed',
     ]),
     styles: {
       fontSize: 9,

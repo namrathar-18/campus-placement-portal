@@ -170,44 +170,34 @@ const OfficerDashboard = () => {
     const othersValue = sorted.slice(5).reduce((sum, item) => sum + item.value, 0);
     return [...top5, { role: 'Others', value: othersValue }];
   }, [applications, companies]);
-  const approvedCompanyByStudent = useMemo(() => {
-    return (applications || []).reduce<Map<string, string>>((acc, application) => {
-      if (application.status !== 'approved') return acc;
-      const studentId = application.studentId?._id;
-      if (!studentId || acc.has(studentId)) return acc;
-      acc.set(studentId, application.companyId?.name || 'Approved Company');
-      return acc;
-    }, new Map<string, string>());
-  }, [applications]);
-
-  const placedOrApprovedStudents = useMemo(() => {
+  // Only export students with status 'placed'
+  const placedStudentsList = useMemo(() => {
     return students
-      .filter((student) => student.isPlaced || approvedCompanyByStudent.has(student._id))
+      .filter((student) => student.isPlaced)
       .map((student) => ({
         name: student.name,
         registerNumber: student.registerNumber,
         department: student.department,
         section: student.section,
         gpa: student.gpa,
-        isPlaced: student.isPlaced,
-        approvedCompany: approvedCompanyByStudent.get(student._id),
+        isPlaced: true,
       }));
-  }, [students, approvedCompanyByStudent]);
+  }, [students]);
 
-  const downloadPlacedApprovedPdf = () => {
-    if (placedOrApprovedStudents.length === 0) {
+  const downloadPlacedPdf = () => {
+    if (placedStudentsList.length === 0) {
       toast({
         title: 'No data available',
-        description: 'No placed or approved students found to export.',
+        description: 'No placed students found to export.',
         variant: 'destructive',
       });
       return;
     }
 
-    exportPlacedApprovedStudentsPdf(placedOrApprovedStudents, 'officer-placed-approved-students');
+    exportPlacedApprovedStudentsPdf(placedStudentsList, 'officer-placed-students');
     toast({
       title: 'PDF exported',
-      description: `Downloaded ${placedOrApprovedStudents.length} students in PDF format.`,
+      description: `Downloaded ${placedStudentsList.length} students in PDF format.`,
     });
   };
   const genderWisePlaced = useMemo(() => {
@@ -246,8 +236,8 @@ const OfficerDashboard = () => {
                 <CardTitle className="text-lg">Student Statistics</CardTitle>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">Live</Badge>
-                  <Button variant="outline" size="sm" onClick={downloadPlacedApprovedPdf}>
-                    Download Placed/Approved PDF
+                  <Button variant="outline" size="sm" onClick={downloadPlacedPdf}>
+                    Download Placed Students PDF
                   </Button>
                 </div>
               </CardHeader>

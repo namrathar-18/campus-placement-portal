@@ -140,7 +140,7 @@ const ManageCompanies = () => {
   const downloadCompanyStudentsPdf = (company: Company, reportType: 'applied' | 'approved') => {
     const companyApplications = applications.filter((application) => application.companyId?._id === company._id);
     const filteredApplications = reportType === 'approved'
-      ? companyApplications.filter((application) => application.status === 'approved')
+      ? companyApplications.filter((application) => application.status === 'placed')
       : companyApplications;
 
     if (filteredApplications.length === 0) {

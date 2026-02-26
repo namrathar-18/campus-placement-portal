@@ -139,8 +139,16 @@ const ManageCompanies = () => {
 
   const downloadCompanyStudentsPdf = (company: Company, reportType: 'applied' | 'approved') => {
     const companyApplications = applications.filter((application) => application.companyId?._id === company._id);
+    const approvedLikeStatuses = new Set(['approved', 'selected', 'placed']);
     const filteredApplications = reportType === 'approved'
+<<<<<<< Updated upstream
       ? companyApplications.filter((application) => application.status === 'placed')
+=======
+      ? companyApplications.filter((application) => {
+          const normalizedStatus = String(application.status || '').trim().toLowerCase();
+          return approvedLikeStatuses.has(normalizedStatus);
+        })
+>>>>>>> Stashed changes
       : companyApplications;
 
     if (filteredApplications.length === 0) {

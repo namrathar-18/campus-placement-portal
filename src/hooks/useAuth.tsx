@@ -69,6 +69,11 @@ const bootstrapDefaultCompaniesIfNeeded = async (user: { id: string; role: UserR
   }
 };
 
+const clearPlacementCelebrationFlag = (userId?: string) => {
+  if (!userId || typeof window === 'undefined') return;
+  sessionStorage.removeItem(`placementCelebrated:${userId}`);
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,6 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { token, ...userData } = data || {};
       
       localStorage.setItem('token', token);
+      clearPlacementCelebrationFlag(userData?.id);
       setUser(userData);
       await bootstrapDefaultCompaniesIfNeeded(userData);
       
@@ -163,6 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { token, ...userData } = data || {};
       
       localStorage.setItem('token', token);
+      clearPlacementCelebrationFlag(userData?.id);
       setUser(userData);
       
       return { error: null };
@@ -173,6 +180,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    const currentUserId = user?.id;
+    clearPlacementCelebrationFlag(currentUserId);
     setUser(null);
     setIsLoading(false);
     localStorage.removeItem('token');

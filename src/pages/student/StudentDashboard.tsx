@@ -68,8 +68,26 @@ const StudentDashboard = () => {
 
   // Get the company name where student is placed
   const getPlacedCompany = () => {
+<<<<<<< Updated upstream
     const placedApp = applications?.find(app => app.status === 'placed');
     return placedApp?.companyId?.name || 'a company';
+=======
+    const placedStatuses = new Set(['approved', 'selected', 'placed']);
+    const placedApp = applications?.find((app: any) =>
+      placedStatuses.has(String(app?.status || '').trim().toLowerCase())
+    ) as any;
+
+    const directName = placedApp?.companyId?.name || placedApp?.companyName;
+    if (directName) return directName;
+
+    const companyId = typeof placedApp?.companyId === 'string' ? placedApp.companyId : placedApp?.companyId?._id;
+    if (companyId) {
+      const matchedCompany = companies?.find((company: any) => company?._id === companyId);
+      if (matchedCompany?.name) return matchedCompany.name;
+    }
+
+    return 'a company';
+>>>>>>> Stashed changes
   };
 
   // Scroll to notifications section if hash is present

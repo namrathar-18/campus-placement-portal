@@ -11,7 +11,7 @@ interface DashboardStats {
   unplacedStudents: number;
   totalApplications: number;
   pendingApplications: number;
-  approvedApplications: number;
+  placedApplications: number;
   activeCompanies: number;
   recentNotifications: any[];
 }
@@ -146,9 +146,9 @@ const RepresentativeDashboard = () => {
                 <span className="font-semibold">{stats?.totalApplications || 0}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Approved</span>
+                <span className="text-sm text-muted-foreground">Placed</span>
                 <span className="font-semibold text-green-600">
-                  {stats?.approvedApplications || 0}
+                  {stats?.placedApplications || 0}
                 </span>
               </div>
               <div className="flex justify-between items-center">

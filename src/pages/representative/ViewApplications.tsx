@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, FileText } from 'lucide-react';
+import { Search, FileText, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,7 +35,7 @@ interface Application {
     location: string;
     package: number;
   };
-  status: 'pending' | 'approved' | 'rejected' | 'under_review';
+  status: 'pending' | 'placed' | 'rejected' | 'ongoing';
   appliedDate: string;
 }
 
@@ -45,6 +45,7 @@ const ViewApplications = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -92,12 +93,37 @@ const ViewApplications = () => {
     setFilteredApplications(filtered);
   };
 
+  const handleStatusChange = async (applicationId: string, newStatus: string) => {
+    setUpdatingId(applicationId);
+    try {
+      await api.put(`/applications/${applicationId}`, { status: newStatus });
+      // Update local state
+      setApplications((prev) =>
+        prev.map((app) =>
+          app._id === applicationId ? { ...app, status: newStatus as Application['status'] } : app
+        )
+      );
+      toast({
+        title: 'Status Updated',
+        description: `Application status changed to ${newStatus.replace('_', ' ')}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error?.response?.data?.message || 'Failed to update status',
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
       pending: { variant: 'secondary', className: 'bg-yellow-600' },
-      approved: { variant: 'default', className: 'bg-green-600' },
+      placed: { variant: 'default', className: 'bg-green-600' },
       rejected: { variant: 'destructive', className: '' },
-      under_review: { variant: 'secondary', className: 'bg-blue-600' },
+      ongoing: { variant: 'secondary', className: 'bg-blue-600' },
     };
 
     const config = variants[status] || variants.pending;
@@ -165,12 +191,12 @@ const ViewApplications = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Approved
+              Placed
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {applications.filter((a) => a.status === 'approved').length}
+              {applications.filter((a) => a.status === 'placed').length}
             </div>
           </CardContent>
         </Card>
@@ -211,9 +237,9 @@ const ViewApplications = () => {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="placed">Placed</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="under_review">Under Review</SelectItem>
+                <SelectItem value="ongoing">Ongoing</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -230,12 +256,13 @@ const ViewApplications = () => {
                   <TableHead>Package</TableHead>
                   <TableHead>Applied Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Change Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredApplications.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       No applications found
                     </TableCell>
                   </TableRow>
@@ -253,6 +280,28 @@ const ViewApplications = () => {
                         {new Date(app.appliedDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell>{getStatusBadge(app.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {updatingId === app._id && (
+                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                          )}
+                          <Select
+                            value={app.status}
+                            onValueChange={(value) => handleStatusChange(app._id, value)}
+                            disabled={updatingId === app._id}
+                          >
+                            <SelectTrigger className="w-[150px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="ongoing">Ongoing</SelectItem>
+                              <SelectItem value="placed">Placed</SelectItem>
+                              <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

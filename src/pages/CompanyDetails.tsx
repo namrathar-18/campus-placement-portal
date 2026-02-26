@@ -44,8 +44,8 @@ const CompanyDetails = () => {
   const isPlaced = user?.isPlaced ?? false;
   const isExpired = new Date(company.deadline) < new Date();
   const studentApplications = applications.filter(app => app.studentId?._id === studentId);
-  const hasApprovedApplication = studentApplications.some(app => app.status === 'approved');
-  const isPlacementLocked = isPlaced || hasApprovedApplication;
+  const hasPlacedApplication = studentApplications.some(app => app.status === 'placed');
+  const isPlacementLocked = isPlaced || hasPlacedApplication;
   const hasApplied = studentApplications.some(app => app.companyId?._id === id);
 
   const handleDownloadDetails = () => {

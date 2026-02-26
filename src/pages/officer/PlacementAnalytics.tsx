@@ -8,16 +8,31 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
 
 const PIE_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--success))',
-  'hsl(var(--warning))',
-  'hsl(var(--accent))',
-  'hsl(var(--info))',
-  'hsl(190 90% 40%)',
+  '#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed',
+  '#0891b2', '#be185d', '#4f46e5', '#15803d', '#ea580c',
+  '#6d28d9', '#0284c7', '#b91c1c', '#0d9488', '#c026d3',
+  '#ca8a04',
 ];
+
+const TreemapContent = (props: any) => {
+  const { x, y, width, height, name, value, index } = props;
+  const color = PIE_COLORS[(index ?? 0) % PIE_COLORS.length];
+  const showLabel = width > 45 && height > 30;
+  return (
+    <g>
+      <rect x={x} y={y} width={width} height={height} fill={color} rx={6} ry={6} stroke="hsl(var(--card))" strokeWidth={3} />
+      {showLabel && (
+        <>
+          <text x={x + width / 2} y={y + height / 2 - 7} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={600}>{name}</text>
+          <text x={x + width / 2} y={y + height / 2 + 10} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize={11}>{value}</text>
+        </>
+      )}
+    </g>
+  );
+};
 
 const PlacementAnalytics = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -42,7 +57,7 @@ const PlacementAnalytics = () => {
   const sectionWiseAnalytics = useMemo(() => {
     const pendingStudentIds = new Set(
       (applications || [])
-        .filter((application) => application.status === 'pending' || application.status === 'under_review')
+        .filter((application) => application.status === 'pending' || application.status === 'ongoing')
         .map((application) => application.studentId?._id)
         .filter(Boolean)
     );
@@ -70,11 +85,11 @@ const PlacementAnalytics = () => {
   }, [applications, students]);
 
   const companyWisePlaced = useMemo(() => {
-    const approvedApplications = (applications || []).filter(
-      (application) => application.status === 'approved' && application.companyId?._id
+    const placedApplications = (applications || []).filter(
+      (application) => application.status === 'placed' && application.companyId?._id
     );
 
-    const companyMap = approvedApplications.reduce<Record<string, { name: string; studentIds: Set<string> }>>(
+    const companyMap = placedApplications.reduce<Record<string, { name: string; studentIds: Set<string> }>>(
       (acc, application) => {
         const companyId = application.companyId._id;
         const companyName = application.companyId.name || 'Unknown Company';
@@ -98,11 +113,11 @@ const PlacementAnalytics = () => {
 
   const roleWisePlaced = useMemo(() => {
     const companyById = new Map((companies || []).map((company) => [company._id, company]));
-    const approvedApplications = (applications || []).filter(
-      (application) => application.status === 'approved' && application.companyId?._id
+    const placedApplications = (applications || []).filter(
+      (application) => application.status === 'placed' && application.companyId?._id
     );
 
-    const roleMap = approvedApplications.reduce<Record<string, Set<string>>>((acc, application) => {
+    const roleMap = placedApplications.reduce<Record<string, Set<string>>>((acc, application) => {
       const company = companyById.get(application.companyId._id);
       const companyRoles = company?.roles?.length ? company.roles : ['Other'];
       const studentKey = application.studentId?._id || application._id;
@@ -204,24 +219,18 @@ const PlacementAnalytics = () => {
               {companyWisePlaced.length > 0 ? (
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={companyWisePlaced}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={55}
-                        outerRadius={95}
-                        paddingAngle={3}
-                      >
-                        {companyWisePlaced.map((entry, index) => (
-                          <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Legend />
-                    </PieChart>
+                    <Treemap
+                      data={companyWisePlaced}
+                      dataKey="value"
+                      nameKey="name"
+                      stroke="hsl(var(--card))"
+                      content={<TreemapContent />}
+                    >
+                      <Tooltip
+                        contentStyle={tooltipStyle}
+                        formatter={(value: number) => [`${value} students`, 'Placed']}
+                      />
+                    </Treemap>
                   </ResponsiveContainer>
                 </div>
               ) : (
@@ -281,8 +290,12 @@ const PlacementAnalytics = () => {
                         outerRadius={95}
                         paddingAngle={4}
                       >
-                        <Cell fill="hsl(340 75% 55%)" />
-                        <Cell fill="hsl(210 80% 55%)" />
+                        {genderWisePlaced.map((entry) => (
+                          <Cell
+                            key={entry.gender}
+                            fill={entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)'}
+                          />
+                        ))}
                       </Pie>
                       <Tooltip contentStyle={tooltipStyle} />
                       <Legend />

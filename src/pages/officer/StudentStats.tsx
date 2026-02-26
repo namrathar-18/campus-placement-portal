@@ -35,8 +35,8 @@ const StudentStats = () => {
     ? (students.reduce((sum, s) => sum + (s.gpa || 0), 0) / students.length).toFixed(2)
     : '0.00';
 
-  const pendingApplications = applications?.filter(a => a.status === 'pending' || a.status === 'under_review').length || 0;
-  const approvedApplications = applications?.filter(a => a.status === 'approved').length || 0;
+  const pendingApplications = applications?.filter(a => a.status === 'pending' || a.status === 'ongoing').length || 0;
+  const placedApplications = applications?.filter(a => a.status === 'placed').length || 0;
   const rejectedApplications = applications?.filter(a => a.status === 'rejected').length || 0;
 
   const placementRate = students.length
@@ -159,8 +159,8 @@ const StudentStats = () => {
                   <CheckCircle2 className="w-4 h-4 text-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-success">{approvedApplications}</p>
-                  <p className="text-xs text-muted-foreground">Approved</p>
+                  <p className="text-2xl font-bold text-success">{placedApplications}</p>
+                  <p className="text-xs text-muted-foreground">Placed</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/15">

@@ -17,7 +17,7 @@ export interface Application {
     location: string;
     deadline: string;
   };
-  status: 'pending' | 'approved' | 'rejected' | 'under_review';
+  status: 'pending' | 'placed' | 'rejected' | 'ongoing';
   appliedDate: string;
   resumeUrl?: string;
   coverLetter?: string;
@@ -33,7 +33,7 @@ export type ApplicationInsert = {
 };
 
 export type ApplicationUpdate = {
-  status?: 'pending' | 'approved' | 'rejected' | 'under_review';
+  status?: 'pending' | 'placed' | 'rejected' | 'ongoing';
   remarks?: string;
   resumeUrl?: string;
   coverLetter?: string;

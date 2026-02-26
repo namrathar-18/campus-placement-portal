@@ -8,8 +8,8 @@ import { FileText, Loader2, Building2, Clock, CheckCircle, XCircle, Users, Award
 
 const statusConfig = {
   pending: { label: 'Pending', color: 'bg-muted text-muted-foreground', icon: Clock },
-  under_review: { label: 'Under Review', color: 'bg-accent/10 text-accent', icon: Users },
-  approved: { label: 'Approved', color: 'bg-success/10 text-success', icon: CheckCircle },
+  ongoing: { label: 'Ongoing', color: 'bg-accent/10 text-accent', icon: Users },
+  placed: { label: 'Placed', color: 'bg-success/10 text-success', icon: CheckCircle },
   rejected: { label: 'Rejected', color: 'bg-destructive/10 text-destructive', icon: XCircle },
   already_placed: { label: 'Already Placed', color: 'bg-primary/10 text-primary', icon: Award },
 };
@@ -21,7 +21,7 @@ const Applications = () => {
 
   // Helper to determine if application should show 'Already Placed'
   const getDisplayStatus = (app: Application) => {
-    if (user?.isPlaced && app.status !== 'approved') {
+    if (user?.isPlaced && app.status !== 'placed') {
       return 'already_placed';
     }
     return app.status;
@@ -32,8 +32,8 @@ const Applications = () => {
     // Filter out applications with null/missing companyId and those that should show 'already_placed'
     const validApplications = applications.filter(app => {
       if (!app.companyId || !app.companyId.name) return false;
-      // Don't show non-approved applications if user is already placed
-      if (user?.isPlaced && app.status !== 'approved') return false;
+      // Don't show non-placed applications if user is already placed
+      if (user?.isPlaced && app.status !== 'placed') return false;
       return true;
     });
     if (status === 'all') return validApplications;
@@ -43,12 +43,12 @@ const Applications = () => {
   const statusCounts = {
     all: applications?.filter(app => {
       if (!app.companyId || !app.companyId.name) return false;
-      if (user?.isPlaced && app.status !== 'approved') return false;
+      if (user?.isPlaced && app.status !== 'placed') return false;
       return true;
     }).length || 0,
     pending: applications?.filter((a) => a.status === 'pending' && !user?.isPlaced && a.companyId && a.companyId.name).length || 0,
-    under_review: applications?.filter((a) => a.status === 'under_review' && !user?.isPlaced && a.companyId && a.companyId.name).length || 0,
-    approved: applications?.filter((a) => a.status === 'approved' && a.companyId && a.companyId.name).length || 0,
+    ongoing: applications?.filter((a) => a.status === 'ongoing' && !user?.isPlaced && a.companyId && a.companyId.name).length || 0,
+    placed: applications?.filter((a) => a.status === 'placed' && a.companyId && a.companyId.name).length || 0,
     rejected: applications?.filter((a) => a.status === 'rejected' && !user?.isPlaced && a.companyId && a.companyId.name).length || 0,
   };
 
@@ -82,11 +82,11 @@ const Applications = () => {
             <TabsTrigger value="pending" className="gap-2">
               Pending <span className="text-xs bg-muted px-1.5 rounded">{statusCounts.pending}</span>
             </TabsTrigger>
-            <TabsTrigger value="under_review" className="gap-2">
-              Under Review <span className="text-xs bg-accent/20 px-1.5 rounded">{statusCounts.under_review}</span>
+            <TabsTrigger value="ongoing" className="gap-2">
+              Ongoing <span className="text-xs bg-accent/20 px-1.5 rounded">{statusCounts.ongoing}</span>
             </TabsTrigger>
-            <TabsTrigger value="approved" className="gap-2">
-              Approved <span className="text-xs bg-success/20 px-1.5 rounded">{statusCounts.approved}</span>
+            <TabsTrigger value="placed" className="gap-2">
+              Placed <span className="text-xs bg-success/20 px-1.5 rounded">{statusCounts.placed}</span>
             </TabsTrigger>
             <TabsTrigger value="rejected" className="gap-2">
               Rejected <span className="text-xs bg-destructive/20 px-1.5 rounded">{statusCounts.rejected}</span>

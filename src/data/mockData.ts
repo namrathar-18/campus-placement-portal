@@ -94,7 +94,7 @@ export const mockApplications: Application[] = [
     studentName: 'John Doe',
     companyId: '1',
     companyName: 'Google',
-    status: 'approved',
+    status: 'placed',
     appliedAt: '2026-01-10',
   },
   {

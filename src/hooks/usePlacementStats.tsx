@@ -4,7 +4,7 @@ import api from '@/lib/api';
 export interface PlacementStats {
   totalApplications?: number;
   pendingApplications?: number;
-  approvedApplications?: number;
+  placedApplications?: number;
   rejectedApplications?: number;
   activeCompanies?: number;
   totalCompanies?: number;

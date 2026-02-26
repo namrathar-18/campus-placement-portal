@@ -46,7 +46,7 @@ export interface Application {
   studentName?: string;
   companyId: any;
   companyName?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'under_review';
+  status: 'pending' | 'placed' | 'rejected' | 'ongoing';
   appliedAt?: string;
   appliedDate?: Date;
 }

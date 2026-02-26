@@ -68,8 +68,8 @@ const StudentDashboard = () => {
 
   // Get the company name where student is placed
   const getPlacedCompany = () => {
-    const approvedApp = applications?.find(app => app.status === 'approved');
-    return approvedApp?.companyId?.name || 'a company';
+    const placedApp = applications?.find(app => app.status === 'placed');
+    return placedApp?.companyId?.name || 'a company';
   };
 
   // Scroll to notifications section if hash is present
@@ -371,7 +371,7 @@ const StudentDashboard = () => {
 
   const statusCounts = {
     total: validApplications.length,
-    shortlisted: validApplications.filter(a => a.status === 'approved').length,
+    shortlisted: validApplications.filter(a => a.status === 'placed').length,
     applied: validApplications.filter(a => a.status === 'pending').length,
   };
 

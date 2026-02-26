@@ -408,10 +408,10 @@ const ManageStudents = () => {
               {/* Pending Companies */}
               <div>
                 <h3 className="font-semibold mb-3">Pending Company List</h3>
-                {selectedStudent.applications?.filter((app: any) => app.status === 'pending' || app.status === 'under_review').length > 0 ? (
+                {selectedStudent.applications?.filter((app: any) => app.status === 'pending' || app.status === 'ongoing').length > 0 ? (
                   <div className="space-y-3">
                     {selectedStudent.applications
-                      .filter((app: any) => app.status === 'pending' || app.status === 'under_review')
+                      .filter((app: any) => app.status === 'pending' || app.status === 'ongoing')
                       .map((app: any) => (
                         <div key={app._id} className="border rounded-lg p-4">
                           <div className="flex justify-between items-start">
@@ -453,7 +453,7 @@ const ManageStudents = () => {
                           </div>
                           <Badge
                             variant={
-                              app.status === 'approved'
+                              app.status === 'placed'
                                 ? 'default'
                                 : app.status === 'rejected'
                                 ? 'destructive'

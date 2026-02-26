@@ -58,12 +58,12 @@ router.post('/', protect, authorize('student'), async (req, res) => {
   try {
     // Check if student is already placed
     const student = await User.findById(req.user._id);
-    const hasApprovedApplication = await Application.exists({
+    const hasPlacedApplication = await Application.exists({
       studentId: req.user._id,
-      status: 'approved',
+      status: 'placed',
     });
 
-    if (student.isPlaced || hasApprovedApplication) {
+    if (student.isPlaced || hasPlacedApplication) {
       if (!student.isPlaced) {
         await User.findByIdAndUpdate(req.user._id, { isPlaced: true });
       }
@@ -127,11 +127,11 @@ router.put('/:id', protect, async (req, res) => {
     .populate('studentId', 'name email registerNumber department')
     .populate('companyId', 'name package location deadline');
 
-    // If status changed to approved, mark student as placed and remove all other applications
-    if (req.body.status === 'approved' && application.status !== 'approved') {
+    // If status changed to placed, mark student as placed and remove all other applications
+    if (req.body.status === 'placed' && application.status !== 'placed') {
       await User.findByIdAndUpdate(application.studentId, { isPlaced: true });
       
-      // Keep only the approved application for this student
+      // Keep only the placed application for this student
       await Application.deleteMany(
         { 
           studentId: application.studentId, 

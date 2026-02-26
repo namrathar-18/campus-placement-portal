@@ -26,8 +26,8 @@ const CompanyListings = () => {
 
   const userGpa = user?.gpa || 0;
   const isPlaced = user?.isPlaced || false;
-  const hasApprovedApplication = (myApplications || []).some((app) => app.status === 'approved');
-  const isPlacementLocked = isPlaced || hasApprovedApplication;
+  const hasPlacedApplication = (myApplications || []).some((app) => app.status === 'placed');
+  const isPlacementLocked = isPlaced || hasPlacedApplication;
 
   const filteredCompanies = companies?.filter((company) => {
     const searchTarget = `${company.name} ${(company.roles || []).join(' ')} ${company.industry || ''}`.toLowerCase();

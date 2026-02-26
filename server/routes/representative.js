@@ -32,9 +32,9 @@ router.get('/dashboard-stats', protect, authorize('student_representative'), asy
       status: 'pending' 
     });
     
-    const approvedApplications = await Application.countDocuments({ 
+    const placedApplications = await Application.countDocuments({ 
       studentId: { $in: studentIds },
-      status: 'approved' 
+      status: 'placed' 
     });
     
     // Get placed students
@@ -59,7 +59,7 @@ router.get('/dashboard-stats', protect, authorize('student_representative'), asy
         unplacedStudents: departmentStudents.length - placedStudents,
         totalApplications,
         pendingApplications,
-        approvedApplications,
+        placedApplications,
         activeCompanies,
         recentNotifications
       }
@@ -258,10 +258,10 @@ router.get('/placement-report', protect, authorize('student_representative'), as
     
     const placedIds = placedStudents.map(s => s._id);
     
-    // Get approved applications for placed students
-    const approvedApplications = await Application.find({
+    // Get placed applications for placed students
+    const placedApplications = await Application.find({
       studentId: { $in: placedIds },
-      status: 'approved'
+      status: 'placed'
     }).populate('companyId', 'name package location');
     
     // Calculate statistics
@@ -273,7 +273,7 @@ router.get('/placement-report', protect, authorize('student_representative'), as
     
     // Get company-wise placements
     const companyWisePlacements = {};
-    approvedApplications.forEach(app => {
+    placedApplications.forEach(app => {
       if (app.companyId) {
         const companyName = app.companyId.name;
         if (!companyWisePlacements[companyName]) {

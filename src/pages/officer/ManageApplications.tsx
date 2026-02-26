@@ -15,10 +15,10 @@ const ManageApplications = () => {
     switch (status) {
       case 'pending':
         return { icon: Send, label: 'Pending', color: 'bg-muted text-muted-foreground' };
-      case 'under_review':
-        return { icon: Clock, label: 'Under Review', color: 'bg-warning/10 text-warning' };
-      case 'approved':
-        return { icon: CheckCircle, label: 'Approved', color: 'bg-success/10 text-success' };
+      case 'ongoing':
+        return { icon: Clock, label: 'Ongoing', color: 'bg-warning/10 text-warning' };
+      case 'placed':
+        return { icon: CheckCircle, label: 'Placed', color: 'bg-success/10 text-success' };
       case 'rejected':
         return { icon: XCircle, label: 'Rejected', color: 'bg-destructive/10 text-destructive' };
     }
@@ -44,8 +44,8 @@ const ManageApplications = () => {
   const statusCounts = {
     all: getUniqueStudentCount(),
     pending: getUniqueStudentCount('pending'),
-    under_review: getUniqueStudentCount('under_review'),
-    approved: getUniqueStudentCount('approved'),
+    ongoing: getUniqueStudentCount('ongoing'),
+    placed: getUniqueStudentCount('placed'),
     rejected: getUniqueStudentCount('rejected'),
   };
 
@@ -89,7 +89,7 @@ const ManageApplications = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          {(['pending', 'under_review', 'approved', 'rejected'] as const).map((status, index) => {
+          {(['pending', 'ongoing', 'placed', 'rejected'] as const).map((status, index) => {
             const config = getStatusConfig(status);
             const Icon = config.icon;
             return (
@@ -131,8 +131,8 @@ const ManageApplications = () => {
                 const companyId = firstApplication.companyId?._id || firstApplication._id;
                 const applicationTotal = companyApplications.length;
                 const pendingTotal = companyApplications.filter((application) => application.status === 'pending').length;
-                const reviewTotal = companyApplications.filter((application) => application.status === 'under_review').length;
-                const approvedTotal = companyApplications.filter((application) => application.status === 'approved').length;
+                const reviewTotal = companyApplications.filter((application) => application.status === 'ongoing').length;
+                const placedTotal = companyApplications.filter((application) => application.status === 'placed').length;
                 const rejectedTotal = companyApplications.filter((application) => application.status === 'rejected').length;
 
                 return (
@@ -159,8 +159,8 @@ const ManageApplications = () => {
 
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Badge variant="outline" className="text-xs">Pending: {pendingTotal}</Badge>
-                      <Badge variant="outline" className="text-xs">Under Review: {reviewTotal}</Badge>
-                      <Badge variant="outline" className="text-xs">Approved: {approvedTotal}</Badge>
+                      <Badge variant="outline" className="text-xs">Ongoing: {reviewTotal}</Badge>
+                      <Badge variant="outline" className="text-xs">Placed: {placedTotal}</Badge>
                       <Badge variant="outline" className="text-xs">Rejected: {rejectedTotal}</Badge>
                     </div>
                   </div>

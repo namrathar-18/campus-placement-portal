@@ -5,6 +5,19 @@ import { protect, authorize } from '../middleware/auth.js';
 const router = express.Router();
 const validSections = new Set(['A', 'B', 'MSc AI/ML']);
 
+const sanitizeText = (value) => {
+  if (typeof value !== 'string') return value;
+  return value.replace(/[<>$]/g, '').trim();
+};
+
+const sanitizeStringArray = (value) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => sanitizeText(item))
+    .filter((item) => typeof item === 'string' && item.length > 0)
+    .slice(0, 50);
+};
+
 // @route   GET /api/users
 // @desc    Get all users (for admin/officers/representatives)
 // @access  Private/Officer/Representative
@@ -31,7 +44,69 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     // Don't allow password updates through this route
-    const { password, ...updateData } = req.body;
+    const { password, ...rawUpdateData } = req.body;
+
+    const updateData = { ...rawUpdateData };
+    const isSelfUpdate = req.user._id.toString() === req.params.id;
+    const isStudentSelfUpdate = isSelfUpdate && req.user.role === 'student';
+
+    if (isStudentSelfUpdate) {
+      const allowedStudentFields = new Set([
+        'phone',
+        'department',
+        'section',
+        'registerNumber',
+        'resumeUrl',
+        'photoUrl',
+        'resumeText',
+        'skills',
+        'certifications',
+        'projects',
+      ]);
+
+      if (!req.user.gpaLocked) {
+        allowedStudentFields.add('gpa');
+      }
+
+      Object.keys(updateData).forEach((key) => {
+        if (!allowedStudentFields.has(key)) {
+          delete updateData[key];
+        }
+      });
+
+      if (typeof updateData.phone === 'string') {
+        updateData.phone = sanitizeText(updateData.phone);
+      }
+      if (typeof updateData.department === 'string') {
+        updateData.department = sanitizeText(updateData.department);
+      }
+      if (typeof updateData.section === 'string') {
+        updateData.section = sanitizeText(updateData.section);
+      }
+      if (typeof updateData.registerNumber === 'string') {
+        updateData.registerNumber = sanitizeText(updateData.registerNumber);
+      }
+      if (typeof updateData.resumeText === 'string') {
+        updateData.resumeText = sanitizeText(updateData.resumeText);
+      }
+      if ('skills' in updateData) {
+        updateData.skills = sanitizeStringArray(updateData.skills);
+      }
+      if ('certifications' in updateData) {
+        updateData.certifications = sanitizeStringArray(updateData.certifications);
+      }
+      if ('projects' in updateData) {
+        updateData.projects = sanitizeStringArray(updateData.projects);
+      }
+
+      if ('gpa' in updateData) {
+        const parsedGpa = Number(updateData.gpa);
+        if (Number.isNaN(parsedGpa) || parsedGpa < 0 || parsedGpa > 10) {
+          return res.status(400).json({ success: false, message: 'Invalid GPA value' });
+        }
+        updateData.gpa = parsedGpa;
+      }
+    }
 
     if (Object.prototype.hasOwnProperty.call(updateData, 'section')) {
       const sectionValue = typeof updateData.section === 'string' ? updateData.section.trim() : '';

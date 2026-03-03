@@ -26,6 +26,7 @@ import ViewApplications from "./pages/representative/ViewApplications";
 import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
 import NotFound from "./pages/NotFound";
+import ZenithChatbot from "@/components/chatbot/zenith/ZenithChatbot";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,9 +40,10 @@ const queryClient = new QueryClient({
 });
 
 const AppContent = () => {
-  const { isLoading } = useAuth();
+  const { isLoading, isAuthenticated, user } = useAuth();
   const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
   const showLoader = hasToken && isLoading;
+  const showZenith = isAuthenticated && user?.role === "student";
 
   return (
     <div style={{ minHeight: '100vh', width: '100%' }}>
@@ -60,6 +62,7 @@ const AppContent = () => {
             {/* Student Routes */}
             <Route path="/student/profile-setup" element={<ProfileSetup />} />
             <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/dashboard" element={<StudentDashboard />} />
             <Route path="/student/companies" element={<CompanyListings />} />
             <Route path="/student/alumni-connect" element={<AlumniConnect />} />
             <Route path="/student/applications" element={<Applications />} />
@@ -87,6 +90,7 @@ const AppContent = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
+        {showZenith && <ZenithChatbot userId={user.id} />}
       </BrowserRouter>
     </div>
   );

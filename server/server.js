@@ -10,6 +10,7 @@ import statsRoutes from './routes/stats.js';
 import userRoutes from './routes/users.js';
 import alumniRoutes from './routes/alumni.js';
 import representativeRoutes from './routes/representative.js';
+import zenithRoutes from './routes/zenith.js';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ const startServer = async () => {
   app.use('/api/users', userRoutes);
   app.use('/api/alumni', alumniRoutes);
   app.use('/api/representative', representativeRoutes);
+  app.use('/api/zenith', zenithRoutes);
 
   // Error handling middleware
   app.use((err, req, res, next) => {

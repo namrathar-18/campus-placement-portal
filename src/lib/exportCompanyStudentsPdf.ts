@@ -16,12 +16,12 @@ export const exportCompanyStudentsPdf = ({
   students,
 }: {
   companyName: string;
-  reportType: 'applied' | 'approved';
+  reportType: 'pending' | 'placed';
   students: CompanyStudentPdfRow[];
 }) => {
   const doc = new jsPDF();
   const generatedDate = new Date().toLocaleString();
-  const reportTitle = reportType === 'applied' ? 'Applied Students' : 'Approved Students';
+  const reportTitle = reportType === 'pending' ? 'Pending Students' : 'Placed Students';
 
   doc.setFontSize(16);
   doc.text(`${companyName} - ${reportTitle}`, 14, 14);

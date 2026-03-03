@@ -6,16 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+<<<<<<< HEAD
 import { Plus, Pencil, Trash2, Building2, Search, Loader2, FileDown } from 'lucide-react';
+=======
+import { Plus, Pencil, Trash2, Building2, Search, Loader2, Database } from 'lucide-react';
+>>>>>>> d0165244d88e1ac853eb9318972b03538774b6c5
 import { useToast } from '@/hooks/use-toast';
 import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany, useBootstrapCompanies, type Company, type CompanyInsert } from '@/hooks/useCompanies';
-import { useApplications } from '@/hooks/useApplications';
-import { exportCompanyStudentsPdf } from '@/lib/exportCompanyStudentsPdf';
 
 const ManageCompanies = () => {
   const { toast } = useToast();
   const { data: companies = [], isLoading } = useCompanies();
-  const { data: applications = [] } = useApplications();
   const createCompany = useCreateCompany();
   const updateCompany = useUpdateCompany();
   const deleteCompany = useDeleteCompany();
@@ -137,6 +138,7 @@ const ManageCompanies = () => {
     }
   };
 
+<<<<<<< HEAD
   const downloadCompanyStudentsPdf = (company: Company, reportType: 'applied' | 'approved') => {
     const companyApplications = applications.filter((application) => application.companyId?._id === company._id);
     const approvedStatuses = new Set(['approved', 'selected', 'placed']);
@@ -192,6 +194,8 @@ const ManageCompanies = () => {
     });
   };
 
+=======
+>>>>>>> d0165244d88e1ac853eb9318972b03538774b6c5
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -265,6 +269,7 @@ const ManageCompanies = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+<<<<<<< HEAD
                     <Button variant="outline" size="sm" onClick={() => downloadCompanyStudentsPdf(company, 'applied')}>
                       <FileDown className="w-4 h-4 mr-1" /> Applied PDF
                     </Button>
@@ -272,6 +277,13 @@ const ManageCompanies = () => {
                       <FileDown className="w-4 h-4 mr-1" /> Approved PDF
                     </Button>
                     <Button variant="outline" size="icon" onClick={() => handleOpenDialog(company)}>
+=======
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleOpenDialog(company)}
+                    >
+>>>>>>> d0165244d88e1ac853eb9318972b03538774b6c5
                       <Pencil className="w-4 h-4" />
                     </Button>
                     <Button variant="outline" size="icon" onClick={() => handleDelete(company._id)} className="text-destructive hover:bg-destructive hover:text-destructive-foreground">

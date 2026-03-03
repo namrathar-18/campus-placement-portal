@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
-const validSections = new Set(['A', 'B', 'MSc AI/ML']);
+const validSections = new Set(['A', 'B', 'AI/ML', 'MSc AI/ML']);
 
 const sanitizeText = (value) => {
   if (typeof value !== 'string') return value;
@@ -113,10 +113,10 @@ router.put('/:id', protect, async (req, res) => {
       if (!validSections.has(sectionValue)) {
         return res.status(400).json({
           success: false,
-          message: 'Section must be one of A, B, or MSc AI/ML',
+          message: 'Section must be one of A, B, or AI/ML',
         });
       }
-      updateData.section = sectionValue;
+      updateData.section = sectionValue === 'MSc AI/ML' ? 'AI/ML' : sectionValue;
     }
 
     const user = await User.findByIdAndUpdate(

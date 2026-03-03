@@ -9,7 +9,7 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
-import { SECTION_OPTIONS, type SectionOption, isSectionOption } from '@/constants/sections';
+import { SECTION_OPTIONS, type SectionOption, isSectionOption, normalizeSection } from '@/constants/sections';
 
 const PIE_COLORS = [
   '#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed',
@@ -73,7 +73,7 @@ const PlacementAnalytics = () => {
 
     students.reduce(
       (acc, student) => {
-        const section = (student.section || '').trim();
+        const section = normalizeSection(student.section) as SectionOption;
         if (!isSectionOption(section)) return acc;
         if (student.isPlaced) {
           acc[section].placed += 1;

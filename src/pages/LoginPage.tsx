@@ -13,6 +13,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { signIn } = useAuth();
   const { toast } = useToast();
+  const validStudentEmailDomains = ['@mca.christuniversity.in', '@mscaiml.christuniversity.in'];
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<'student' | 'officer'>('student');
@@ -22,6 +23,19 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
+      if (
+        userType === 'student' &&
+        !validStudentEmailDomains.some((domain) => credentials.email.toLowerCase().endsWith(domain))
+      ) {
+        toast({
+          title: 'Login Failed',
+          description: 'Use your @mca.christuniversity.in or @mscaiml.christuniversity.in email.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await signIn(credentials.email, credentials.password);
       
       if (error) {
@@ -111,7 +125,7 @@ const LoginPage = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder={userType === 'student' ? 'sample@mca.christuniversity.in' : 'Enter your email or ID'}
+                  placeholder={userType === 'student' ? 'sample@mca.christuniversity.in or sample@mscaiml.christuniversity.in' : 'Enter your email or ID'}
                   value={credentials.email}
                   onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
                   className="pl-10"
@@ -143,7 +157,7 @@ const LoginPage = () => {
 
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground text-center">
-              <strong>Students:</strong> Login with your @mca.christuniversity.in email
+              <strong>Students:</strong> Login with @mca.christuniversity.in or @mscaiml.christuniversity.in
             </p>
             <p className="text-sm text-muted-foreground text-center mt-1">
               <strong>Placement Officers:</strong> Login with your email/ID

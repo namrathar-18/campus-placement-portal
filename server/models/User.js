@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema({
   },
   section: {
     type: String,
-    enum: ['A', 'B', 'MSc AI/ML']
+    enum: ['A', 'B', 'AI/ML', 'MSc AI/ML']
   },
   gpa: {
     type: Number,

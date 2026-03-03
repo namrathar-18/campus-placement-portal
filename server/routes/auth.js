@@ -5,10 +5,11 @@ import User from '../models/User.js';
 import { sendPasswordResetEmail } from '../config/email.js';
 
 const router = express.Router();
-const studentEmailDomain = '@mca.christuniversity.in';
+const studentEmailDomains = ['@mca.christuniversity.in', '@mscaiml.christuniversity.in'];
 
 const isStudentEmail = (email) =>
-  typeof email === 'string' && email.toLowerCase().endsWith(studentEmailDomain);
+  typeof email === 'string' &&
+  studentEmailDomains.some((domain) => email.toLowerCase().endsWith(domain));
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -45,7 +46,7 @@ router.post('/register', async (req, res) => {
       if (!isStudentEmail(email)) {
         return res.status(400).json({
           success: false,
-          message: `Please use your ${studentEmailDomain} email address`
+          message: 'Please use your @mca.christuniversity.in or @mscaiml.christuniversity.in email address',
         });
       }
       

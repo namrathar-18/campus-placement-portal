@@ -16,9 +16,10 @@ import api from '@/lib/api';
 const emailSchema = z.string().trim().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
+const validStudentEmailDomains = ['@mca.christuniversity.in', '@mscaiml.christuniversity.in'];
 const studentEmailSchema = emailSchema.refine(
-  (value) => value.toLowerCase().endsWith('@mca.christuniversity.in'),
-  { message: 'Use your @mca.christuniversity.in email address' }
+  (value) => validStudentEmailDomains.some((domain) => value.toLowerCase().endsWith(domain)),
+  { message: 'Use your @mca.christuniversity.in or @mscaiml.christuniversity.in email address' }
 );
 
 const AuthPage = () => {
@@ -58,7 +59,7 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      emailSchema.parse(loginData.email);
+      studentEmailSchema.parse(loginData.email);
       passwordSchema.parse(loginData.password);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -277,7 +278,7 @@ const AuthPage = () => {
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="sample@mca.christuniversity.in"
+                      placeholder="sample@mca.christuniversity.in or sample@mscaiml.christuniversity.in"
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       className="pl-10"
@@ -347,7 +348,7 @@ const AuthPage = () => {
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="sample@mca.christuniversity.in"
+                      placeholder="sample@mca.christuniversity.in or sample@mscaiml.christuniversity.in"
                       value={signupData.email}
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       className="pl-10"

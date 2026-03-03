@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Upload, FileText, Loader2, Camera, X } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
-import { SECTION_OPTIONS, type SectionOption, isSectionOption } from '@/constants/sections';
+import { SECTION_OPTIONS, type SectionOption, isSectionOption, normalizeSection } from '@/constants/sections';
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const ProfileSetup = () => {
     registerNumber: user?.registerNumber || '',
     phone: user?.phone || '',
     department: user?.department || '',
-    section: isSectionOption(user?.section) ? user.section : '',
+    section: isSectionOption(user?.section) ? normalizeSection(user.section) : '',
     gender: user?.gender === 'male' || user?.gender === 'female' ? user.gender : '',
     gpa: user?.gpa?.toString() || '',
   });
@@ -67,7 +67,7 @@ const ProfileSetup = () => {
       return false;
     }
     if (!isSectionOption(profileData.section)) {
-      toast({ title: 'Error', description: 'Section must be A, B, or MSc AI/ML', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Section must be A, B, or AI/ML', variant: 'destructive' });
       return false;
     }
     if (profileData.gender !== 'male' && profileData.gender !== 'female') {

@@ -17,7 +17,7 @@ import { useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
-import { SECTION_OPTIONS, isSectionOption } from '@/constants/sections';
+import { SECTION_OPTIONS, isSectionOption, normalizeSection } from '@/constants/sections';
 
 const StudentDashboard = () => {
   const { user, isAuthenticated, isLoading: authLoading, refreshUser, setUserData } = useAuth();
@@ -42,7 +42,7 @@ const StudentDashboard = () => {
   const [profileForm, setProfileForm] = useState({
     phone: user?.phone || '',
     department: user?.department || '',
-    section: isSectionOption(user?.section) ? user.section : '',
+    section: isSectionOption(user?.section) ? normalizeSection(user.section) : '',
     registerNumber: user?.registerNumber || '',
     gpa: user?.gpa?.toString() || '',
   });
@@ -233,7 +233,7 @@ const StudentDashboard = () => {
     setProfileForm({
       phone: user?.phone || '',
       department: user?.department || '',
-      section: isSectionOption(user?.section) ? user.section : '',
+      section: isSectionOption(user?.section) ? normalizeSection(user.section) : '',
       registerNumber: user?.registerNumber || '',
       gpa: user?.gpa?.toString() || '',
     });

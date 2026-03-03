@@ -68,10 +68,6 @@ const StudentDashboard = () => {
 
   // Get the company name where student is placed
   const getPlacedCompany = () => {
-<<<<<<< Updated upstream
-    const placedApp = applications?.find(app => app.status === 'placed');
-    return placedApp?.companyId?.name || 'a company';
-=======
     const placedStatuses = new Set(['approved', 'selected', 'placed']);
     const placedApp = applications?.find((app: any) =>
       placedStatuses.has(String(app?.status || '').trim().toLowerCase())
@@ -87,7 +83,6 @@ const StudentDashboard = () => {
     }
 
     return 'a company';
->>>>>>> Stashed changes
   };
 
   // Scroll to notifications section if hash is present

@@ -3,13 +3,70 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useApplications, Application } from '@/hooks/useApplications';
-import { CheckCircle, Clock, XCircle, Send, FileText, ChevronRight, Search } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Send, FileText, ChevronRight, Search, FileDown } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { exportCompanyStudentsPdf } from '@/lib/exportCompanyStudentsPdf';
 
 const ManageApplications = () => {
   const navigate = useNavigate();
   const { data: applications = [] } = useApplications();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+
+  const downloadCompanyStudentsPdf = (companyApplications: Application[], reportType: 'pending' | 'placed') => {
+    const companyName = companyApplications[0]?.companyId?.name || 'Company';
+    const filteredApplications = reportType === 'placed'
+      ? companyApplications.filter((application) => application.status === 'approved')
+      : companyApplications.filter((application) => application.status === 'pending' || application.status === 'under_review');
+
+    if (filteredApplications.length === 0) {
+      toast({
+        title: 'No data available',
+        description: `No ${reportType} students found for ${companyName}.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const uniqueStudentsMap = filteredApplications.reduce<Map<string, {
+      name: string;
+      registerNumber?: string;
+      department?: string;
+      email?: string;
+      status: string;
+      appliedDate?: string;
+    }>>((acc, application) => {
+      const studentId = application.studentId?._id;
+      if (!studentId || acc.has(studentId)) return acc;
+
+      const normalizedStatus = application.status
+        ? application.status.replace('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+        : 'N/A';
+
+      acc.set(studentId, {
+        name: application.studentId?.name || 'N/A',
+        registerNumber: application.studentId?.registerNumber,
+        department: application.studentId?.department,
+        email: application.studentId?.email,
+        status: normalizedStatus,
+        appliedDate: application.appliedDate ? new Date(application.appliedDate).toLocaleDateString() : undefined,
+      });
+      return acc;
+    }, new Map());
+
+    exportCompanyStudentsPdf({
+      companyName,
+      reportType,
+      students: Array.from(uniqueStudentsMap.values()),
+    });
+
+    toast({
+      title: 'PDF exported',
+      description: `${reportType === 'pending' ? 'Pending' : 'Placed'} students PDF downloaded for ${companyName}.`,
+    });
+  };
 
   const getStatusConfig = (status: Application['status']) => {
     switch (status) {
@@ -162,6 +219,31 @@ const ManageApplications = () => {
                       <Badge variant="outline" className="text-xs">Ongoing: {reviewTotal}</Badge>
                       <Badge variant="outline" className="text-xs">Placed: {placedTotal}</Badge>
                       <Badge variant="outline" className="text-xs">Rejected: {rejectedTotal}</Badge>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          downloadCompanyStudentsPdf(companyApplications, 'pending');
+                        }}
+                      >
+                        <FileDown className="w-4 h-4 mr-1" />
+                        Pending PDF
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          downloadCompanyStudentsPdf(companyApplications, 'placed');
+                        }}
+                      >
+                        <FileDown className="w-4 h-4 mr-1" />
+                        Placed PDF
+                      </Button>
                     </div>
                   </div>
                 );

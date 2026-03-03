@@ -39,14 +39,30 @@ export type ApplicationUpdate = {
   coverLetter?: string;
 };
 
+function extractData<T>(response: any, fallback: T): T {
+  if (response && typeof response === 'object') {
+    if ('success' in response && 'data' in response) {
+      return (response.data ?? fallback) as T;
+    }
+
+    if ('data' in response && response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return (response.data.data ?? fallback) as T;
+    }
+
+    if ('data' in response && !('success' in response)) {
+      return (response.data ?? fallback) as T;
+    }
+  }
+
+  return (response ?? fallback) as T;
+}
+
 export const useApplications = () => {
   return useQuery({
     queryKey: ['applications'],
     queryFn: async () => {
       const response = await api.get('/applications');
-      const data = response.data?.data || response.data || [];
-      console.log('Applications API Response:', data);
-      return data as Application[];
+      return extractData<Application[]>(response, []);
     },
     staleTime: 0,
     refetchOnMount: true,
@@ -59,7 +75,7 @@ export const useApplication = (id: string) => {
     queryKey: ['applications', id],
     queryFn: async () => {
       const response = await api.get(`/applications/${id}`);
-      return response.data as Application;
+      return extractData<Application | null>(response, null) as Application;
     },
     enabled: !!id,
   });
@@ -71,7 +87,7 @@ export const useCreateApplication = () => {
   return useMutation({
     mutationFn: async (application: ApplicationInsert) => {
       const response = await api.post('/applications', application);
-      return response.data.data;
+      return extractData<Application | null>(response, null);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
@@ -86,7 +102,7 @@ export const useUpdateApplication = () => {
   return useMutation({
     mutationFn: async ({ id, ...application }: ApplicationUpdate & { id: string }) => {
       const response = await api.put(`/applications/${id}`, application);
-      return response.data;
+      return extractData<Application | null>(response, null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });

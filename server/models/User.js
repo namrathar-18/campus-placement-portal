@@ -57,6 +57,26 @@ const userSchema = new mongoose.Schema({
     min: 0,
     max: 10
   },
+  gpaLocked: {
+    type: Boolean,
+    default: false
+  },
+  skills: {
+    type: [String],
+    default: []
+  },
+  certifications: {
+    type: [String],
+    default: []
+  },
+  projects: {
+    type: [String],
+    default: []
+  },
+  resumeText: {
+    type: String,
+    default: ''
+  },
   resumeUrl: {
     type: String
   },

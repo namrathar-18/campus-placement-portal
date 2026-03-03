@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
+const validSections = new Set(['A', 'B', 'MSc AI/ML']);
 
 // @route   GET /api/users
 // @desc    Get all users (for admin/officers/representatives)
@@ -31,6 +32,17 @@ router.put('/:id', protect, async (req, res) => {
 
     // Don't allow password updates through this route
     const { password, ...updateData } = req.body;
+
+    if (Object.prototype.hasOwnProperty.call(updateData, 'section')) {
+      const sectionValue = typeof updateData.section === 'string' ? updateData.section.trim() : '';
+      if (!validSections.has(sectionValue)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Section must be one of A, B, or MSc AI/ML',
+        });
+      }
+      updateData.section = sectionValue;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.params.id,

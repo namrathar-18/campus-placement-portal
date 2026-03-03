@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatsCard from '@/components/cards/StatsCard';
 import { Building2, Send, CheckCircle, Clock, Mail, Phone, GraduationCap, FileText, ArrowRight, Loader2, Bell, Edit2, X, Upload, Camera, PartyPopper } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
@@ -16,6 +17,7 @@ import { useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
+import { SECTION_OPTIONS, isSectionOption } from '@/constants/sections';
 
 const StudentDashboard = () => {
   const { user, isAuthenticated, isLoading: authLoading, refreshUser, setUserData } = useAuth();
@@ -40,7 +42,7 @@ const StudentDashboard = () => {
   const [profileForm, setProfileForm] = useState({
     phone: user?.phone || '',
     department: user?.department || '',
-    section: user?.section || '',
+    section: isSectionOption(user?.section) ? user.section : '',
     registerNumber: user?.registerNumber || '',
     gpa: user?.gpa?.toString() || '',
   });
@@ -183,6 +185,11 @@ const StudentDashboard = () => {
   const onSaveProfile = async () => {
     if (!user?.id) return;
 
+    if (!isSectionOption(profileForm.section)) {
+      toast({ title: 'Error', description: 'Please select a valid section', variant: 'destructive' });
+      return;
+    }
+
     // Validate GPA
     if (profileForm.gpa) {
       const gpa = parseFloat(profileForm.gpa);
@@ -226,7 +233,7 @@ const StudentDashboard = () => {
     setProfileForm({
       phone: user?.phone || '',
       department: user?.department || '',
-      section: user?.section || '',
+      section: isSectionOption(user?.section) ? user.section : '',
       registerNumber: user?.registerNumber || '',
       gpa: user?.gpa?.toString() || '',
     });
@@ -684,12 +691,21 @@ const StudentDashboard = () => {
                         <Label htmlFor="section" className="text-sm">
                           Section
                         </Label>
-                        <Input
-                          id="section"
+                        <Select
                           value={profileForm.section}
-                          onChange={(e) => setProfileForm({ ...profileForm, section: e.target.value })}
-                          placeholder="e.g., A"
-                        />
+                          onValueChange={(value) => setProfileForm({ ...profileForm, section: value })}
+                        >
+                          <SelectTrigger id="section">
+                            <SelectValue placeholder="Select section" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SECTION_OPTIONS.map((section) => (
+                              <SelectItem key={section} value={section}>
+                                {section}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="space-y-2">

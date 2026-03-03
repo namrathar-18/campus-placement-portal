@@ -13,6 +13,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
 import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
 import { useToast } from '@/hooks/use-toast';
+import { SECTION_OPTIONS, type SectionOption, isSectionOption } from '@/constants/sections';
 
 const PIE_COLORS = [
   '#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed',
@@ -75,14 +76,18 @@ const OfficerDashboard = () => {
         .filter(Boolean)
     );
 
-    const groupedBySection = students.reduce<Record<string, { section: string; placed: number; unplaced: number; pending: number }>>(
+    const groupedBySection = SECTION_OPTIONS.reduce<Record<SectionOption, { section: SectionOption; placed: number; unplaced: number; pending: number }>>(
+      (acc, section) => {
+        acc[section] = { section, placed: 0, unplaced: 0, pending: 0 };
+        return acc;
+      },
+      {} as Record<SectionOption, { section: SectionOption; placed: number; unplaced: number; pending: number }>
+    );
+
+    students.reduce(
       (acc, student) => {
         const section = (student.section || '').trim();
-        if (!section) return acc;
-
-        if (!acc[section]) {
-          acc[section] = { section, placed: 0, unplaced: 0, pending: 0 };
-        }
+        if (!isSectionOption(section)) return acc;
 
         if (student.isPlaced) {
           acc[section].placed += 1;
@@ -94,10 +99,10 @@ const OfficerDashboard = () => {
 
         return acc;
       },
-      {}
+      groupedBySection
     );
 
-    return Object.values(groupedBySection).sort((a, b) => a.section.localeCompare(b.section));
+    return SECTION_OPTIONS.map((section) => groupedBySection[section]);
   }, [applications, students]);
   const companyWisePlaced = useMemo(() => {
     const placedApplications = (applications || []).filter(

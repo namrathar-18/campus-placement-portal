@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApplications } from '@/hooks/useApplications';
 import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
+import { SECTION_OPTIONS } from '@/constants/sections';
 
 interface Student {
   _id: string;
@@ -76,7 +77,18 @@ const ManageStudents = () => {
   }, [filteredStudents]);
 
   const sectionKeys = useMemo(
-    () => Object.keys(groupedStudents).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Object.keys(groupedStudents).sort((a, b) => {
+        const aIndex = SECTION_OPTIONS.findIndex((section) => section === a);
+        const bIndex = SECTION_OPTIONS.findIndex((section) => section === b);
+        const aKnown = aIndex !== -1;
+        const bKnown = bIndex !== -1;
+
+        if (aKnown && bKnown) return aIndex - bIndex;
+        if (aKnown) return -1;
+        if (bKnown) return 1;
+        return a.localeCompare(b);
+      }),
     [groupedStudents]
   );
 

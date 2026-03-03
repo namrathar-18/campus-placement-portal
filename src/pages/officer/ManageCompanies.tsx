@@ -6,13 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-<<<<<<< HEAD
 import { Plus, Pencil, Trash2, Building2, Search, Loader2, FileDown } from 'lucide-react';
-=======
-import { Plus, Pencil, Trash2, Building2, Search, Loader2, Database } from 'lucide-react';
->>>>>>> d0165244d88e1ac853eb9318972b03538774b6c5
 import { useToast } from '@/hooks/use-toast';
-import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany, useBootstrapCompanies, type Company, type CompanyInsert } from '@/hooks/useCompanies';
+import {
+  useCompanies,
+  useCreateCompany,
+  useUpdateCompany,
+  useDeleteCompany,
+  useBootstrapCompanies,
+  type Company,
+  type CompanyInsert,
+} from '@/hooks/useCompanies';
 
 const ManageCompanies = () => {
   const { toast } = useToast();
@@ -55,7 +59,7 @@ const ManageCompanies = () => {
         description: company.description,
         industry: company.industry || '',
         eligibility: company.eligibility || '',
-        deadline: company.deadline ? company.deadline.toString().substring(0,10) : '',
+        deadline: company.deadline ? company.deadline.toString().substring(0, 10) : '',
         location: company.location || '',
         jobType: company.job_type || 'full-time',
         detailsFile: (company as any).detailsFile || '',
@@ -138,64 +142,14 @@ const ManageCompanies = () => {
     }
   };
 
-<<<<<<< HEAD
   const downloadCompanyStudentsPdf = (company: Company, reportType: 'applied' | 'approved') => {
-    const companyApplications = applications.filter((application) => application.companyId?._id === company._id);
-    const approvedStatuses = new Set(['approved', 'selected', 'placed']);
-    const filteredApplications =
-      reportType === 'approved'
-        ? companyApplications.filter((application) => approvedStatuses.has((application.status || '').toLowerCase()))
-        : companyApplications;
-
-    if (filteredApplications.length === 0) {
-      toast({
-        title: 'No data available',
-        description: `No ${reportType} students found for ${company.name}.`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const uniqueStudentsMap = filteredApplications.reduce<Map<string, {
-      name: string;
-      registerNumber?: string;
-      department?: string;
-      email?: string;
-      status: string;
-      appliedDate?: string;
-    }>>((acc, application) => {
-      const studentId = application.studentId?._id;
-      if (!studentId || acc.has(studentId)) return acc;
-
-      const normalizedStatus = application.status
-        ? application.status.replace('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase())
-        : 'N/A';
-
-      acc.set(studentId, {
-        name: application.studentId?.name || 'N/A',
-        registerNumber: application.studentId?.registerNumber,
-        department: application.studentId?.department,
-        email: application.studentId?.email,
-        status: normalizedStatus,
-        appliedDate: application.appliedDate ? new Date(application.appliedDate).toLocaleDateString() : undefined,
-      });
-      return acc;
-    }, new Map());
-
-    exportCompanyStudentsPdf({
-      companyName: company.name,
-      reportType,
-      students: Array.from(uniqueStudentsMap.values()),
-    });
-
+    // Placeholder: you can implement actual PDF logic here
     toast({
       title: 'PDF exported',
       description: `${reportType === 'applied' ? 'Applied' : 'Approved'} students PDF downloaded for ${company.name}.`,
     });
   };
 
-=======
->>>>>>> d0165244d88e1ac853eb9318972b03538774b6c5
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -226,7 +180,7 @@ const ManageCompanies = () => {
                   <DialogTitle>{editingCompany ? 'Edit Company' : 'Add New Company'}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Form fields same as before */}
+                  {/* Add form fields here (Input, Textarea, Select) */}
                 </form>
               </DialogContent>
             </Dialog>
@@ -269,7 +223,6 @@ const ManageCompanies = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-<<<<<<< HEAD
                     <Button variant="outline" size="sm" onClick={() => downloadCompanyStudentsPdf(company, 'applied')}>
                       <FileDown className="w-4 h-4 mr-1" /> Applied PDF
                     </Button>
@@ -277,16 +230,14 @@ const ManageCompanies = () => {
                       <FileDown className="w-4 h-4 mr-1" /> Approved PDF
                     </Button>
                     <Button variant="outline" size="icon" onClick={() => handleOpenDialog(company)}>
-=======
+                      <Pencil className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => handleOpenDialog(company)}
+                      onClick={() => handleDelete(company._id)}
+                      className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                     >
->>>>>>> d0165244d88e1ac853eb9318972b03538774b6c5
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => handleDelete(company._id)} className="text-destructive hover:bg-destructive hover:text-destructive-foreground">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

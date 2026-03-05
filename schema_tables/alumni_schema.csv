@@ -1,0 +1,12 @@
+Attribute Name,Datatype
+_id,ObjectId
+name,String
+batch,String
+currentCompany,String
+normalizedCompany,String
+role,String
+linkedin,String
+email,String
+createdAt,Date
+updatedAt,Date
+__v,Number

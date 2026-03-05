@@ -59,7 +59,7 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      studentEmailSchema.parse(loginData.email);
+      emailSchema.parse(loginData.email);
       passwordSchema.parse(loginData.password);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -272,13 +272,13 @@ const AuthPage = () => {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Student Email</Label>
+                  <Label htmlFor="login-email">Email</Label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="sample@mca.christuniversity.in or sample@mscaiml.christuniversity.in"
+                      placeholder="Enter your email"
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       className="pl-10"

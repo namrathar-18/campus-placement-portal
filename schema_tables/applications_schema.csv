@@ -1,0 +1,12 @@
+Attribute Name,Datatype
+_id,ObjectId
+studentId,ObjectId
+companyId,ObjectId
+status,String
+appliedDate,Date
+resumeUrl,String
+CompanyDetails,String
+remarks,String
+createdAt,Date
+updatedAt,Date
+__v,Number

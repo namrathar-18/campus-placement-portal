@@ -1,0 +1,14 @@
+Attribute Name,Datatype
+_id,ObjectId
+title,String
+message,String
+type,String
+targetRole,String
+isRead,Boolean
+userId,ObjectId
+createdBy,ObjectId
+relatedTo,String
+relatedId,ObjectId
+createdAt,Date
+updatedAt,Date
+__v,Number

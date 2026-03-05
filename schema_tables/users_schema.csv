@@ -1,0 +1,27 @@
+Attribute Name,Datatype
+_id,ObjectId
+email,String
+password,String
+name,String
+role,String
+gender,String
+isRepresentative,Boolean
+representativeDesignation,String
+registerNumber,String
+phone,String
+department,String
+section,String
+gpa,Number
+gpaLocked,Boolean
+skills,Array<String>
+certifications,Array<String>
+projects,Array<String>
+resumeText,String
+resumeUrl,String
+photoUrl,String
+isPlaced,Boolean
+resetPasswordToken,String
+resetPasswordExpire,Date
+createdAt,Date
+updatedAt,Date
+__v,Number

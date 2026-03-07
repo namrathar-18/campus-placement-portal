@@ -34,14 +34,21 @@ const AuthPage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
+<<<<<<< Updated upstream
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ name: '', email: '', registerNumber: '', password: '' });
+=======
+  const [loginData, setLoginData] = useState({ identifier: '', password: '' });
+  const [signupData, setSignupData] = useState({ registerNumber: '', password: '', name: '' });
+>>>>>>> Stashed changes
 
   useEffect(() => {
     // Only redirect if authenticated AND not currently loading
     if (isAuthenticated && user && !authLoading) {
       if (user.role === 'placement_officer' || user.role === 'student_representative') {
         navigate('/officer/dashboard', { replace: true });
+      } else if (user.role === 'student_representative') {
+        navigate('/representative/dashboard', { replace: true });
       } else {
         // Check if student has completed profile setup
         if (!user.registerNumber || !user.phone || !user.department || !user.section || !user.gender || !user.gpa) {
@@ -58,7 +65,6 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      emailSchema.parse(loginData.email);
       passwordSchema.parse(loginData.password);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -72,7 +78,12 @@ const AuthPage = () => {
       }
     }
 
+<<<<<<< Updated upstream
     const { error } = await signIn(loginData.email.trim(), loginData.password);
+=======
+    // Always use register number for students
+    const { error } = await signIn(loginData.identifier, loginData.password, true);
+>>>>>>> Stashed changes
     
     if (error) {
       toast({
@@ -95,9 +106,14 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
+<<<<<<< Updated upstream
       nameSchema.parse(signupData.name);
       studentEmailSchema.parse(signupData.email);
       passwordSchema.parse(signupData.password);
+=======
+      passwordSchema.parse(signupData.password);
+      nameSchema.parse(signupData.name);
+>>>>>>> Stashed changes
       
       if (!signupData.registerNumber || signupData.registerNumber.length < 5) {
         throw new z.ZodError([{
@@ -118,6 +134,7 @@ const AuthPage = () => {
       }
     }
 
+<<<<<<< Updated upstream
     const { error } = await signUp({
       name: signupData.name,
       email: signupData.email.trim(),
@@ -125,6 +142,9 @@ const AuthPage = () => {
       password: signupData.password,
       role: 'student',
     });
+=======
+    const { error } = await signUp(signupData.registerNumber, signupData.password, signupData.name, true);
+>>>>>>> Stashed changes
     
     if (error) {
       let message = error.message;
@@ -263,6 +283,7 @@ const AuthPage = () => {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
+<<<<<<< Updated upstream
                   <Label htmlFor="login-email">Student Email</Label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -272,6 +293,17 @@ const AuthPage = () => {
                       placeholder="sample@mca.christuniversity.in"
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+=======
+                  <Label htmlFor="login-identifier">Register Number</Label>
+                  <div className="relative">
+                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="login-identifier"
+                      type="text"
+                      placeholder="Enter your register number"
+                      value={loginData.identifier}
+                      onChange={(e) => setLoginData({ ...loginData, identifier: e.target.value.toUpperCase() })}
+>>>>>>> Stashed changes
                       className="pl-10"
                       required
                     />
@@ -333,15 +365,27 @@ const AuthPage = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
+<<<<<<< Updated upstream
                   <Label htmlFor="signup-email">Student Email</Label>
+=======
+                  <Label htmlFor="signup-registerNumber">Register Number</Label>
+>>>>>>> Stashed changes
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
+<<<<<<< Updated upstream
                       id="signup-email"
                       type="email"
                       placeholder="sample@mca.christuniversity.in"
                       value={signupData.email}
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+=======
+                      id="signup-registerNumber"
+                      type="text"
+                      placeholder="Enter your register number"
+                      value={signupData.registerNumber}
+                      onChange={(e) => setSignupData({ ...signupData, registerNumber: e.target.value.toUpperCase() })}
+>>>>>>> Stashed changes
                       className="pl-10"
                       required
                     />

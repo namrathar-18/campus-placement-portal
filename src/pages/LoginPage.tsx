@@ -22,7 +22,14 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
+<<<<<<< Updated upstream
       const { error } = await signIn(credentials.email, credentials.password);
+=======
+      // Determine if using registerNumber or email based on userType
+      const isRegisterNumber = userType === 'student';
+      
+      const { error } = await signIn(credentials.id, credentials.password, isRegisterNumber);
+>>>>>>> Stashed changes
       
       if (error) {
         toast({
@@ -103,6 +110,7 @@ const LoginPage = () => {
             </div>
 
             <div className="space-y-2">
+<<<<<<< Updated upstream
                   <Label htmlFor="email">
                     {userType === 'student' ? 'Student Email' : 'Email / User ID'}
                   </Label>
@@ -114,6 +122,18 @@ const LoginPage = () => {
                   placeholder={userType === 'student' ? 'sample@mca.christuniversity.in' : 'Enter your email or ID'}
                   value={credentials.email}
                   onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+=======
+              <Label htmlFor="id">
+                {userType === 'student' ? 'Register Number' : 'Email / User ID'}
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="id"
+                  placeholder={userType === 'student' ? 'Enter your register number' : 'Enter your email or ID'}
+                  value={credentials.id}
+                  onChange={(e) => setCredentials({ ...credentials, id: e.target.value })}
+>>>>>>> Stashed changes
                   className="pl-10"
                   required
                 />
@@ -143,7 +163,11 @@ const LoginPage = () => {
 
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground text-center">
+<<<<<<< Updated upstream
               <strong>Students:</strong> Login with your @mca.christuniversity.in email
+=======
+              <strong>Students:</strong> Login with your register number
+>>>>>>> Stashed changes
             </p>
             <p className="text-sm text-muted-foreground text-center mt-1">
               <strong>Placement Officers:</strong> Login with your email/ID

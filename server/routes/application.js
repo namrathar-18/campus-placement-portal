@@ -108,13 +108,20 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    // Check if student is already placed in another company
-    if ((req.user.role === 'placement_officer' || req.user.role === 'student_representative') && req.body.status) {
-      const student = await User.findById(application.studentId);
-      if (student.isPlaced) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Student is already placed in another company. Status cannot be changed.' 
+    // Only block if trying to mark as 'placed' when student is already placed at a different company
+    if (
+      (req.user.role === 'placement_officer' || req.user.role === 'student_representative') &&
+      req.body.status === 'placed'
+    ) {
+      const alreadyPlaced = await Application.findOne({
+        studentId: application.studentId,
+        status: 'placed',
+        _id: { $ne: req.params.id },
+      });
+      if (alreadyPlaced) {
+        return res.status(400).json({
+          success: false,
+          message: 'Student is already placed in another company.',
         });
       }
     }

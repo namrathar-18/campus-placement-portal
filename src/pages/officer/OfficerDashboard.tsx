@@ -177,8 +177,16 @@ const OfficerDashboard = () => {
   }, [applications, companies]);
   // Only export students with status 'placed'
   const placedStudentsList = useMemo(() => {
+    // Collect student IDs who have at least one placed application
+    const placedByApplicationIds = new Set(
+      (applications || [])
+        .filter((app) => app.status === 'placed')
+        .map((app) => app.studentId?._id)
+        .filter(Boolean)
+    );
+
     return students
-      .filter((student) => student.isPlaced)
+      .filter((student) => student.isPlaced || placedByApplicationIds.has(student._id))
       .map((student) => ({
         name: student.name,
         registerNumber: student.registerNumber,
@@ -187,7 +195,7 @@ const OfficerDashboard = () => {
         gpa: student.gpa,
         isPlaced: true,
       }));
-  }, [students]);
+  }, [students, applications]);
 
   const downloadPlacedPdf = () => {
     if (placedStudentsList.length === 0) {

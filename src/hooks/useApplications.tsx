@@ -104,7 +104,20 @@ export const useUpdateApplication = () => {
       const response = await api.put(`/applications/${id}`, application);
       return extractData<Application | null>(response, null);
     },
-    onSuccess: () => {
+    onSuccess: (updatedApp) => {
+      // Optimistically patch the cache so the UI reflects the new status instantly
+      queryClient.setQueryData<Application[]>(['applications'], (old) => {
+        if (!old || !updatedApp) return old;
+        return old
+          .map((app) => (app._id === updatedApp._id ? { ...app, ...updatedApp } : app))
+          // Remove applications for students that were placed in another company
+          .filter((app) => {
+            if (updatedApp.status === 'placed' && app.studentId?._id === updatedApp.studentId?._id && app._id !== updatedApp._id) {
+              return false;
+            }
+            return true;
+          });
+      });
       queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });

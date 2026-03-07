@@ -18,7 +18,7 @@ const ManageApplications = () => {
   const downloadCompanyStudentsPdf = (companyApplications: Application[], reportType: 'pending' | 'placed') => {
     const companyName = companyApplications[0]?.companyId?.name || 'Company';
     const filteredApplications = reportType === 'placed'
-      ? companyApplications.filter((application) => application.status === 'approved')
+      ? companyApplications.filter((application) => application.status === 'placed')
       : companyApplications.filter((application) => application.status === 'pending' || application.status === 'under_review');
 
     if (filteredApplications.length === 0) {
@@ -233,17 +233,30 @@ const ManageApplications = () => {
                         <FileDown className="w-4 h-4 mr-1" />
                         Pending PDF
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          downloadCompanyStudentsPdf(companyApplications, 'placed');
-                        }}
-                      >
-                        <FileDown className="w-4 h-4 mr-1" />
-                        Placed PDF
-                      </Button>
+                      {(pendingTotal > 0 || reviewTotal > 0) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          title={`Cannot download: ${pendingTotal + reviewTotal} application(s) still pending/ongoing`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FileDown className="w-4 h-4 mr-1" />
+                          Placed PDF
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            downloadCompanyStudentsPdf(companyApplications, 'placed');
+                          }}
+                        >
+                          <FileDown className="w-4 h-4 mr-1" />
+                          Placed PDF
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );

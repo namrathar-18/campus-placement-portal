@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import User from '../models/User.js';
 import { sendPasswordResetEmail } from '../config/email.js';
 
+
 const router = express.Router();
 const studentEmailDomains = ['@mca.christuniversity.in', '@mscaiml.christuniversity.in'];
 
@@ -300,6 +301,74 @@ router.post('/reset-password', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   POST /api/auth/google
+// @desc    Verify Google ID token and login/register user
+// @access  Public
+router.post('/google', async (req, res) => {
+  try {
+    const { accessToken } = req.body;
+    if (!accessToken) {
+      return res.status(400).json({ success: false, message: 'Google access token is required' });
+    }
+
+    // Verify the token by calling Google's userinfo endpoint
+    const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!googleRes.ok) {
+      return res.status(401).json({ success: false, message: 'Invalid Google token. Please try again.' });
+    }
+
+    const { email, name } = await googleRes.json();
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Could not retrieve email from Google account' });
+    }
+
+    // Reject non-university Google accounts
+    if (!isStudentEmail(email)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only @mca.christuniversity.in and @mscaiml.christuniversity.in email accounts are allowed.',
+      });
+    }
+
+    // Look up existing user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found for this email. Please sign up first.',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        gender: user.gender,
+        registerNumber: user.registerNumber,
+        phone: user.phone,
+        department: user.department,
+        section: user.section,
+        gpa: user.gpa,
+        resumeUrl: user.resumeUrl,
+        photoUrl: user.photoUrl,
+        isPlaced: user.isPlaced,
+        token: generateToken(user._id),
+      },
+    });
+  } catch (error) {
+    console.error('Google auth error:', error.message);
+    res.status(401).json({ success: false, message: 'Google sign-in failed. Please try again.' });
   }
 });
 

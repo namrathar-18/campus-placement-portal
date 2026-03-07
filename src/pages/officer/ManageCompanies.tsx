@@ -223,12 +223,6 @@ const ManageCompanies = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => downloadCompanyStudentsPdf(company, 'applied')}>
-                      <FileDown className="w-4 h-4 mr-1" /> Applied PDF
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => downloadCompanyStudentsPdf(company, 'approved')}>
-                      <FileDown className="w-4 h-4 mr-1" /> Approved PDF
-                    </Button>
                     <Button variant="outline" size="icon" onClick={() => handleOpenDialog(company)}>
                       <Pencil className="w-4 h-4" />
                     </Button>

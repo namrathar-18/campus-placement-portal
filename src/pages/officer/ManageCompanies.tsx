@@ -6,10 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Company } from '@/types';
-import { Plus, Pencil, Trash2, Building2, Search, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Search, Loader2, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany } from '@/hooks/useCompanies';
+import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany, useBootstrapCompanies, type Company, type CompanyInsert } from '@/hooks/useCompanies';
 
 const ManageCompanies = () => {
   const { toast } = useToast();
@@ -17,6 +16,7 @@ const ManageCompanies = () => {
   const createCompany = useCreateCompany();
   const updateCompany = useUpdateCompany();
   const deleteCompany = useDeleteCompany();
+  const bootstrapCompanies = useBootstrapCompanies();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -77,11 +77,13 @@ const ManageCompanies = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
+    const packageValue = parseFloat(formData.salary.replace(/,/g, '')) || 0;
+    const payload: CompanyInsert = {
       name: formData.name,
       description: formData.description,
       industry: formData.industry,
       location: formData.location,
+      package: packageValue,
       salary: formData.salary,
       min_gpa: parseFloat(formData.minGpa || '0'),
       eligibility: formData.eligibility,
@@ -89,7 +91,7 @@ const ManageCompanies = () => {
       roles: formData.role ? [formData.role] : [],
       job_type: formData.jobType,
       status: 'active',
-      detailsFile: formData.detailsFile,
+      ...(formData.detailsFile ? { detailsFile: formData.detailsFile } : {}),
     };
 
     try {
@@ -97,7 +99,7 @@ const ManageCompanies = () => {
         await updateCompany.mutateAsync({ id: editingCompany._id, ...payload });
         toast({ title: 'Company Updated', description: `${formData.name} has been updated.` });
       } else {
-        await createCompany.mutateAsync(payload as any);
+        await createCompany.mutateAsync(payload);
         toast({ title: 'Company Added', description: `${formData.name} has been added.` });
       }
       setIsDialogOpen(false);
@@ -112,6 +114,23 @@ const ManageCompanies = () => {
       toast({ title: 'Company Deleted', description: `The company has been removed.`, variant: 'destructive' });
     } catch (error: any) {
       toast({ title: 'Error', description: error?.message || 'Failed to delete company', variant: 'destructive' });
+    }
+  };
+
+  const handleBootstrap = async () => {
+    try {
+      const response = await bootstrapCompanies.mutateAsync();
+      const synced = response?.data?.total ?? 0;
+      toast({
+        title: 'Companies Synced',
+        description: `${synced} default companies synced to MongoDB.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Sync failed',
+        description: error?.message || 'Could not sync default companies.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -136,13 +155,23 @@ const ManageCompanies = () => {
               Add, edit, or remove company listings
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="hero" className="gap-2" onClick={() => handleOpenDialog()}>
-                <Plus className="w-4 h-4" />
-                Add Company
-              </Button>
-            </DialogTrigger>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleBootstrap}
+              disabled={bootstrapCompanies.isPending}
+            >
+              {bootstrapCompanies.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              Sync Default Companies
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="hero" className="gap-2" onClick={() => handleOpenDialog()}>
+                  <Plus className="w-4 h-4" />
+                  Add Company
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
@@ -290,7 +319,8 @@ const ManageCompanies = () => {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Search */}
@@ -308,7 +338,7 @@ const ManageCompanies = () => {
         <div className="space-y-4">
           {filteredCompanies.map((company, index) => (
             <Card
-              key={company._id || company.id}
+              key={company._id}
               className="animate-slide-up hover:shadow-card-hover transition-all"
               style={{ animationDelay: `${index * 50}ms` }}
             >
@@ -339,7 +369,7 @@ const ManageCompanies = () => {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => handleDelete(company._id || company.id)}
+                      onClick={() => handleDelete(company._id)}
                       className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                     >
                       <Trash2 className="w-4 h-4" />

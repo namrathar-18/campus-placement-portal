@@ -22,7 +22,8 @@ export const protect = async (req, res, next) => {
 
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    const isRepWithOfficerAccess = req.user.role === 'student_representative' && roles.includes('placement_officer');
+    if (!roles.includes(req.user.role) && !isRepWithOfficerAccess) {
       return res.status(403).json({ 
         success: false, 
         message: `User role ${req.user.role} is not authorized to access this route` 

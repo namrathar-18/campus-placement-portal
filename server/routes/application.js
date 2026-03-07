@@ -100,7 +100,7 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     // Check if student is already placed in another company
-    if (req.user.role === 'placement_officer' && req.body.status) {
+    if ((req.user.role === 'placement_officer' || req.user.role === 'student_representative') && req.body.status) {
       const student = await User.findById(application.studentId);
       if (student.isPlaced) {
         return res.status(400).json({ 

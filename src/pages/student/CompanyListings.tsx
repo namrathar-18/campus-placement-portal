@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Search, Filter, Building2, CheckCircle2, MapPin, Calendar, Briefcase, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { alumniData } from '@/data/alumniData';
 
 const CompanyListings = () => {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ const CompanyListings = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [jobTypeFilter, setJobTypeFilter] = useState<string>('all');
   const [showEligibleOnly, setShowEligibleOnly] = useState(false);
+  const [applyingCompanyId, setApplyingCompanyId] = useState<string | null>(null);
 
   const userGpa = user?.gpa || 0;
   const isPlaced = user?.isPlaced || false;
@@ -40,6 +42,13 @@ const CompanyListings = () => {
       const appCompanyId = app.companyId?._id || app.companyId;
       return appCompanyId === companyId;
     });
+  };
+
+  const getAlumniCountForCompany = (companyName: string) => {
+    const normalizedCompany = companyName.trim().toLowerCase();
+    return alumniData.filter(
+      (alumni) => alumni.currentCompany.trim().toLowerCase() === normalizedCompany
+    ).length;
   };
 
   const handleApply = async (companyId: string) => {
@@ -82,6 +91,7 @@ const CompanyListings = () => {
     }
 
     try {
+      setApplyingCompanyId(companyId);
       await applyMutation.mutateAsync({ companyId });
       const company = companies?.find((c) => c._id === companyId);
       toast({
@@ -94,6 +104,8 @@ const CompanyListings = () => {
         description: error.message || 'Failed to submit application.',
         variant: 'destructive',
       });
+    } finally {
+      setApplyingCompanyId(null);
     }
   };
 
@@ -195,6 +207,8 @@ const CompanyListings = () => {
             const isEligible = company.min_gpa <= userGpa;
             const applied = hasApplied(company._id);
             const isExpired = new Date(company.deadline) < new Date();
+            const isApplyingCurrent = applyingCompanyId === company._id;
+            const alumniCount = getAlumniCountForCompany(company.name);
             
             return (
               <Card
@@ -237,6 +251,9 @@ const CompanyListings = () => {
                       <Calendar className="w-4 h-4" />
                       <span>Deadline: {new Date(company.deadline).toLocaleDateString()}</span>
                     </div>
+                    <div className="text-sm text-muted-foreground">
+                      Alumni from this company: <span className="font-medium text-foreground">{alumniCount}</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
@@ -250,10 +267,10 @@ const CompanyListings = () => {
                       <Button
                         size="sm"
                         variant={applied ? 'outline' : 'hero'}
-                        disabled={!isEligible || isPlaced || applied || isExpired || applyMutation.isPending}
+                        disabled={!isEligible || isPlaced || applied || isExpired || isApplyingCurrent}
                         onClick={() => handleApply(company._id)}
                       >
-                        {applyMutation.isPending ? (
+                        {isApplyingCurrent ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : applied ? (
                           'Applied'

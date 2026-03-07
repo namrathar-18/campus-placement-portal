@@ -13,9 +13,13 @@ import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
 
-const emailSchema = z.string().email('Please enter a valid email address');
+const emailSchema = z.string().trim().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
+const studentEmailSchema = emailSchema.refine(
+  (value) => value.toLowerCase().endsWith('@mca.christuniversity.in'),
+  { message: 'Use your @mca.christuniversity.in email address' }
+);
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -30,16 +34,14 @@ const AuthPage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const [loginData, setLoginData] = useState({ identifier: '', password: '' });
-  const [signupData, setSignupData] = useState({ registerNumber: '', password: '', name: '' });
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [signupData, setSignupData] = useState({ name: '', email: '', registerNumber: '', password: '' });
 
   useEffect(() => {
     // Only redirect if authenticated AND not currently loading
     if (isAuthenticated && user && !authLoading) {
-      if (user.role === 'placement_officer') {
+      if (user.role === 'placement_officer' || user.role === 'student_representative') {
         navigate('/officer/dashboard', { replace: true });
-      } else if (user.role === 'student_representative') {
-        navigate('/representative/dashboard', { replace: true });
       } else {
         // Check if student has completed profile setup
         if (!user.registerNumber || !user.phone || !user.department || !user.section || !user.gender || !user.gpa) {
@@ -56,6 +58,7 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
+      emailSchema.parse(loginData.email);
       passwordSchema.parse(loginData.password);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -69,8 +72,7 @@ const AuthPage = () => {
       }
     }
 
-    // Always use register number for students
-    const { error } = await signIn(loginData.identifier, loginData.password, true);
+    const { error } = await signIn(loginData.email.trim(), loginData.password);
     
     if (error) {
       toast({
@@ -93,8 +95,9 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      passwordSchema.parse(signupData.password);
       nameSchema.parse(signupData.name);
+      studentEmailSchema.parse(signupData.email);
+      passwordSchema.parse(signupData.password);
       
       if (!signupData.registerNumber || signupData.registerNumber.length < 5) {
         throw new z.ZodError([{
@@ -115,7 +118,13 @@ const AuthPage = () => {
       }
     }
 
-    const { error } = await signUp(signupData.registerNumber, signupData.password, signupData.name, true);
+    const { error } = await signUp({
+      name: signupData.name,
+      email: signupData.email.trim(),
+      registerNumber: signupData.registerNumber.trim(),
+      password: signupData.password,
+      role: 'student',
+    });
     
     if (error) {
       let message = error.message;
@@ -254,15 +263,15 @@ const AuthPage = () => {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-identifier">Register Number</Label>
+                  <Label htmlFor="login-email">Student Email</Label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="login-identifier"
-                      type="text"
-                      placeholder="Enter your register number"
-                      value={loginData.identifier}
-                      onChange={(e) => setLoginData({ ...loginData, identifier: e.target.value.toUpperCase() })}
+                      id="login-email"
+                      type="email"
+                      placeholder="sample@mca.christuniversity.in"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       className="pl-10"
                       required
                     />
@@ -318,6 +327,21 @@ const AuthPage = () => {
                       placeholder="Enter your full name"
                       value={signupData.name}
                       onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Student Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="sample@mca.christuniversity.in"
+                      value={signupData.email}
+                      onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       className="pl-10"
                       required
                     />

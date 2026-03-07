@@ -24,6 +24,7 @@ router.put('/:id', protect, async (req, res) => {
     // Users can only update their own profile unless they're an officer/admin
     if (req.user._id.toString() !== req.params.id && 
         req.user.role !== 'placement_officer' && 
+        req.user.role !== 'student_representative' && 
         req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }

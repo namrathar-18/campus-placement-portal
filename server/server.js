@@ -8,6 +8,7 @@ import applicationRoutes from './routes/application.js';
 import notificationRoutes from './routes/notifications.js';
 import statsRoutes from './routes/stats.js';
 import userRoutes from './routes/users.js';
+import alumniRoutes from './routes/alumni.js';
 import representativeRoutes from './routes/representative.js';
 
 dotenv.config();
@@ -30,6 +31,7 @@ const startServer = async () => {
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/stats', statsRoutes);
   app.use('/api/users', userRoutes);
+  app.use('/api/alumni', alumniRoutes);
   app.use('/api/representative', representativeRoutes);
 
   // Error handling middleware

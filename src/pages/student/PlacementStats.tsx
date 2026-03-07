@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatsCard from '@/components/cards/StatsCard';
 import { Users, UserCheck, Building2, TrendingUp, IndianRupee, Award } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const PlacementStats = () => {
+  const academicYear = '2023 - 2025';
+
   const pastBatchStats = {
     totalStudents: 120,
     placedStudents: 75,
@@ -15,13 +17,13 @@ const PlacementStats = () => {
   const unplacedStudents = pastBatchStats.totalStudents - pastBatchStats.placedStudents;
   const placementRate = Math.round((pastBatchStats.placedStudents / pastBatchStats.totalStudents) * 100);
 
-  const monthlyPlacementData = [
-    { month: 'Aug', placed: 8, target: 12 },
-    { month: 'Sep', placed: 18, target: 22 },
-    { month: 'Oct', placed: 30, target: 36 },
-    { month: 'Nov', placed: 46, target: 50 },
-    { month: 'Dec', placed: 62, target: 66 },
-    { month: 'Jan', placed: pastBatchStats.placedStudents, target: 80 },
+  const monthlyPlacedCountData = [
+    { month: 'Aug', placed: 8 },
+    { month: 'Sep', placed: 10 },
+    { month: 'Oct', placed: 12 },
+    { month: 'Nov', placed: 16 },
+    { month: 'Dec', placed: 14 },
+    { month: 'Jan', placed: 15 },
   ];
 
   const companyWiseData = [
@@ -51,10 +53,10 @@ const PlacementStats = () => {
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
-            Past Batch Placement Statistics
+            Past Batch Placement Statistics ({academicYear})
           </h1>
           <p className="text-muted-foreground">
-            Placement outcomes from the previous graduating batch
+            Placement outcomes for the academic year {academicYear}
           </p>
         </div>
 
@@ -73,8 +75,6 @@ const PlacementStats = () => {
               value={pastBatchStats.placedStudents}
               icon={UserCheck}
               variant="success"
-              trend="Past batch result"
-              trendUp
             />
           </div>
           <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
@@ -112,15 +112,15 @@ const PlacementStats = () => {
 
         {/* Charts */}
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Placement Trend */}
+          {/* Monthly Placements */}
           <Card className="animate-slide-up" style={{ animationDelay: '600ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Past Batch Placement Trend</CardTitle>
+              <CardTitle className="text-lg">Students Placed Each Month (AY {academicYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyPlacementData}>
+                  <BarChart data={monthlyPlacedCountData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
                     <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -131,21 +131,12 @@ const PlacementStats = () => {
                         borderRadius: '8px',
                       }}
                     />
-                    <Line
-                      type="monotone"
+                    <Bar
                       dataKey="placed"
-                      stroke="hsl(207, 31%, 32%)" /* #456882 */
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(207, 31%, 32%)', r: 4 }}
+                      fill="hsl(207, 31%, 32%)"
+                      radius={[6, 6, 0, 0]}
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="target"
-                      stroke="hsl(207, 50%, 28%)" /* #234C6A */
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                    />
-                  </LineChart>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
@@ -154,7 +145,7 @@ const PlacementStats = () => {
           {/* Company-wise Stats */}
           <Card className="animate-slide-up" style={{ animationDelay: '700ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Top Recruiters by Offers</CardTitle>
+              <CardTitle className="text-lg">Top Recruiters by Offers (AY {academicYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
@@ -180,7 +171,7 @@ const PlacementStats = () => {
           {/* Placement Ratio */}
           <Card className="animate-slide-up" style={{ animationDelay: '800ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Past Batch Placed vs Unplaced</CardTitle>
+              <CardTitle className="text-lg">Placed vs Unplaced (AY {academicYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row items-center justify-center gap-8">
@@ -229,7 +220,7 @@ const PlacementStats = () => {
           {/* Role-based Placement Stats */}
           <Card className="animate-slide-up" style={{ animationDelay: '900ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Role-based Placement Stats</CardTitle>
+              <CardTitle className="text-lg">Role-based Placement Stats (AY {academicYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">

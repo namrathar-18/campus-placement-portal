@@ -38,7 +38,7 @@ const OfficerDashboard = () => {
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'placement_officer') {
+  if (!isAuthenticated || (user?.role !== 'placement_officer' && user?.role !== 'student_representative')) {
     return <Navigate to="/login" replace />;
   }
 

@@ -5,6 +5,10 @@ import User from '../models/User.js';
 import { sendPasswordResetEmail } from '../config/email.js';
 
 const router = express.Router();
+const studentEmailDomain = '@mca.christuniversity.in';
+
+const isStudentEmail = (email) =>
+  typeof email === 'string' && email.toLowerCase().endsWith(studentEmailDomain);
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -18,6 +22,7 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -56,13 +61,32 @@ router.post('/register', async (req, res) => {
 
     const userRole = role || 'student';
 >>>>>>> Stashed changes
+=======
+    const { email, password, name, role, registerNumber } = req.body;
+
+    const userRole = role || 'student';
+>>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
     
-    // For students, registerNumber is required
+    // For students, registerNumber and email are required
     if (userRole === 'student') {
       if (!registerNumber) {
         return res.status(400).json({ 
           success: false, 
           message: 'Register number is required for students' 
+        });
+      }
+
+      if (!email) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Email is required for students' 
+        });
+      }
+
+      if (!isStudentEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: `Please use your ${studentEmailDomain} email address`
         });
       }
       
@@ -74,6 +98,11 @@ router.post('/register', async (req, res) => {
           message: 'This register number is already registered' 
         });
       }
+
+      const existingEmail = await User.findOne({ email: email.toLowerCase() });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Email is already registered' });
+      }
     } else {
       // For officers/admin, email is required
       if (!email) {
@@ -83,10 +112,11 @@ router.post('/register', async (req, res) => {
         });
       }
       
-      const userExists = await User.findOne({ email });
+      const userExists = await User.findOne({ email: email.toLowerCase() });
       if (userExists) {
         return res.status(400).json({ success: false, message: 'User already exists' });
       }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,14 +127,17 @@ router.post('/register', async (req, res) => {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
     }
 
     // Create user
     const user = await User.create({
-      email: userRole === 'student' ? undefined : email,
+      email: email ? email.toLowerCase() : undefined,
       password,
       name,
       role: userRole,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -122,6 +155,9 @@ router.post('/register', async (req, res) => {
 =======
       registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
 >>>>>>> Stashed changes
+=======
+      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
+>>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
     });
 
     if (user) {
@@ -156,7 +192,7 @@ router.post('/login', async (req, res) => {
       user = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
     } else if (email) {
       // Officer/admin login with email
-      user = await User.findOne({ email });
+      user = await User.findOne({ email: email.toLowerCase() });
     } else {
       return res.status(400).json({ 
         success: false, 

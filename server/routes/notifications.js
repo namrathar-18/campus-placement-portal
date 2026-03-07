@@ -9,10 +9,14 @@ const router = express.Router();
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
+    const roleTargets = req.user.role === 'student_representative'
+      ? ['student_representative', 'placement_officer']
+      : [req.user.role];
+
     const notifications = await Notification.find({
       $or: [
         { targetRole: 'all' },
-        { targetRole: req.user.role },
+        { targetRole: { $in: roleTargets } },
         { userId: req.user._id },
         { createdBy: req.user._id } // Officers can see notifications they created
       ]

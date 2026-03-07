@@ -1,6 +1,7 @@
 import express from 'express';
 import Company from '../models/Company.js';
 import { protect, authorize } from '../middleware/auth.js';
+import { defaultCompanies } from '../data/defaultCompanies.js';
 
 const router = express.Router();
 
@@ -46,6 +47,52 @@ router.post('/', protect, authorize('placement_officer', 'admin'), async (req, r
     res.status(201).json({ success: true, data: company });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   POST /api/companies/bootstrap-defaults
+// @desc    Upsert default companies for placement officer/admin
+// @access  Private/Placement Officer
+router.post('/bootstrap-defaults', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+  try {
+    const upsertOperations = defaultCompanies.map((company) => ({
+      updateOne: {
+        filter: { name: company.name },
+        update: {
+          $set: {
+            description: company.description,
+            industry: company.industry,
+            location: company.location,
+            salary: company.salary,
+            min_gpa: company.min_gpa,
+            eligibility: company.eligibility,
+            deadline: company.deadline,
+            role: company.role,
+            roles: [company.role],
+            job_type: company.job_type,
+            status: company.status,
+            openings: company.openings,
+            createdBy: req.user._id,
+          },
+        },
+        upsert: true,
+      },
+    }));
+
+    const result = await Company.bulkWrite(upsertOperations, { ordered: false });
+
+    return res.json({
+      success: true,
+      message: 'Default companies synced to database successfully.',
+      data: {
+        total: defaultCompanies.length,
+        inserted: result.upsertedCount || 0,
+        modified: result.modifiedCount || 0,
+        matched: result.matchedCount || 0,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 

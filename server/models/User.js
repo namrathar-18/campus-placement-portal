@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'student_representative', 'placement_officer', 'admin'],
     default: 'student'
   },
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +38,12 @@ const userSchema = new mongoose.Schema({
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+  gender: {
+    type: String,
+    enum: ['male', 'female']
+  },
+>>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
   isRepresentative: {
     type: Boolean,
     default: false
@@ -45,6 +52,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['class_representative', 'department_representative', 'placement_coordinator'],
     sparse: true
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +63,8 @@ const userSchema = new mongoose.Schema({
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
   },
   registerNumber: {
     type: String,

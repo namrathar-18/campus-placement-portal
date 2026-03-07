@@ -83,3 +83,35 @@ export interface PlacementStats {
   topCompany: string;
   companiesVisited: number;
 }
+
+export interface AlumniRecord {
+  name: string;
+  batch: string;
+  currentCompany: string;
+  role: string;
+  linkedin: string;
+  email: string;
+}
+
+export interface AlumniMatchItem {
+  name: string;
+  batch: string;
+  role: string;
+  linkedin: string;
+  email: string;
+}
+
+export interface AlumniMatchFoundResponse {
+  company: string;
+  alumniFound: true;
+  totalMatches: number;
+  alumni: AlumniMatchItem[];
+}
+
+export interface AlumniMatchNotFoundResponse {
+  company: string;
+  alumniFound: false;
+  message: string;
+}
+
+export type AlumniMatchResponse = AlumniMatchFoundResponse | AlumniMatchNotFoundResponse;

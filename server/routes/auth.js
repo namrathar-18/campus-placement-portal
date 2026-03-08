@@ -24,60 +24,11 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    const { email, password, name, role, gender } = req.body;
-=======
-    const { email, password, name, role, registerNumber } = req.body;
->>>>>>> Stashed changes
-
-    const userRole = role || 'student';
-<<<<<<< Updated upstream
-    const normalizedGender = typeof gender === 'string' ? gender.toLowerCase().trim() : '';
-    if (userRole === 'student' && !email.endsWith('@mca.christuniversity.in')) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Students must register with @mca.christuniversity.in email address' 
-      });
-    }
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ success: false, message: 'User already exists' });
-=======
-=======
-    const { email, password, name, role, registerNumber } = req.body;
-
-    const userRole = role || 'student';
->>>>>>> Stashed changes
-=======
-    const { email, password, name, role, registerNumber } = req.body;
-
-    const userRole = role || 'student';
->>>>>>> Stashed changes
-=======
-    const { email, password, name, role, registerNumber } = req.body;
-
-    const userRole = role || 'student';
->>>>>>> Stashed changes
-=======
-    const { email, password, name, role, registerNumber } = req.body;
-
-    const userRole = role || 'student';
->>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
-    
-    // For students, registerNumber and email are required
-=======
     const { email, password, name, role, registerNumber } = req.body;
 
     const userRole = role || 'student';
     
     // For students, registerNumber is required
->>>>>>> Stashed changes
     if (userRole === 'student') {
       if (!registerNumber) {
         return res.status(400).json({ 
@@ -85,24 +36,6 @@ router.post('/register', async (req, res) => {
           message: 'Register number is required for students' 
         });
       }
-<<<<<<< Updated upstream
-
-      if (!email) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Email is required for students' 
-        });
-      }
-
-      if (!isStudentEmail(email)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Please use your @mca.christuniversity.in or @mscaiml.christuniversity.in email address',
-        });
-      }
-=======
->>>>>>> Stashed changes
-      
       // Check if registerNumber already exists
       const existingUser = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
       if (existingUser) {
@@ -111,14 +44,6 @@ router.post('/register', async (req, res) => {
           message: 'This register number is already registered' 
         });
       }
-<<<<<<< Updated upstream
-
-      const existingEmail = await User.findOne({ email: email.toLowerCase() });
-      if (existingEmail) {
-        return res.status(400).json({ success: false, message: 'Email is already registered' });
-      }
-=======
->>>>>>> Stashed changes
     } else {
       // For officers/admin, email is required
       if (!email) {
@@ -128,67 +53,19 @@ router.post('/register', async (req, res) => {
         });
       }
       
-<<<<<<< Updated upstream
-      const userExists = await User.findOne({ email: email.toLowerCase() });
-      if (userExists) {
-        return res.status(400).json({ success: false, message: 'User already exists' });
-      }
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
-=======
       const userExists = await User.findOne({ email });
       if (userExists) {
         return res.status(400).json({ success: false, message: 'User already exists' });
       }
->>>>>>> Stashed changes
     }
 
     // Create user
     const user = await User.create({
-<<<<<<< Updated upstream
-      email: email ? email.toLowerCase() : undefined,
-      password,
-      name,
-      role: userRole,
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      gender: userRole === 'student' && ['male', 'female'].includes(normalizedGender) ? normalizedGender : undefined
-=======
-      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
-=======
-      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
-=======
-      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
-=======
-      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
-=======
-      registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> 16e293291012a08b14f94bca2e3027e9a45229dd
-=======
       email: userRole === 'student' ? undefined : email,
       password,
       name,
       role: userRole,
       registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
->>>>>>> Stashed changes
     });
 
     if (user) {
@@ -223,11 +100,7 @@ router.post('/login', async (req, res) => {
       user = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
     } else if (email) {
       // Officer/admin login with email
-<<<<<<< Updated upstream
-      user = await User.findOne({ email: email.toLowerCase() });
-=======
       user = await User.findOne({ email });
->>>>>>> Stashed changes
     } else {
       return res.status(400).json({ 
         success: false, 

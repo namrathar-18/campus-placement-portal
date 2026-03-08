@@ -14,13 +14,8 @@ const createRepresentative = async () => {
     // Create a sample student representative
     const representative = await User.create({
       name: 'Student Representative',
-<<<<<<< Updated upstream
-      email: 'studentrep@gmail.com',
-      password: 'studentrep', // Will be hashed automatically
-=======
       registerNumber: 'REP2024001',
       password: 'representative123', // Will be hashed automatically
->>>>>>> Stashed changes
       role: 'student_representative',
       isRepresentative: true,
       representativeDesignation: 'department_representative',
@@ -31,13 +26,8 @@ const createRepresentative = async () => {
     });
 
     console.log('✅ Student Representative created successfully:');
-<<<<<<< Updated upstream
-    console.log('   Email: studentrep@gmail.com');
-    console.log('   Password: studentrep');
-=======
     console.log('   Register Number: REP2024001');
     console.log('   Password: representative123');
->>>>>>> Stashed changes
     console.log('   Role: student_representative');
     console.log('   Department: MCA');
     

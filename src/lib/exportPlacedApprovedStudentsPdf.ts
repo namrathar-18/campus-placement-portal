@@ -19,7 +19,7 @@ export const exportPlacedApprovedStudentsPdf = (
   const generatedDate = new Date().toLocaleString();
 
   doc.setFontSize(16);
-  doc.text('Placed / Approved Students List', 14, 14);
+  doc.text('Placed Students List', 14, 14);
   doc.setFontSize(10);
   doc.text(`Generated: ${generatedDate}`, 14, 20);
 

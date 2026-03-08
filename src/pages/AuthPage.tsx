@@ -5,30 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, User, Loader2, GraduationCap } from 'lucide-react';
+import { Mail, Lock, GraduationCap, Loader2 } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
 
 const emailSchema = z.string().trim().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
-const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
-const validStudentEmailDomains = ['@mca.christuniversity.in', '@mscaiml.christuniversity.in'];
-const studentEmailSchema = emailSchema.refine(
-  (value) => validStudentEmailDomains.some((domain) => value.toLowerCase().endsWith(domain)),
-  { message: 'Use your @mca.christuniversity.in or @mscaiml.christuniversity.in email address' }
-);
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, isAuthenticated, user, isLoading: authLoading } = useAuth();
+  const { signIn, isAuthenticated, user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('login');
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [resetStep, setResetStep] = useState<'email' | 'code' | 'password'>('email');
@@ -37,8 +29,6 @@ const AuthPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ name: '', email: '', registerNumber: '', password: '' });
-  const [emailVerified, setEmailVerified] = useState(false);
 
   // ── Google Login (for the Login tab) ─────────────────────────────────────
   const googleLoginForLogin = useGoogleLogin({
@@ -74,54 +64,6 @@ const AuthPage = () => {
       setIsLoading(false);
     },
     onError: () => toast({ title: 'Google Sign-In Failed', description: 'Could not open Google sign-in.', variant: 'destructive' }),
-  });
-
-  // ── Google Signup Verification (for the Sign Up tab) ─────────────────────
-  const googleLoginForSignup = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setIsLoading(true);
-      try {
-        // Validate form fields first
-        nameSchema.parse(signupData.name);
-        studentEmailSchema.parse(signupData.email);
-        passwordSchema.parse(signupData.password);
-        if (!signupData.registerNumber || signupData.registerNumber.length < 5) {
-          throw new Error('Please enter a valid register number before verifying with Google.');
-        }
-
-        // Get the actual Google account email
-        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        const { email: googleEmail } = await userInfoRes.json();
-
-        if (!googleEmail) {
-          toast({ title: 'Verification Failed', description: 'Could not retrieve email from Google.', variant: 'destructive' });
-          setIsLoading(false);
-          return;
-        }
-
-        // The Google email MUST match the typed student email
-        if (googleEmail.toLowerCase() !== signupData.email.trim().toLowerCase()) {
-          toast({
-            title: 'Email Mismatch',
-            description: `Please sign in with the Google account for "${signupData.email}". You signed in with "${googleEmail}".`,
-            variant: 'destructive',
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        // Email verified — unlock Create Account
-        setEmailVerified(true);
-        toast({ title: 'Email Verified ✓', description: 'Your email is confirmed. Click "Create Account" to finish.' });
-      } catch (error: any) {
-        const msg = error instanceof z.ZodError ? error.errors[0].message : (error?.message || 'Verification failed.');
-        toast({ title: 'Error', description: msg, variant: 'destructive' });
-      }
-      setIsLoading(false);
-    },
-    onError: () => toast({ title: 'Google Verification Failed', description: 'Could not open Google sign-in.', variant: 'destructive' }),
   });
 
 
@@ -177,56 +119,6 @@ const AuthPage = () => {
     }
     
     setIsLoading(false);
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      nameSchema.parse(signupData.name);
-      studentEmailSchema.parse(signupData.email);
-      passwordSchema.parse(signupData.password);
-      if (!signupData.registerNumber || signupData.registerNumber.length < 5) {
-        throw new z.ZodError([{
-          code: 'custom',
-          path: ['registerNumber'],
-          message: 'Please enter a valid register number'
-        }]);
-      }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast({
-          title: 'Validation Error',
-          description: error.errors[0].message,
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    const { error } = await signUp(signupData.email.trim(), signupData.password, signupData.name, signupData.registerNumber.trim());
-    
-    if (error) {
-      let message = error.message;
-      if (error.message.includes('already registered')) {
-        message = 'This register number is already registered. Please login instead.';
-      }
-      toast({
-        title: 'Signup Failed',
-        description: message,
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-    } else {
-      toast({
-        title: 'Account Created! 🎉',
-        description: 'Let\'s complete your profile!',
-      });
-      // Redirect to profile setup after successful signup
-      navigate('/student/profile-setup');
-    }
   };
 
   const handleForgotPassword = async () => {
@@ -344,187 +236,81 @@ const AuthPage = () => {
           <CardDescription>Christ (Deemed to be University) Placement Portal</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Student Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="sample@mca.christuniversity.in"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="px-0 text-sm"
-                    onClick={() => setForgotPasswordOpen(true)}
-                  >
-                    Forgot Password?
-                  </Button>
-                </div>
-                <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    'Sign In'
-                  )}
-                </Button>
-                <div className="relative my-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">or</span>
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full flex items-center gap-2"
-                  disabled={isLoading}
-                  onClick={() => googleLoginForLogin()}
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Continue with Google
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={signupData.name}
-                      onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Student Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="sample@mca.christuniversity.in"
-                      value={signupData.email}
-                      onChange={(e) => { setSignupData({ ...signupData, email: e.target.value }); setEmailVerified(false); }}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-registerNumber">Register Number</Label>
-                  <div className="relative">
-                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="signup-registerNumber"
-                      type="text"
-                      placeholder="Enter your register number"
-                      value={signupData.registerNumber}
-                      onChange={(e) => setSignupData({ ...signupData, registerNumber: e.target.value.toUpperCase() })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Create a password (min 6 characters)"
-                      value={signupData.password}
-                      onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant={emailVerified ? 'outline' : 'hero'}
-                  className="w-full flex items-center justify-center gap-2"
-                  disabled={isLoading || emailVerified}
-                  onClick={() => googleLoginForSignup()}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : emailVerified ? (
-                    <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  ) : (
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                      <path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                  )}
-                  {emailVerified ? 'Email Verified ✓' : 'Verify Email'}
-                </Button>
-                <Button
-                  type="submit"
-                  variant="hero"
-                  className="w-full"
-                  disabled={isLoading || !emailVerified}
-                >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Account'}
-                </Button>
-                <p className="text-xs text-center text-muted-foreground">
-                  First verify your email with Google, then create your account.
-                </p>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="login-email">Student Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="sample@mca.christuniversity.in"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="login-password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="login-password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="link"
+                className="px-0 text-sm"
+                onClick={() => setForgotPasswordOpen(true)}
+              >
+                Forgot Password?
+              </Button>
+            </div>
+            <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </Button>
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center gap-2"
+              disabled={isLoading}
+              onClick={() => googleLoginForLogin()}
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Continue with Google
+            </Button>
+          </form>
           
           <p className="text-center text-xs text-muted-foreground mt-6">
             By continuing, you agree to the university's placement policies.

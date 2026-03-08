@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Building2, Search, Loader2, FileDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Search, Loader2, FileDown, Paperclip, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   useCompanies,
@@ -29,6 +29,7 @@ const ManageCompanies = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -51,6 +52,7 @@ const ManageCompanies = () => {
   const handleOpenDialog = (company?: Company) => {
     if (company) {
       setEditingCompany(company);
+      setSelectedFileName((company as any).detailsFile ? `${company.name}_Details.pdf` : '');
       setFormData({
         name: company.name,
         role: company.roles?.[0] || '',
@@ -66,6 +68,7 @@ const ManageCompanies = () => {
       });
     } else {
       setEditingCompany(null);
+      setSelectedFileName('');
       setFormData({
         name: '',
         role: '',
@@ -81,6 +84,19 @@ const ManageCompanies = () => {
       });
     }
     setIsDialogOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Please upload a file under 5 MB.', variant: 'destructive' });
+      return;
+    }
+    setSelectedFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => setFormData((prev) => ({ ...prev, detailsFile: reader.result as string }));
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -202,7 +218,7 @@ const ManageCompanies = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="salary">Salary / Package</Label>
+                      <Label htmlFor="salary">Package</Label>
                       <Input id="salary" value={formData.salary} onChange={(e) => setFormData({ ...formData, salary: e.target.value })} placeholder="e.g. 12 LPA" />
                     </div>
                     <div className="space-y-2">
@@ -234,6 +250,21 @@ const ManageCompanies = () => {
                   <div className="space-y-2">
                     <Label htmlFor="description">Description *</Label>
                     <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Brief description of the company and role..." rows={3} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Company Details File <span className="text-muted-foreground text-xs">(PDF, max 5 MB)</span></Label>
+                    <label className="flex items-center gap-3 border border-dashed border-border rounded-md px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                      <Paperclip className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm text-muted-foreground truncate flex-1">
+                        {selectedFileName || 'Click to upload a file...'}
+                      </span>
+                      {selectedFileName && (
+                        <button type="button" onClick={(e) => { e.preventDefault(); setSelectedFileName(''); setFormData((p) => ({ ...p, detailsFile: '' })); }}>
+                          <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                        </button>
+                      )}
+                      <input id="detailsFile" type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleFileChange} />
+                    </label>
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>

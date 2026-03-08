@@ -24,13 +24,8 @@ interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-<<<<<<< Updated upstream
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (payload: { email: string; password: string; name: string; registerNumber?: string; role?: UserRole }) => Promise<{ error: Error | null }>;
-=======
   signIn: (identifier: string, password: string, isRegisterNumber?: boolean) => Promise<{ error: Error | null }>;
   signUp: (emailOrRegisterNumber: string, password: string, name: string, isRegisterNumber?: boolean) => Promise<{ error: Error | null }>;
->>>>>>> Stashed changes
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserData: (updates: Partial<AuthUser>) => void;
@@ -149,13 +144,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (identifier: string, password: string, isRegisterNumber: boolean = false) => {
     try {
-<<<<<<< Updated upstream
-      const payload = { email, password };
-=======
       const payload = isRegisterNumber 
         ? { registerNumber: identifier, password }
         : { email: identifier, password };
->>>>>>> Stashed changes
       
       const response = await api.post('/auth/login', payload);
       const data = extractPayload(response) as any;
@@ -173,17 +164,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-<<<<<<< Updated upstream
-  const signUp = async (payload: { email: string; password: string; name: string; registerNumber?: string; role?: UserRole }) => {
-    try {
-=======
   const signUp = async (emailOrRegisterNumber: string, password: string, name: string, isRegisterNumber: boolean = false) => {
     try {
       const payload = isRegisterNumber
         ? { registerNumber: emailOrRegisterNumber, password, name }
         : { email: emailOrRegisterNumber, password, name };
       
->>>>>>> Stashed changes
       const response = await api.post('/auth/register', payload);
       const data = extractPayload(response) as any;
       const { token, ...userData } = data || {};

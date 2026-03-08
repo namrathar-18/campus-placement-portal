@@ -32,9 +32,6 @@ const Navbar = () => {
         { to: '/student/stats', label: 'Placement Stats' },
       ];
     }
-<<<<<<< Updated upstream
-    if (user?.role === 'placement_officer' || user?.role === 'student_representative') {
-=======
     if (user?.role === 'student_representative') {
       return [
         { to: '/representative/dashboard', label: 'Dashboard' },
@@ -45,7 +42,6 @@ const Navbar = () => {
       ];
     }
     if (user?.role === 'placement_officer') {
->>>>>>> Stashed changes
       return [
         { to: '/officer/dashboard', label: 'Dashboard' },
         { to: '/officer/companies', label: 'Manage Companies' },

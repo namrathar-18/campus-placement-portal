@@ -8,7 +8,10 @@ import applicationRoutes from './routes/application.js';
 import notificationRoutes from './routes/notifications.js';
 import statsRoutes from './routes/stats.js';
 import userRoutes from './routes/users.js';
+<<<<<<< Updated upstream
 import alumniRoutes from './routes/alumni.js';
+=======
+>>>>>>> Stashed changes
 import representativeRoutes from './routes/representative.js';
 import zenithRoutes from './routes/zenith.js';
 
@@ -32,7 +35,10 @@ const startServer = async () => {
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/stats', statsRoutes);
   app.use('/api/users', userRoutes);
+<<<<<<< Updated upstream
   app.use('/api/alumni', alumniRoutes);
+=======
+>>>>>>> Stashed changes
   app.use('/api/representative', representativeRoutes);
   app.use('/api/zenith', zenithRoutes);
 

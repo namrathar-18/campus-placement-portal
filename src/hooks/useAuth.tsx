@@ -24,8 +24,8 @@ interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signIn: (identifier: string, password: string, isRegisterNumber?: boolean) => Promise<{ error: Error | null }>;
-  signUp: (emailOrRegisterNumber: string, password: string, name: string, isRegisterNumber?: boolean) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, name: string, registerNumber?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserData: (updates: Partial<AuthUser>) => void;
@@ -142,11 +142,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : prev));
   };
 
-  const signIn = async (identifier: string, password: string, isRegisterNumber: boolean = false) => {
+  const signIn = async (email: string, password: string) => {
     try {
-      const payload = isRegisterNumber 
-        ? { registerNumber: identifier, password }
-        : { email: identifier, password };
+      const payload = { email, password };
       
       const response = await api.post('/auth/login', payload);
       const data = extractPayload(response) as any;
@@ -164,11 +162,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (emailOrRegisterNumber: string, password: string, name: string, isRegisterNumber: boolean = false) => {
+  const signUp = async (email: string, password: string, name: string, registerNumber?: string) => {
     try {
-      const payload = isRegisterNumber
-        ? { registerNumber: emailOrRegisterNumber, password, name }
-        : { email: emailOrRegisterNumber, password, name };
+      const payload = { email, password, name, ...(registerNumber ? { registerNumber } : {}), role: 'student' };
       
       const response = await api.post('/auth/register', payload);
       const data = extractPayload(response) as any;

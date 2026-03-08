@@ -28,17 +28,26 @@ router.post('/register', async (req, res) => {
 
     const userRole = role || 'student';
     
-    // For students, registerNumber is required
+    // For students, email and registerNumber are required
     if (userRole === 'student') {
+      if (!email || !isStudentEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please use your @mca.christuniversity.in or @mscaiml.christuniversity.in email address',
+        });
+      }
       if (!registerNumber) {
         return res.status(400).json({ 
           success: false, 
           message: 'Register number is required for students' 
         });
       }
-      // Check if registerNumber already exists
-      const existingUser = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
-      if (existingUser) {
+      const existingEmail = await User.findOne({ email: email.toLowerCase() });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'This email is already registered' });
+      }
+      const existingReg = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
+      if (existingReg) {
         return res.status(400).json({ 
           success: false, 
           message: 'This register number is already registered' 
@@ -61,7 +70,7 @@ router.post('/register', async (req, res) => {
 
     // Create user
     const user = await User.create({
-      email: userRole === 'student' ? undefined : email,
+      email: email ? email.toLowerCase() : undefined,
       password,
       name,
       role: userRole,
@@ -93,20 +102,14 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password, registerNumber } = req.body;
 
-    // Check for user - students use registerNumber, officers use email
-    let user;
-    if (registerNumber) {
-      // Student login with register number
-      user = await User.findOne({ registerNumber: registerNumber.toUpperCase() });
-    } else if (email) {
-      // Officer/admin login with email
-      user = await User.findOne({ email });
-    } else {
+    // All users login with email
+    if (!email) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Please provide register number or email' 
+        message: 'Please provide your email address' 
       });
     }
+    const user = await User.findOne({ email: email.toLowerCase() });
 
     if (user && (await user.matchPassword(password))) {
       res.json({

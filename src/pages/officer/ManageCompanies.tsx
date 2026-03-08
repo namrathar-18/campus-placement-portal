@@ -180,7 +180,68 @@ const ManageCompanies = () => {
                   <DialogTitle>{editingCompany ? 'Edit Company' : 'Add New Company'}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Add form fields here (Input, Textarea, Select) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Company Name *</Label>
+                      <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Google" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="industry">Industry</Label>
+                      <Input id="industry" value={formData.industry} onChange={(e) => setFormData({ ...formData, industry: e.target.value })} placeholder="e.g. Technology" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Role *</Label>
+                      <Input id="role" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} placeholder="e.g. Software Engineer" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Location</Label>
+                      <Input id="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="e.g. Bengaluru" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="salary">Salary / Package</Label>
+                      <Input id="salary" value={formData.salary} onChange={(e) => setFormData({ ...formData, salary: e.target.value })} placeholder="e.g. 12 LPA" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="minGpa">Minimum GPA</Label>
+                      <Input id="minGpa" type="number" step="0.1" min="0" max="10" value={formData.minGpa} onChange={(e) => setFormData({ ...formData, minGpa: e.target.value })} placeholder="e.g. 7.0" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="jobType">Job Type</Label>
+                      <Select value={formData.jobType} onValueChange={(v: 'full-time' | 'internship' | 'both') => setFormData({ ...formData, jobType: v })}>
+                        <SelectTrigger id="jobType"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="full-time">Full-time</SelectItem>
+                          <SelectItem value="internship">Internship</SelectItem>
+                          <SelectItem value="both">Both</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="deadline">Application Deadline</Label>
+                      <Input id="deadline" type="date" value={formData.deadline} onChange={(e) => setFormData({ ...formData, deadline: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="eligibility">Eligibility Criteria</Label>
+                    <Input id="eligibility" value={formData.eligibility} onChange={(e) => setFormData({ ...formData, eligibility: e.target.value })} placeholder="e.g. MCA / MSc AIML" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description *</Label>
+                    <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Brief description of the company and role..." rows={3} required />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                    <Button type="submit" variant="hero" disabled={createCompany.isPending || updateCompany.isPending}>
+                      {(createCompany.isPending || updateCompany.isPending) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                      {editingCompany ? 'Save Changes' : 'Add Company'}
+                    </Button>
+                  </div>
                 </form>
               </DialogContent>
             </Dialog>

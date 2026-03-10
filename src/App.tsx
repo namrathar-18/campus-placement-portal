@@ -18,11 +18,9 @@ import ManageCompanies from "./pages/officer/ManageCompanies";
 import ManageApplications from "./pages/officer/ManageApplications";
 import CompanyApplications from "./pages/officer/CompanyApplications";
 import ManageNotifications from "./pages/officer/ManageNotifications";
-import RepresentativeDashboard from "./pages/representative/RepresentativeDashboard";
-import ManageStudents from "./pages/representative/ManageStudents";
-import SendReminders from "./pages/representative/SendReminders";
-import PlacementReport from "./pages/representative/PlacementReport";
-import ViewApplications from "./pages/representative/ViewApplications";
+import StudentStats from "./pages/officer/StudentStats";
+import PlacementAnalytics from "./pages/officer/PlacementAnalytics";
+
 import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
 import NotFound from "./pages/NotFound";
@@ -75,13 +73,15 @@ const AppContent = () => {
             <Route path="/officer/applications" element={<ManageApplications />} />
             <Route path="/officer/applications/:companyId" element={<CompanyApplications />} />
             <Route path="/officer/notifications" element={<ManageNotifications />} />
+            <Route path="/officer/students" element={<StudentStats />} />
+            <Route path="/officer/analytics" element={<PlacementAnalytics />} />
             
-            {/* Student Representative Routes */}
-            <Route path="/representative/dashboard" element={<RepresentativeDashboard />} />
-            <Route path="/representative/students" element={<ManageStudents />} />
-            <Route path="/representative/applications" element={<ViewApplications />} />
-            <Route path="/representative/reminders" element={<SendReminders />} />
-            <Route path="/representative/report" element={<PlacementReport />} />
+            {/* Student Representative Routes — redirect to identical officer pages */}
+            <Route path="/representative/dashboard" element={<OfficerDashboard />} />
+            <Route path="/representative/companies" element={<ManageCompanies />} />
+            <Route path="/representative/applications" element={<ManageApplications />} />
+            <Route path="/representative/applications/:companyId" element={<CompanyApplications />} />
+            <Route path="/representative/notifications" element={<ManageNotifications />} />
             
             {/* Company Details */}
             <Route path="/company/:id" element={<CompanyDetails />} />

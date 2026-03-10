@@ -8,7 +8,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Users, Plus, ArrowRight, Clock, Loader2 } from 'lucide-react';
+import { Building2, Users, Plus, ArrowRight, Clock, Loader2, TrendingUp, BarChart2 } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
 import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
@@ -252,6 +252,7 @@ const OfficerDashboard = () => {
                   <Button variant="outline" size="sm" onClick={downloadPlacedPdf}>
                     Download Placed Students PDF
                   </Button>
+                  <Link to="/officer/students"><Button variant="ghost" size="sm" className="gap-1"><TrendingUp className="w-4 h-4" /> View Details <ArrowRight className="w-4 h-4" /></Button></Link>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -280,7 +281,10 @@ const OfficerDashboard = () => {
               <Card className="rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Section-wise Placement Analytics</CardTitle>
-                  <Badge variant="outline" className="text-xs">{sectionWiseAnalytics.length} Sections</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">{sectionWiseAnalytics.length} Sections</Badge>
+                    <Link to="/officer/analytics"><Button variant="ghost" size="sm" className="gap-1"><BarChart2 className="w-4 h-4" /> Full Analytics <ArrowRight className="w-4 h-4" /></Button></Link>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {sectionWiseAnalytics.length > 0 ? (

@@ -34,11 +34,12 @@ const Navbar = () => {
     }
     if (user?.role === 'student_representative') {
       return [
-        { to: '/representative/dashboard', label: 'Dashboard' },
-        { to: '/representative/students', label: 'Students' },
-        { to: '/representative/applications', label: 'Applications' },
-        { to: '/representative/reminders', label: 'Reminders' },
-        { to: '/representative/report', label: 'Reports' },
+        { to: '/officer/dashboard', label: 'Dashboard' },
+        { to: '/officer/companies', label: 'Manage Companies' },
+        { to: '/officer/applications', label: 'Applications' },
+        { to: '/officer/students', label: 'Student Stats' },
+        { to: '/officer/analytics', label: 'Analytics' },
+        { to: '/officer/notifications', label: 'Notifications' },
       ];
     }
     if (user?.role === 'placement_officer') {
@@ -46,6 +47,8 @@ const Navbar = () => {
         { to: '/officer/dashboard', label: 'Dashboard' },
         { to: '/officer/companies', label: 'Manage Companies' },
         { to: '/officer/applications', label: 'Applications' },
+        { to: '/officer/students', label: 'Student Stats' },
+        { to: '/officer/analytics', label: 'Analytics' },
         { to: '/officer/notifications', label: 'Notifications' },
       ];
     }

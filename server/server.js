@@ -20,7 +20,23 @@ const startServer = async () => {
   await connectDB();
 
   // Middleware
-  app.use(cors());
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      // Allow localhost (any port) and any *.vercel.app domain
+      if (
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Allow all for now; restrict if needed
+    },
+    credentials: true,
+  }));
   app.use(express.json({ limit: '50mb' })); // Increase limit for base64 files
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 

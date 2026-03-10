@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -29,7 +30,7 @@ import {
 import {
   Loader2, ArrowLeft, Users, UserCheck, UserX, GraduationCap,
   TrendingUp, FileText, Clock, CheckCircle2, XCircle, Search,
-  Mail, Phone, Building2, ChevronRight, BookOpen,
+  Mail, Phone, Building2, ChevronRight, BookOpen, ExternalLink, Award,
 } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -282,6 +283,9 @@ const StudentStats = () => {
               </div>
               {selectedStudent?.name}
             </DialogTitle>
+            <DialogDescription>
+              Full placement profile and application history
+            </DialogDescription>
           </DialogHeader>
 
           {selectedStudent && (
@@ -336,6 +340,39 @@ const StudentStats = () => {
                         ? <span className="inline-flex items-center gap-1 text-sm font-bold text-success"><CheckCircle2 className="w-4 h-4" />Placed</span>
                         : <span className="inline-flex items-center gap-1 text-sm font-bold text-warning"><XCircle className="w-4 h-4" />Unplaced</span>}
                     </div>
+                    {selectedStudent.resumeUrl && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-muted-foreground mb-1">Resume</p>
+                        <a
+                          href={selectedStudent.resumeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> View Resume
+                        </a>
+                      </div>
+                    )}
+                    {selectedStudent.skills && selectedStudent.skills.length > 0 && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Award className="w-3 h-3" /> Skills</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedStudent.skills.map((skill: string) => (
+                            <span key={skill} className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">{skill}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {selectedStudent.certifications && selectedStudent.certifications.length > 0 && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-muted-foreground mb-2">Certifications</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedStudent.certifications.map((cert: string) => (
+                            <span key={cert} className="px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">{cert}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

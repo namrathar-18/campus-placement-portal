@@ -13,6 +13,10 @@ export interface BasicUser {
   section?: string;
   phone?: string;
   isPlaced?: boolean;
+  resumeUrl?: string;
+  photoUrl?: string;
+  skills?: string[];
+  certifications?: string[];
 }
 
 export const useUsers = () => {

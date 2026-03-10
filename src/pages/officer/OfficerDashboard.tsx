@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useApplications } from '@/hooks/useApplications';
@@ -8,7 +8,23 @@ import { useUsers } from '@/hooks/useUsers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Users, Plus, ArrowRight, Clock, Loader2, TrendingUp, BarChart2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Building2, Users, Plus, ArrowRight, Clock, Loader2, TrendingUp, BarChart2, Search, CheckCircle2, XCircle } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
 import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
@@ -48,6 +64,9 @@ const OfficerDashboard = () => {
   const { data: users, isLoading: usersLoading } = useUsers();
   const { toast } = useToast();
 
+  const [sectionDialog, setSectionDialog] = useState<{ section: string; tab: 'all' | 'placed' | 'unplaced' | 'pending' } | null>(null);
+  const [sectionSearch, setSectionSearch] = useState('');
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -68,6 +87,23 @@ const OfficerDashboard = () => {
   const averageGpa = students.length
     ? (students.reduce((sum, s) => sum + (s.gpa || 0), 0) / students.length).toFixed(2)
     : '0.00';
+  const pendingStudentIds = useMemo(() => new Set(
+    (applications || [])
+      .filter(a => a.status === 'pending' || a.status === 'ongoing')
+      .map(a => a.studentId?._id)
+      .filter(Boolean)
+  ), [applications]);
+
+  const placedCompanyByStudent = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const app of (applications || [])) {
+      if (app.status === 'placed' && app.studentId?._id && !map.has(app.studentId._id)) {
+        map.set(app.studentId._id, app.companyId?.name || 'Unknown');
+      }
+    }
+    return map;
+  }, [applications]);
+
   const sectionWiseAnalytics = useMemo(() => {
     const pendingStudentIds = new Set(
       (applications || [])
@@ -288,9 +324,9 @@ const OfficerDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   {sectionWiseAnalytics.length > 0 ? (
-                    <div className="h-72">
+                    <div className="h-72 cursor-pointer">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={sectionWiseAnalytics}>
+                        <BarChart data={sectionWiseAnalytics} onClick={(data) => { if (data?.activeLabel) { setSectionDialog({ section: data.activeLabel, tab: 'all' }); setSectionSearch(''); } }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                           <XAxis dataKey="section" stroke="hsl(var(--muted-foreground))" />
                           <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
@@ -465,6 +501,119 @@ const OfficerDashboard = () => {
           </div>
         </div>
       </div>
+      {/* Section Student List Dialog */}
+      <Dialog open={!!sectionDialog} onOpenChange={open => { if (!open) { setSectionDialog(null); setSectionSearch(''); } }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Section {sectionDialog?.section} — Students</DialogTitle>
+            <DialogDescription>
+              {students.filter(s => normalizeSection(s.section) === sectionDialog?.section).length} total students in this section
+            </DialogDescription>
+          </DialogHeader>
+          {sectionDialog && (() => {
+            const sec = sectionDialog.section;
+            const allInSection = students.filter(s => normalizeSection(s.section) === sec);
+            const tabs: { key: 'all' | 'placed' | 'unplaced' | 'pending'; label: string }[] = [
+              { key: 'all',      label: 'All' },
+              { key: 'placed',   label: 'Placed' },
+              { key: 'unplaced', label: 'Unplaced' },
+              { key: 'pending',  label: 'Pending' },
+            ];
+            let list = allInSection;
+            if (sectionDialog.tab === 'placed')   list = list.filter(s => s.isPlaced);
+            if (sectionDialog.tab === 'unplaced') list = list.filter(s => !s.isPlaced && !pendingStudentIds.has(s._id));
+            if (sectionDialog.tab === 'pending')  list = list.filter(s => pendingStudentIds.has(s._id));
+            if (sectionSearch.trim()) {
+              const term = sectionSearch.toLowerCase();
+              list = list.filter(s => s.name?.toLowerCase().includes(term) || s.registerNumber?.toLowerCase().includes(term));
+            }
+            return (
+              <div className="space-y-4 mt-2">
+                <div className="flex gap-2 flex-wrap">
+                  {tabs.map(t => {
+                    const count =
+                      t.key === 'all'      ? allInSection.length :
+                      t.key === 'placed'   ? allInSection.filter(s => s.isPlaced).length :
+                      t.key === 'unplaced' ? allInSection.filter(s => !s.isPlaced && !pendingStudentIds.has(s._id)).length :
+                      allInSection.filter(s => pendingStudentIds.has(s._id)).length;
+                    return (
+                      <button key={t.key}
+                        onClick={() => setSectionDialog({ ...sectionDialog, tab: t.key })}
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                          sectionDialog.tab === t.key
+                            ? t.key === 'placed'   ? 'bg-green-100 text-green-800 border-green-300'
+                            : t.key === 'unplaced' ? 'bg-orange-100 text-orange-800 border-orange-300'
+                            : t.key === 'pending'  ? 'bg-blue-100 text-blue-800 border-blue-300'
+                            : 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                        }`}>
+                        {t.label} <span className="ml-1 opacity-70">({count})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input placeholder="Search by name or register number..." value={sectionSearch} onChange={e => setSectionSearch(e.target.value)} className="pl-9" />
+                </div>
+                <div className="rounded-xl border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/40">
+                        <TableHead>#</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Register No.</TableHead>
+                        <TableHead>GPA</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Placed At</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {list.length === 0 ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No students found</TableCell></TableRow>
+                      ) : list.map((student, idx) => {
+                        const isPlaced  = student.isPlaced;
+                        const isPending = pendingStudentIds.has(student._id);
+                        const company   = placedCompanyByStudent.get(student._id);
+                        return (
+                          <TableRow key={student._id}>
+                            <TableCell className="text-muted-foreground text-sm">{idx + 1}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${ isPlaced ? 'bg-success/10 text-success' : isPending ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'}`}>
+                                  {student.name?.charAt(0) || '?'}
+                                </div>
+                                <span className="font-medium text-sm">{student.name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">{student.registerNumber || '—'}</TableCell>
+                            <TableCell>
+                              <span className={`font-semibold text-sm ${(student.gpa || 0) >= 8 ? 'text-success' : (student.gpa || 0) >= 6 ? 'text-warning' : 'text-destructive'}`}>
+                                {student.gpa?.toFixed(2) ?? '—'}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {isPlaced ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-success"><CheckCircle2 className="w-3.5 h-3.5" />Placed</span>
+                              ) : isPending ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary"><Clock className="w-3.5 h-3.5" />Pending</span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-warning"><XCircle className="w-3.5 h-3.5" />Unplaced</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{company ?? '—'}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                <p className="text-xs text-muted-foreground">Showing {list.length} students</p>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

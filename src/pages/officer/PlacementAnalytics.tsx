@@ -39,7 +39,7 @@ const TreemapContent = (props: any) => {
   const color = PIE_COLORS[(index ?? 0) % PIE_COLORS.length];
   const showLabel = width > 45 && height > 30;
   return (
-    <g>
+    <g style={{ cursor: 'pointer' }}>
       <rect x={x} y={y} width={width} height={height} fill={color} rx={6} ry={6} stroke="hsl(var(--card))" strokeWidth={3} />
       {showLabel && (
         <>
@@ -301,7 +301,7 @@ const PlacementAnalytics = () => {
             </CardHeader>
             <CardContent>
               {companyWisePlaced.length > 0 ? (
-                <div className="h-80">
+                <div className="h-80" style={{ cursor: 'pointer' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <Treemap
                       data={companyWisePlaced}
@@ -309,6 +309,12 @@ const PlacementAnalytics = () => {
                       nameKey="name"
                       stroke="hsl(var(--card))"
                       content={<TreemapContent />}
+                      onClick={(data: any) => {
+                        if (data?.name) {
+                          setCompanyDialog(data.name);
+                          setCompanySearchTerm('');
+                        }
+                      }}
                     >
                       <Tooltip
                         contentStyle={tooltipStyle}

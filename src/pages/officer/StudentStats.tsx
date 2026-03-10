@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { normalizeSection } from '@/constants/sections';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   pending:  { label: 'Pending',  className: 'bg-yellow-100 text-yellow-800' },
@@ -54,6 +55,7 @@ const StudentStats = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'placed' | 'unplaced'>('all');
+  const [sectionFilter, setSectionFilter] = useState<'all' | 'A' | 'B' | 'AI/ML'>('all');
   const [selectedStudent, setSelectedStudent] = useState<BasicUser | null>(null);
 
   if (authLoading) {
@@ -94,6 +96,9 @@ const StudentStats = () => {
     let list = students;
     if (statusFilter === 'placed')   list = list.filter(s => s.isPlaced);
     if (statusFilter === 'unplaced') list = list.filter(s => !s.isPlaced);
+    if (sectionFilter !== 'all') {
+      list = list.filter(s => normalizeSection(s.section) === sectionFilter);
+    }
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       list = list.filter(s =>
@@ -105,7 +110,7 @@ const StudentStats = () => {
       );
     }
     return list;
-  }, [students, statusFilter, searchTerm]);
+  }, [students, statusFilter, sectionFilter, searchTerm]);
 
   // Data for the selected student's detail dialog
   const selectedApps = selectedStudent ? (appsByStudent.get(selectedStudent._id) ?? []) : [];
@@ -181,6 +186,17 @@ const StudentStats = () => {
                     <SelectItem value="all">All Students</SelectItem>
                     <SelectItem value="placed">Placed</SelectItem>
                     <SelectItem value="unplaced">Unplaced</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sectionFilter} onValueChange={(v: any) => setSectionFilter(v)}>
+                  <SelectTrigger className="w-36 rounded-lg">
+                    <SelectValue placeholder="Section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sections</SelectItem>
+                    <SelectItem value="A">Section A</SelectItem>
+                    <SelectItem value="B">Section B</SelectItem>
+                    <SelectItem value="AI/ML">MSc AI/ML</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

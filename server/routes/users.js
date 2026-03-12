@@ -56,6 +56,7 @@ router.put('/:id', protect, async (req, res) => {
         'department',
         'section',
         'registerNumber',
+        'gender',
         'resumeUrl',
         'photoUrl',
         'resumeText',
@@ -85,6 +86,14 @@ router.put('/:id', protect, async (req, res) => {
       }
       if (typeof updateData.registerNumber === 'string') {
         updateData.registerNumber = sanitizeText(updateData.registerNumber);
+      }
+      if (typeof updateData.gender === 'string') {
+        const g = updateData.gender.toLowerCase();
+        if (g !== 'male' && g !== 'female') {
+          delete updateData.gender;
+        } else {
+          updateData.gender = g;
+        }
       }
       if (typeof updateData.resumeText === 'string') {
         updateData.resumeText = sanitizeText(updateData.resumeText);

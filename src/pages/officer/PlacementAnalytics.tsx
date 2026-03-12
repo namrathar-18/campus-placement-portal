@@ -61,6 +61,7 @@ const PlacementAnalytics = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [companyDialog, setCompanyDialog] = useState<string | null>(null);
   const [companySearchTerm, setCompanySearchTerm] = useState('');
+  const [sectionFilter, setSectionFilter] = useState<'all' | 'A' | 'B' | 'AI/ML'>('all');
 
   if (authLoading) {
     return (
@@ -74,7 +75,16 @@ const PlacementAnalytics = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const students = (users || []).filter(u => u.role === 'student');
+  const students = useMemo(() =>
+    (users || []).filter(u => u.role === 'student'),
+  [users]);
+
+  const filteredStudents = useMemo(() => {
+    if (sectionFilter === 'all') return students;
+    return students.filter(s => normalizeSection(s.section) === sectionFilter);
+  }, [students, sectionFilter]);
+
+  const filteredStudentIds = useMemo(() => new Set(filteredStudents.map(s => s._id)), [filteredStudents]);
 
   const pendingStudentIds = useMemo(() => new Set(
     (applications || [])
@@ -83,29 +93,29 @@ const PlacementAnalytics = () => {
       .filter(Boolean)
   ), [applications]);
 
-  // Map company name â†’ set of placed student IDs
+  // Map company name → set of placed student IDs
   const companyStudentIdsMap = useMemo(() => {
     const map = new Map<string, Set<string>>();
     for (const app of (applications || [])) {
-      if (app.status === 'placed' && app.companyId?.name && app.studentId?._id) {
+      if (app.status === 'placed' && app.companyId?.name && app.studentId?._id && filteredStudentIds.has(app.studentId._id)) {
         const name = app.companyId.name;
         if (!map.has(name)) map.set(name, new Set());
         map.get(name)!.add(app.studentId._id);
       }
     }
     return map;
-  }, [applications]);
+  }, [applications, filteredStudentIds]);
 
-  // Map studentId â†’ placed company name
+  // Map studentId → placed company name
   const placedCompanyByStudent = useMemo(() => {
     const map = new Map<string, string>();
     for (const app of (applications || [])) {
-      if (app.status === 'placed' && app.studentId?._id && !map.has(app.studentId._id)) {
+      if (app.status === 'placed' && app.studentId?._id && filteredStudentIds.has(app.studentId._id) && !map.has(app.studentId._id)) {
         map.set(app.studentId._id, app.companyId?.name || 'Unknown');
       }
     }
     return map;
-  }, [applications]);
+  }, [applications, filteredStudentIds]);
 
   const sectionWiseAnalytics = useMemo(() => {
     const groupedBySection = SECTION_OPTIONS.reduce<Record<SectionOption, { section: SectionOption; placed: number; unplaced: number; pending: number }>>(
@@ -116,7 +126,7 @@ const PlacementAnalytics = () => {
       {} as Record<SectionOption, { section: SectionOption; placed: number; unplaced: number; pending: number }>
     );
 
-    students.reduce((acc, student) => {
+    filteredStudents.reduce((acc, student) => {
       const section = normalizeSection(student.section) as SectionOption;
       if (!isSectionOption(section)) return acc;
       if (student.isPlaced) {
@@ -130,11 +140,11 @@ const PlacementAnalytics = () => {
     }, groupedBySection);
 
     return SECTION_OPTIONS.map((section) => groupedBySection[section]);
-  }, [applications, students, pendingStudentIds]);
+  }, [filteredStudents, pendingStudentIds]);
 
   const companyWisePlaced = useMemo(() => {
     const placedApplications = (applications || []).filter(
-      (application) => application.status === 'placed' && application.companyId?._id
+      (application) => application.status === 'placed' && application.companyId?._id && filteredStudentIds.has(application.studentId?._id)
     );
     const companyMap = placedApplications.reduce<Record<string, { name: string; studentIds: Set<string> }>>(
       (acc, application) => {
@@ -150,12 +160,12 @@ const PlacementAnalytics = () => {
       .map((company) => ({ name: company.name, value: company.studentIds.size }))
       .filter((company) => company.value > 0)
       .sort((a, b) => b.value - a.value);
-  }, [applications]);
+  }, [applications, filteredStudentIds]);
 
   const roleWisePlaced = useMemo(() => {
     const companyById = new Map((companies || []).map((company) => [company._id, company]));
     const placedApplications = (applications || []).filter(
-      (application) => application.status === 'placed' && application.companyId?._id
+      (application) => application.status === 'placed' && application.companyId?._id && filteredStudentIds.has(application.studentId?._id)
     );
     const roleMap = placedApplications.reduce<Record<string, Set<string>>>((acc, application) => {
       const company = companyById.get(application.companyId._id);
@@ -177,10 +187,10 @@ const PlacementAnalytics = () => {
     const top5 = sorted.slice(0, 5);
     const othersValue = sorted.slice(5).reduce((sum, item) => sum + item.value, 0);
     return [...top5, { role: 'Others', value: othersValue }];
-  }, [applications, companies]);
+  }, [applications, companies, filteredStudentIds]);
 
   const genderWisePlaced = useMemo(() => {
-    const groupedByGender = students.reduce<Record<string, number>>((acc, student) => {
+    const groupedByGender = filteredStudents.reduce<Record<string, number>>((acc, student) => {
       if (!student.isPlaced) return acc;
       const gender = (student.gender || '').trim().toLowerCase();
       if (gender === 'male' || gender === 'female') {
@@ -192,7 +202,7 @@ const PlacementAnalytics = () => {
     return Object.entries(groupedByGender)
       .map(([gender, value]) => ({ gender, value }))
       .sort((a, b) => b.value - a.value);
-  }, [students]);
+  }, [filteredStudents]);
 
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
@@ -264,12 +274,29 @@ const PlacementAnalytics = () => {
           <p className="text-muted-foreground">Click any section bar or company tile to view its student list</p>
         </div>
 
+        {/* Section Filter */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {(['all', 'A', 'B', 'AI/ML'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setSectionFilter(s)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                sectionFilter === s
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+              }`}
+            >
+              {s === 'all' ? 'All Sections' : `Section ${s}`}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Section-wise â€” CLICKABLE */}
+          {/* Section-wise — CLICKABLE */}
           <Card className="rounded-2xl animate-slide-up" style={{ animationDelay: '0ms' }}>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Section-wise Placement</CardTitle>
-              <Badge variant="outline" className="text-xs">{sectionWiseAnalytics.filter(s => s.placed + s.unplaced + s.pending > 0).length} Sections Â· click bar to view students</Badge>
+              <Badge variant="outline" className="text-xs">{sectionWiseAnalytics.filter(s => s.placed + s.unplaced + s.pending > 0).length} Sections · click bar to view students</Badge>
             </CardHeader>
             <CardContent>
               {sectionWiseAnalytics.length > 0 ? (
@@ -404,7 +431,7 @@ const PlacementAnalytics = () => {
       <Dialog open={!!companyDialog} onOpenChange={open => { if (!open) { setCompanyDialog(null); setCompanySearchTerm(''); } }}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl">{companyDialog} â€” Placed Students</DialogTitle>
+            <DialogTitle className="text-xl">{companyDialog} — Placed Students</DialogTitle>
             <DialogDescription>
               {companyStudentIdsMap.get(companyDialog || '')?.size ?? 0} students placed at this company
             </DialogDescription>
@@ -451,16 +478,16 @@ const PlacementAnalytics = () => {
                               <span className="font-medium text-sm">{student.name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="font-mono text-sm">{student.registerNumber || 'â€”'}</TableCell>
+                          <TableCell className="font-mono text-sm">{student.registerNumber || '—'}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-xs">{student.section || 'â€”'}</Badge>
+                            <Badge variant="outline" className="text-xs">{student.section || '—'}</Badge>
                           </TableCell>
                           <TableCell>
                             <span className={`font-semibold text-sm ${
                               (student.gpa || 0) >= 8 ? 'text-success' :
                               (student.gpa || 0) >= 6 ? 'text-warning' : 'text-destructive'
                             }`}>
-                              {student.gpa?.toFixed(2) ?? 'â€”'}
+                              {student.gpa?.toFixed(2) ?? '—'}
                             </span>
                           </TableCell>
                         </TableRow>
@@ -479,7 +506,7 @@ const PlacementAnalytics = () => {
       <Dialog open={!!sectionDialog} onOpenChange={open => { if (!open) { setSectionDialog(null); setSearchTerm(''); } }}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl">Section {sectionDialog?.section} â€” Students</DialogTitle>
+            <DialogTitle className="text-xl">Section {sectionDialog?.section} — Students</DialogTitle>
             <DialogDescription>
               {students.filter(s => normalizeSection(s.section) === sectionDialog?.section).length} total students in this section
             </DialogDescription>
@@ -563,10 +590,10 @@ const PlacementAnalytics = () => {
                                 <span className="font-medium text-sm">{student.name}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="font-mono text-sm">{student.registerNumber || 'â€”'}</TableCell>
+                            <TableCell className="font-mono text-sm">{student.registerNumber || '—'}</TableCell>
                             <TableCell>
                               <span className={`font-semibold text-sm ${(student.gpa || 0) >= 8 ? 'text-success' : (student.gpa || 0) >= 6 ? 'text-warning' : 'text-destructive'}`}>
-                                {student.gpa?.toFixed(2) ?? 'â€”'}
+                                {student.gpa?.toFixed(2) ?? '—'}
                               </span>
                             </TableCell>
                             <TableCell>
@@ -578,7 +605,7 @@ const PlacementAnalytics = () => {
                                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-warning"><XCircle className="w-3.5 h-3.5" />Unplaced</span>
                               )}
                             </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">{company ?? 'â€”'}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{company ?? '—'}</TableCell>
                           </TableRow>
                         );
                       })

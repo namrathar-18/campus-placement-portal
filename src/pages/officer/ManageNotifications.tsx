@@ -195,11 +195,11 @@ const ManageNotifications = () => {
                     Create Notification
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
+                <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+              <DialogHeader className="flex-shrink-0 px-6 pt-6">
                 <DialogTitle>Create New Notification</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+              <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 py-4">
                 {/* Title */}
                 <div className="space-y-2">
                   <Label>Title</Label>
@@ -276,7 +276,7 @@ const ManageNotifications = () => {
                         className="pl-9"
                       />
                     </div>
-                    <div className="border rounded-lg max-h-44 overflow-y-auto divide-y">
+                    <div className="border rounded-lg max-h-52 overflow-y-auto divide-y">
                       {filteredUserList.length === 0 ? (
                         <p className="text-sm text-muted-foreground text-center py-4">No students found</p>
                       ) : filteredUserList.map(s => (
@@ -325,9 +325,9 @@ const ManageNotifications = () => {
                         </button>
                       ))}
                     </div>
-                    <div className="border rounded-lg max-h-44 overflow-y-auto divide-y">
+                    <div className="border rounded-lg max-h-52 overflow-y-auto divide-y">
                       {filteredUserList.length > 0 && (
-                        <label className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-muted/50 bg-muted/30 sticky top-0">
+                        <label className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-muted/50 bg-muted/30 sticky top-0 z-10">
                           <Checkbox
                             checked={filteredUserList.length > 0 && filteredUserList.every(s => selectedUserIds.has(s._id))}
                             onCheckedChange={toggleAllVisible}
@@ -365,7 +365,7 @@ const ManageNotifications = () => {
                   />
                 </div>
 
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-3 pt-2 flex-shrink-0">
                   <Button type="button" variant="outline" onClick={() => { setIsDialogOpen(false); resetForm(); }}>Cancel</Button>
                   <Button type="submit" variant="hero" disabled={isSubmitting}>
                     {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : 'Send Notification'}

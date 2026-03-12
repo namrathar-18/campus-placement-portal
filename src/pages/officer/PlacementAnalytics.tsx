@@ -449,7 +449,8 @@ const PlacementAnalytics = () => {
                           <Cell
                             key={entry.gender}
                             fill={entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)'}
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: 'pointer', outline: 'none' }}
+                            stroke="none"
                             onClick={() => {
                               setGenderDialog(entry.gender);
                               setGenderSearchTerm('');

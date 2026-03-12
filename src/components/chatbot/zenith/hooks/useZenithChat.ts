@@ -39,6 +39,7 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
   const contextRef = useRef<SessionContext>({ pendingUpdate: null });
   const timerRef = useRef<number | null>(null);
   const geminiHistory = useRef<ChatHistoryEntry[]>([]);
+  const portalContextRef = useRef<string | undefined>(undefined);
 
   const storageKey = useMemo(() => `zenith-advanced-chat:${userId}`, [userId]);
 
@@ -238,8 +239,38 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
           return;
         }
 
-        // unknown_placement or out_of_scope — let Gemini answer (system prompt enforces topic)
-        const geminiReply = await getZenithResponse(trimmedInput, geminiHistory.current);
+        // unknown_placement or out_of_scope — let Gemini answer with live portal data
+        if (!portalContextRef.current) {
+          try {
+            const [profile, drives, recs] = await Promise.all([
+              zenithApi.getProfile(),
+              zenithApi.getUpcomingDrives(),
+              zenithApi.getRecommendations(),
+            ]);
+            contextRef.current.lastProfile = profile;
+            const driveLines = drives.map(
+              (d) => `  - ${d.name} | Role: ${d.role} | Deadline: ${new Date(d.deadline).toLocaleDateString()} | Min CGPA: ${d.minGpa}${d.salary ? ` | Package: ${d.salary}` : ''}`
+            ).join('\n') || '  None currently.';
+            const recLines = recs.map(
+              (r) => `  - ${r.name} (${r.role}) | Match: ${r.overallScore}% | ${r.reasons.join(' | ')}`
+            ).join('\n') || '  None.';
+            portalContextRef.current = [
+              `Student Name: ${profile.name}`,
+              `Department: ${profile.department || 'N/A'}`,
+              `Section: ${profile.section || 'N/A'}`,
+              `CGPA: ${profile.gpa ?? 'N/A'}`,
+              `Skills: ${profile.skills.length ? profile.skills.join(', ') : 'None listed'}`,
+              `Certifications: ${profile.certifications.length ? profile.certifications.join(', ') : 'None listed'}`,
+              `Projects: ${profile.projects.length ? profile.projects.join(', ') : 'None listed'}`,
+              `Resume Summary: ${profile.resumeText ? profile.resumeText.slice(0, 500) : 'Not uploaded'}`,
+              `\nUpcoming Drives:\n${driveLines}`,
+              `\nTop Company Recommendations:\n${recLines}`,
+            ].join('\n');
+          } catch {
+            // context fetch failed — Gemini will still answer generically
+          }
+        }
+        const geminiReply = await getZenithResponse(trimmedInput, geminiHistory.current, portalContextRef.current);
         geminiHistory.current = [
           ...geminiHistory.current,
           { role: 'user', parts: [{ text: trimmedInput }] },
@@ -268,6 +299,7 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
   const clearChat = () => {
     contextRef.current = { pendingUpdate: null };
     geminiHistory.current = [];
+    portalContextRef.current = undefined;
     const initial = [makeMessage('assistant', welcomeText)];
     setMessages(initial);
     localStorage.setItem(storageKey, JSON.stringify(initial));

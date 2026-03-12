@@ -38,16 +38,21 @@ const getGenAI = () => {
 
 export const getZenithResponse = async (
   query: string,
-  history: ChatHistoryEntry[]
+  history: ChatHistoryEntry[],
+  portalContext?: string
 ): Promise<string> => {
   if (!GEMINI_API_KEY) {
     return "Zenith is not configured. Please contact the administrator.";
   }
 
   try {
+    const systemInstruction = portalContext
+      ? `${SYSTEM_PROMPT}\n\nCURRENT STUDENT PORTAL DATA (use this to give personalised answers):\n${portalContext}`
+      : SYSTEM_PROMPT;
+
     const model = getGenAI().getGenerativeModel({
       model: "gemini-1.5-flash",
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction,
     });
 
     const chat = model.startChat({ history });

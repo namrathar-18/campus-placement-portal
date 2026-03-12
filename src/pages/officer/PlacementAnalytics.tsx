@@ -62,6 +62,9 @@ const PlacementAnalytics = () => {
   const [companyDialog, setCompanyDialog] = useState<string | null>(null);
   const [companySearchTerm, setCompanySearchTerm] = useState('');
   const [sectionFilter, setSectionFilter] = useState<'all' | 'A' | 'B' | 'AI/ML'>('all');
+  const [genderDialog, setGenderDialog] = useState<string | null>(null);
+  const [genderSearchTerm, setGenderSearchTerm] = useState('');
+  const [genderSectionFilter, setGenderSectionFilter] = useState<'all' | 'A' | 'B' | 'AI/ML'>('all');
 
   if (authLoading) {
     return (
@@ -203,6 +206,35 @@ const PlacementAnalytics = () => {
       .map(([gender, value]) => ({ gender, value }))
       .sort((a, b) => b.value - a.value);
   }, [filteredStudents]);
+
+  const genderDialogStudents = useMemo(() => {
+    if (!genderDialog) return [];
+    let list = filteredStudents.filter(s =>
+      s.isPlaced &&
+      (s.gender || '').trim().toLowerCase() === genderDialog.toLowerCase()
+    );
+    if (genderSectionFilter !== 'all') list = list.filter(s => normalizeSection(s.section) === genderSectionFilter);
+    if (genderSearchTerm.trim()) {
+      const term = genderSearchTerm.toLowerCase();
+      list = list.filter(s =>
+        s.name?.toLowerCase().includes(term) ||
+        s.registerNumber?.toLowerCase().includes(term)
+      );
+    }
+    return list;
+  }, [genderDialog, filteredStudents, genderSectionFilter, genderSearchTerm]);
+
+  const genderSectionBreakdown = useMemo(() => {
+    if (!genderDialog) return [];
+    return SECTION_OPTIONS.map(sec => ({
+      section: sec,
+      count: filteredStudents.filter(s =>
+        s.isPlaced &&
+        (s.gender || '').trim().toLowerCase() === genderDialog.toLowerCase() &&
+        normalizeSection(s.section) === sec
+      ).length,
+    }));
+  }, [genderDialog, filteredStudents]);
 
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
@@ -389,12 +421,13 @@ const PlacementAnalytics = () => {
 
           {/* Gender-wise */}
           <Card className="rounded-2xl animate-slide-up" style={{ animationDelay: '150ms' }}>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Gender-wise Placed Analytics</CardTitle>
+              <Badge variant="outline" className="text-xs">click slice to view section breakdown</Badge>
             </CardHeader>
             <CardContent>
               {genderWisePlaced.length > 0 ? (
-                <div className="h-80">
+                <div className="h-80" style={{ cursor: 'pointer' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -406,6 +439,13 @@ const PlacementAnalytics = () => {
                         innerRadius={60}
                         outerRadius={95}
                         paddingAngle={4}
+                        onClick={(data: any) => {
+                          if (data?.gender) {
+                            setGenderDialog(data.gender);
+                            setGenderSearchTerm('');
+                            setGenderSectionFilter('all');
+                          }
+                        }}
                       >
                         {genderWisePlaced.map((entry) => (
                           <Cell
@@ -497,6 +537,110 @@ const PlacementAnalytics = () => {
                 </Table>
               </div>
               <p className="text-xs text-muted-foreground">Showing {companyDialogStudents.length} students</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Gender Breakdown Dialog */}
+      <Dialog open={!!genderDialog} onOpenChange={open => { if (!open) { setGenderDialog(null); setGenderSearchTerm(''); setGenderSectionFilter('all'); } }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              {genderDialog} — Placed Students
+            </DialogTitle>
+            <DialogDescription>
+              {filteredStudents.filter(s => s.isPlaced && (s.gender || '').trim().toLowerCase() === genderDialog?.toLowerCase()).length} {genderDialog?.toLowerCase()} students placed
+            </DialogDescription>
+          </DialogHeader>
+
+          {genderDialog && (
+            <div className="space-y-4 mt-2">
+              {/* Section breakdown summary */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setGenderSectionFilter('all')}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                    genderSectionFilter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                  }`}
+                >
+                  All Sections
+                </button>
+                {genderSectionBreakdown.map(({ section, count }) => (
+                  <button
+                    key={section}
+                    onClick={() => setGenderSectionFilter(section as any)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                      genderSectionFilter === section ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                    }`}
+                  >
+                    Sec {section} <span className="ml-1 opacity-70">({count})</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name or register number..."
+                  value={genderSearchTerm}
+                  onChange={e => setGenderSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Table */}
+              <div className="rounded-xl border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40">
+                      <TableHead>#</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Register No.</TableHead>
+                      <TableHead>Section</TableHead>
+                      <TableHead>GPA</TableHead>
+                      <TableHead>Placed At</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {genderDialogStudents.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No students found</TableCell>
+                      </TableRow>
+                    ) : genderDialogStudents.map((student, idx) => (
+                      <TableRow key={student._id}>
+                        <TableCell className="text-muted-foreground text-sm">{idx + 1}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                              style={{ background: genderDialog === 'Male' ? 'hsl(210 80% 90%)' : 'hsl(340 75% 90%)', color: genderDialog === 'Male' ? 'hsl(210 80% 35%)' : 'hsl(340 75% 35%)' }}>
+                              {student.name?.charAt(0) || '?'}
+                            </div>
+                            <span className="font-medium text-sm">{student.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">{student.registerNumber || '—'}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">{student.section || '—'}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-semibold text-sm ${
+                            (student.gpa || 0) >= 8 ? 'text-success' :
+                            (student.gpa || 0) >= 6 ? 'text-warning' : 'text-destructive'
+                          }`}>
+                            {student.gpa?.toFixed(2) ?? '—'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {placedCompanyByStudent.get(student._id) ?? '—'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <p className="text-xs text-muted-foreground">Showing {genderDialogStudents.length} students</p>
             </div>
           )}
         </DialogContent>

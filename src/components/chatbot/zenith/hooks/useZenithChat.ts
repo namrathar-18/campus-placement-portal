@@ -10,6 +10,8 @@ import {
   isYes,
   parseProfileUpdateRequest,
 } from '../services/zenithAiService';
+import { getZenithResponse, type ChatHistoryEntry } from '../../zenithEngine';
+import { getZenithResponse, type ChatHistoryEntry } from '../../zenithEngine';
 
 interface UseZenithChatOptions {
   userId: string;
@@ -37,6 +39,7 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
   const [isHydrated, setIsHydrated] = useState(false);
   const contextRef = useRef<SessionContext>({ pendingUpdate: null });
   const timerRef = useRef<number | null>(null);
+  const geminiHistory = useRef<ChatHistoryEntry[]>([]);
 
   const storageKey = useMemo(() => `zenith-advanced-chat:${userId}`, [userId]);
 
@@ -242,13 +245,14 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
           return;
         }
 
-        setMessages((prev) => [
-          ...prev,
-          makeMessage(
-            'assistant',
-            'I can help with profile, recommendations, upcoming drives, resume feedback, eligibility, and application-related queries.',
-          ),
-        ]);
+        // unknown_placement — ask Gemini
+        const geminiReply = await getZenithResponse(trimmedInput, geminiHistory.current);
+        geminiHistory.current = [
+          ...geminiHistory.current,
+          { role: 'user', parts: [{ text: trimmedInput }] },
+          { role: 'model', parts: [{ text: geminiReply }] },
+        ];
+        setMessages((prev) => [...prev, makeMessage('assistant', geminiReply)]);
       } catch (error: any) {
         setMessages((prev) => [
           ...prev,
@@ -270,6 +274,7 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
 
   const clearChat = () => {
     contextRef.current = { pendingUpdate: null };
+    geminiHistory.current = [];
     const initial = [makeMessage('assistant', welcomeText)];
     setMessages(initial);
     localStorage.setItem(storageKey, JSON.stringify(initial));

@@ -1,14 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 
+export interface NotifUser {
+  _id: string;
+  name: string;
+  email: string;
+}
+
 export interface Notification {
   _id: string;
   title: string;
   message: string;
   type: 'info' | 'warning' | 'success' | 'error';
-  targetRole: 'all' | 'student' | 'placement_officer';
+  targetRole: 'all' | 'student' | 'placement_officer' | 'specific';
   isRead: boolean;
-  userId?: string;
+  userId?: NotifUser | string;
+  userIds?: NotifUser[] | string[];
   relatedTo?: string;
   relatedId?: string;
   createdAt: string;
@@ -19,7 +26,9 @@ export type NotificationInsert = {
   title: string;
   message: string;
   type?: 'info' | 'warning' | 'success' | 'error';
-  targetRole?: 'all' | 'student' | 'placement_officer';
+  targetRole?: 'all' | 'student' | 'placement_officer' | 'specific';
+  userId?: string;
+  userIds?: string[];
 };
 
 export const useNotifications = () => {

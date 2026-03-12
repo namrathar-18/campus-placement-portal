@@ -18,9 +18,13 @@ router.get('/', protect, async (req, res) => {
         { targetRole: 'all' },
         { targetRole: { $in: roleTargets } },
         { userId: req.user._id },
-        { createdBy: req.user._id } // Officers can see notifications they created
+        { userIds: req.user._id },
+        { createdBy: req.user._id }
       ]
-    }).sort({ createdAt: -1 });
+    })
+      .populate('userId', 'name email')
+      .populate('userIds', 'name email')
+      .sort({ createdAt: -1 });
 
     res.json({ success: true, data: notifications });
   } catch (error) {
@@ -29,15 +33,44 @@ router.get('/', protect, async (req, res) => {
 });
 
 // @route   POST /api/notifications
-// @desc    Create a notification
+// @desc    Create a notification (broadcast or targeted)
 // @access  Private/Placement Officer
 router.post('/', protect, authorize('placement_officer', 'admin'), async (req, res) => {
   try {
-    const notification = await Notification.create({
-      ...req.body,
-      createdBy: req.user._id
-    });
-    res.status(201).json({ success: true, data: notification });
+    const { title, message, type, targetRole, userId, userIds } = req.body;
+
+    const sanitize = (v) => (typeof v === 'string' ? v.replace(/[<>$]/g, '').trim().slice(0, 500) : '');
+    const validTypes = ['info', 'warning', 'success', 'error'];
+    const validRoles = ['all', 'student', 'placement_officer', 'specific'];
+
+    const notifData = {
+      title: sanitize(title),
+      message: sanitize(message),
+      type: validTypes.includes(type) ? type : 'info',
+      targetRole: validRoles.includes(targetRole) ? targetRole : 'all',
+      createdBy: req.user._id,
+    };
+
+    if (!notifData.title || !notifData.message) {
+      return res.status(400).json({ success: false, message: 'Title and message are required' });
+    }
+
+    if (targetRole === 'specific') {
+      if (userId && typeof userId === 'string') {
+        notifData.userId = userId;
+      } else if (Array.isArray(userIds) && userIds.length > 0) {
+        notifData.userIds = userIds.slice(0, 200);
+      } else {
+        return res.status(400).json({ success: false, message: 'Specific target requires userId or userIds' });
+      }
+    }
+
+    const notification = await Notification.create(notifData);
+    const populated = await notification.populate([
+      { path: 'userId', select: 'name email' },
+      { path: 'userIds', select: 'name email' },
+    ]);
+    res.status(201).json({ success: true, data: populated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -16,7 +16,7 @@ const notificationSchema = new mongoose.Schema({
   },
   targetRole: {
     type: String,
-    enum: ['all', 'student', 'placement_officer'],
+    enum: ['all', 'student', 'placement_officer', 'specific'],
     default: 'all'
   },
   isRead: {
@@ -27,6 +27,10 @@ const notificationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  userIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

@@ -27,8 +27,8 @@ router.get('/', protect, async (req, res) => {
       // Officer/Admin stats
       stats.totalCompanies = await Company.countDocuments();
       stats.activeCompanies = await Company.countDocuments({ status: 'active' });
-      stats.totalStudents = await User.countDocuments({ role: 'student' });
-      stats.placedStudents = await User.countDocuments({ role: 'student', isPlaced: true });
+      stats.totalStudents = await User.countDocuments({ role: 'student', registerNumber: { $exists: true, $ne: '' }, department: { $exists: true, $ne: '' }, section: { $exists: true, $ne: '' } });
+      stats.placedStudents = await User.countDocuments({ role: 'student', isPlaced: true, registerNumber: { $exists: true, $ne: '' }, department: { $exists: true, $ne: '' }, section: { $exists: true, $ne: '' } });
       stats.totalApplications = await Application.countDocuments();
       stats.pendingApplications = await Application.countDocuments({ status: 'pending' });
       stats.approvedApplications = await Application.countDocuments({ status: 'approved' });

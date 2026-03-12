@@ -81,7 +81,12 @@ const OfficerDashboard = () => {
 
   const pendingApplications = applications?.filter(a => a.status === 'pending' || a.status === 'ongoing').length || 0;
 
-  const students = (users || []).filter(u => u.role === 'student');
+  const students = (users || []).filter(u =>
+    u.role === 'student' &&
+    u.registerNumber?.trim() &&
+    u.department?.trim() &&
+    u.section?.trim()
+  );
   const placedStudents = students.filter(s => s.isPlaced).length;
   const unplacedStudents = students.length - placedStudents;
   const averageGpa = students.length

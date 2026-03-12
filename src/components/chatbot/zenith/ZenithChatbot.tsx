@@ -56,7 +56,7 @@ const ZenithChatbot = ({ userId }: ZenithChatbotProps) => {
     <div className="fixed bottom-6 right-6 z-[70]">
       <div
         className={cn(
-          'mb-3 h-[500px] w-[360px] max-w-[calc(100vw-2rem)] origin-bottom-right overflow-hidden rounded-2xl border border-border bg-background shadow-2xl transition-all duration-300',
+          'mb-3 flex h-[560px] max-h-[calc(100dvh-6rem)] w-[360px] max-w-[calc(100vw-2rem)] flex-col origin-bottom-right overflow-hidden rounded-2xl border border-border bg-background shadow-2xl transition-all duration-300',
           isOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none translate-y-3 scale-95 opacity-0',
         )}
       >
@@ -74,24 +74,7 @@ const ZenithChatbot = ({ userId }: ZenithChatbotProps) => {
           </Button>
         </div>
 
-        <div className="border-b border-border/70 px-3 py-2">
-          <div className="flex flex-wrap gap-2">
-            {QUICK_PROMPTS.map((prompt) => (
-              <Button
-                key={prompt}
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 rounded-full border-primary/30 px-3 text-[11px] text-primary hover:bg-primary hover:text-primary-foreground"
-                onClick={() => void respond(prompt)}
-              >
-                {prompt}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <ScrollArea className="h-[calc(100%-8.9rem)] px-3 py-3">
+        <ScrollArea className="flex-1 overflow-y-auto px-3 py-3">
           <div className="space-y-3">
             {messages.map((message) => (
               <div key={message.id} className={cn('flex', message.sender === 'user' ? 'justify-end' : 'justify-start')}>

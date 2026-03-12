@@ -24,7 +24,7 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, role, registerNumber } = req.body;
+    const { email, password, name, role, registerNumber, gender } = req.body;
 
     const userRole = role || 'student';
     
@@ -74,6 +74,7 @@ router.post('/register', async (req, res) => {
       password,
       name,
       role: userRole,
+      gender: gender ? gender.toLowerCase() : undefined,
       registerNumber: userRole === 'student' ? registerNumber.toUpperCase() : undefined
     });
 

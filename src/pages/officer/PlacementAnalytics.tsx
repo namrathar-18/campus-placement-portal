@@ -428,44 +428,71 @@ const PlacementAnalytics = () => {
           <Card className="rounded-2xl animate-slide-up" style={{ animationDelay: '150ms' }}>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Gender-wise Placed Analytics</CardTitle>
-              <Badge variant="outline" className="text-xs">click slice to view section breakdown</Badge>
+              <Badge variant="outline" className="text-xs">click slice or label to view students</Badge>
             </CardHeader>
             <CardContent>
               {genderWisePlaced.length > 0 ? (
-                <div className="h-80" style={{ cursor: 'pointer' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={genderWisePlaced}
-                        dataKey="value"
-                        nameKey="gender"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={95}
-                        paddingAngle={4}
-                        onClick={(data: any) => {
-                          const gender = data?.gender || data?.name;
-                          if (gender) {
-                            setGenderDialog(gender);
-                            setGenderSearchTerm('');
-                            setGenderSectionFilter('all');
-                          }
+                <div className="flex flex-col items-center">
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={genderWisePlaced}
+                          dataKey="value"
+                          nameKey="gender"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={95}
+                          paddingAngle={4}
+                          onClick={(data: any) => {
+                            const gender = data?.gender || data?.name || data?.payload?.gender;
+                            if (gender) {
+                              setGenderDialog(gender);
+                              setGenderSearchTerm('');
+                              setGenderSectionFilter('all');
+                            }
+                          }}
+                        >
+                          {genderWisePlaced.map((entry) => (
+                            <Cell
+                              key={entry.gender}
+                              fill={entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)'}
+                              style={{ cursor: 'pointer', outline: 'none' }}
+                              stroke="none"
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={tooltipStyle} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Clickable legend buttons */}
+                  <div className="flex gap-4 mt-2">
+                    {genderWisePlaced.map((entry) => (
+                      <button
+                        key={entry.gender}
+                        onClick={() => {
+                          setGenderDialog(entry.gender);
+                          setGenderSearchTerm('');
+                          setGenderSectionFilter('all');
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors hover:bg-muted/60"
+                        style={{
+                          borderColor: entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)',
                         }}
                       >
-                        {genderWisePlaced.map((entry) => (
-                          <Cell
-                            key={entry.gender}
-                            fill={entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)'}
-                            style={{ cursor: 'pointer', outline: 'none' }}
-                            stroke="none"
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+                        <span
+                          className="w-3 h-3 rounded-full shrink-0"
+                          style={{ background: entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)' }}
+                        />
+                        <span className="text-sm font-medium">{entry.gender}</span>
+                        <span className="text-sm font-bold" style={{ color: entry.gender === 'Male' ? 'hsl(210 80% 45%)' : 'hsl(340 75% 45%)' }}>
+                          {entry.value}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground py-8 text-center">No gender-wise placement data yet.</p>

@@ -183,10 +183,13 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
           const summary = recommendations
             .slice(0, 3)
             .map(
-              (item, index) =>
-                `${index + 1}. ${item.name} (${item.role})\nScore: ${item.overallScore}%\n${item.reasons.join(' | ')}`,
+              (item, index) => {
+                const pkg = item.salary || (item.package ? `${item.package} LPA` : null);
+                const deadline = new Date(item.deadline).toLocaleDateString();
+                return `${index + 1}. ${item.name} — ${item.role}${pkg ? ` | ${pkg}` : ''} | Deadline: ${deadline}`;
+              }
             )
-            .join('\n\n');
+            .join('\n');
 
           setMessages((prev) => [...prev, makeMessage('assistant', `Top matching companies:\n${summary}`)]);
           setIsTyping(false);
@@ -252,7 +255,10 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
               (d) => `  - ${d.name} | Role: ${d.role} | Deadline: ${new Date(d.deadline).toLocaleDateString()} | Min CGPA: ${d.minGpa}${d.salary ? ` | Package: ${d.salary}` : ''}`
             ).join('\n') || '  None currently.';
             const recLines = recs.map(
-              (r) => `  - ${r.name} (${r.role}) | Match: ${r.overallScore}% | ${r.reasons.join(' | ')}`
+              (r) => {
+                const pkg = r.salary || (r.package ? `${r.package} LPA` : null);
+                return `  - ${r.name} (${r.role})${pkg ? ` | ${pkg}` : ''} | Min CGPA: ${r.minGpa} | CGPA eligible: ${r.gpaEligible ? 'Yes' : 'No'}`;
+              }
             ).join('\n') || '  None.';
             portalContextRef.current = [
               `Student Name: ${profile.name}`,

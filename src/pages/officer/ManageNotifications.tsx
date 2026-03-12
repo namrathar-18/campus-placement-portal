@@ -156,57 +156,46 @@ const ManageNotifications = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-in">
-          <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
-              Notifications & Announcements
-            </h1>
-            <p className="text-muted-foreground">
-              Create and manage announcements for students
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full lg:w-auto">
-            <div className="relative w-full sm:w-auto sm:min-w-[220px] lg:min-w-[280px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <Input
-                placeholder="Search title or message"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 rounded-xl w-full"
-              />
+        <div className="mb-6 animate-fade-in">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
+                Notifications & Announcements
+              </h1>
+              <p className="text-muted-foreground">
+                Create and manage announcements for students
+              </p>
             </div>
-            <Select value={typeFilter} onValueChange={(v: 'all' | 'info' | 'warning' | 'success' | 'error') => setTypeFilter(v)}>
-              <SelectTrigger className="rounded-xl w-full sm:w-[140px]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="info">Information</SelectItem>
-                <SelectItem value="success">Success</SelectItem>
-                <SelectItem value="warning">Warning</SelectItem>
-                <SelectItem value="error">Error</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={targetFilter} onValueChange={(v: 'all' | 'student' | 'placement_officer' | 'specific') => setTargetFilter(v)}>
-              <SelectTrigger className="rounded-xl w-full sm:w-[140px]">
-                <SelectValue placeholder="Audience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="student">Students</SelectItem>
-                <SelectItem value="placement_officer">Officers</SelectItem>
-                <SelectItem value="specific">Targeted</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button variant="hero" className="gap-2">
-                <Plus className="w-4 h-4" />
-                Create Notification
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative sm:min-w-[240px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Search title or message"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 rounded-xl w-full"
+                />
+              </div>
+              <Select value={typeFilter} onValueChange={(v: 'all' | 'info' | 'warning' | 'success' | 'error') => setTypeFilter(v)}>
+                <SelectTrigger className="rounded-xl w-[140px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="info">Information</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                  <SelectItem value="warning">Warning</SelectItem>
+                  <SelectItem value="error">Error</SelectItem>
+                </SelectContent>
+              </Select>
+              <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
+                <DialogTrigger asChild>
+                  <Button variant="hero" className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Create Notification
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create New Notification</DialogTitle>
               </DialogHeader>
@@ -385,6 +374,30 @@ const ManageNotifications = () => {
               </form>
             </DialogContent>
           </Dialog>
+            </div>
+          </div>
+          {/* Audience filter pills */}
+          <div className="flex flex-wrap gap-2 mt-3">
+            {([
+              { key: 'all', label: 'All' },
+              { key: 'student', label: 'Students' },
+              { key: 'placement_officer', label: 'Officers' },
+              { key: 'specific', label: 'Targeted' },
+            ] as const).map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setTargetFilter(key)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                  targetFilter === key
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Notifications List */}

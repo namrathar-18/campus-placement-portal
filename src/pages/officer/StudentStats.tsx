@@ -829,8 +829,6 @@ const StudentStats = () => {
 
                           <TableHead>Location</TableHead>
 
-                          <TableHead>Package</TableHead>
-
                           <TableHead>Applied On</TableHead>
 
                           <TableHead>Status</TableHead>
@@ -852,12 +850,6 @@ const StudentStats = () => {
                               <TableCell className="font-medium">{app.companyId?.name || '—'}</TableCell>
 
                               <TableCell className="text-sm text-muted-foreground">{app.companyId?.location || '—'}</TableCell>
-
-                              <TableCell className="text-sm">
-
-                                {app.companyId?.package ? `₹${app.companyId.package} LPA` : '—'}
-
-                              </TableCell>
 
                               <TableCell className="text-sm text-muted-foreground">
 

@@ -32,9 +32,8 @@ const ManageNotifications = () => {
     title: '',
     message: '',
     type: 'info' as 'info' | 'warning' | 'success' | 'error',
-    targetRole: 'all' as 'all' | 'student' | 'placement_officer',
   });
-  const [targetMode, setTargetMode] = useState<'broadcast' | 'specific' | 'bulk'>('broadcast');
+  const [targetMode, setTargetMode] = useState<'all' | 'student' | 'placement_officer' | 'specific' | 'bulk'>('all');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [userSearch, setUserSearch] = useState('');
@@ -57,8 +56,8 @@ const ManageNotifications = () => {
   }, [students, bulkSectionFilter, userSearch]);
 
   const resetForm = () => {
-    setFormData({ title: '', message: '', type: 'info', targetRole: 'all' });
-    setTargetMode('broadcast');
+    setFormData({ title: '', message: '', type: 'info' });
+    setTargetMode('all');
     setSelectedUserId('');
     setSelectedUserIds(new Set());
     setUserSearch('');
@@ -82,14 +81,14 @@ const ManageNotifications = () => {
         message: formData.message,
         type: formData.type,
       };
-      if (targetMode === 'broadcast') {
-        payload.targetRole = formData.targetRole;
-      } else if (targetMode === 'specific') {
+      if (targetMode === 'specific') {
         payload.targetRole = 'specific';
         payload.userId = selectedUserId;
-      } else {
+      } else if (targetMode === 'bulk') {
         payload.targetRole = 'specific';
         payload.userIds = [...selectedUserIds];
+      } else {
+        payload.targetRole = targetMode; // 'all', 'student', or 'placement_officer'
       }
       await createNotification.mutateAsync(payload);
       toast({ title: 'Notification Sent', description: 'Your notification has been published successfully.' });
@@ -195,11 +194,12 @@ const ManageNotifications = () => {
                     Create Notification
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
-              <DialogHeader className="flex-shrink-0 px-6 pt-6">
+                <DialogContent className="max-w-lg max-h-[88vh] overflow-hidden flex flex-col p-0 gap-0">
+              <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-3 border-b">
                 <DialogTitle>Create New Notification</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 py-4">
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
                 {/* Title */}
                 <div className="space-y-2">
                   <Label>Title</Label>
@@ -228,9 +228,11 @@ const ManageNotifications = () => {
                 {/* Target Mode toggle */}
                 <div className="space-y-2">
                   <Label>Send To</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {([
-                      { key: 'broadcast', icon: Users, label: 'Broadcast' },
+                      { key: 'all', icon: Users, label: 'All Users' },
+                      { key: 'student', icon: UsersRound, label: 'Students' },
+                      { key: 'placement_officer', icon: User, label: 'Officers' },
                       { key: 'specific', icon: User, label: 'One Student' },
                       { key: 'bulk', icon: UsersRound, label: 'Multiple' },
                     ] as const).map(({ key, icon: Icon, label }) => (
@@ -238,7 +240,7 @@ const ManageNotifications = () => {
                         key={key}
                         type="button"
                         onClick={() => { setTargetMode(key); setSelectedUserId(''); setSelectedUserIds(new Set()); setUserSearch(''); }}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
+                        className={`flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-sm font-medium border transition-colors ${
                           targetMode === key ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
                         }`}
                       >
@@ -247,21 +249,6 @@ const ManageNotifications = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Broadcast: audience dropdown */}
-                {targetMode === 'broadcast' && (
-                  <div className="space-y-2">
-                    <Label>Audience</Label>
-                    <Select value={formData.targetRole} onValueChange={(v: any) => setFormData({ ...formData, targetRole: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Users</SelectItem>
-                        <SelectItem value="student">Students Only</SelectItem>
-                        <SelectItem value="placement_officer">Officers Only</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
 
                 {/* Specific: single student picker */}
                 {targetMode === 'specific' && (
@@ -365,7 +352,8 @@ const ManageNotifications = () => {
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2 flex-shrink-0">
+              </div>
+              <div className="flex-shrink-0 border-t px-6 py-4 flex justify-end gap-3">
                   <Button type="button" variant="outline" onClick={() => { setIsDialogOpen(false); resetForm(); }}>Cancel</Button>
                   <Button type="submit" variant="hero" disabled={isSubmitting}>
                     {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : 'Send Notification'}

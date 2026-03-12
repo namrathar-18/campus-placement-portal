@@ -51,8 +51,9 @@ export const getZenithResponse = async (
       : SYSTEM_PROMPT;
 
     const model = getGenAI().getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       systemInstruction,
+      generationConfig: { thinkingConfig: { thinkingBudget: 0 } } as any,
     });
 
     const chat = model.startChat({ history });

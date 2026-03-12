@@ -214,7 +214,7 @@ const PlacementAnalytics = () => {
 
   const genderDialogStudents = useMemo(() => {
     if (!genderDialog) return [];
-    let list = filteredStudents.filter(s =>
+    let list = students.filter(s =>
       s.isPlaced &&
       (s.gender || '').trim().toLowerCase() === genderDialog.toLowerCase()
     );
@@ -227,13 +227,13 @@ const PlacementAnalytics = () => {
       );
     }
     return list;
-  }, [genderDialog, filteredStudents, genderSectionFilter, genderSearchTerm]);
+  }, [genderDialog, students, genderSectionFilter, genderSearchTerm]);
 
   const genderSectionBreakdown = useMemo(() => {
     if (!genderDialog) return [];
     return SECTION_OPTIONS.map(sec => ({
       section: sec,
-      count: filteredStudents.filter(s =>
+      count: students.filter(s =>
         s.isPlaced &&
         (s.gender || '').trim().toLowerCase() === genderDialog.toLowerCase() &&
         normalizeSection(s.section) === sec
@@ -444,6 +444,14 @@ const PlacementAnalytics = () => {
                         innerRadius={60}
                         outerRadius={95}
                         paddingAngle={4}
+                        onClick={(data: any) => {
+                          const gender = data?.gender || data?.name;
+                          if (gender) {
+                            setGenderDialog(gender);
+                            setGenderSearchTerm('');
+                            setGenderSectionFilter('all');
+                          }
+                        }}
                       >
                         {genderWisePlaced.map((entry) => (
                           <Cell
@@ -451,11 +459,6 @@ const PlacementAnalytics = () => {
                             fill={entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)'}
                             style={{ cursor: 'pointer', outline: 'none' }}
                             stroke="none"
-                            onClick={() => {
-                              setGenderDialog(entry.gender);
-                              setGenderSearchTerm('');
-                              setGenderSectionFilter('all');
-                            }}
                           />
                         ))}
                       </Pie>
@@ -555,7 +558,7 @@ const PlacementAnalytics = () => {
               {genderDialog} — Placed Students
             </DialogTitle>
             <DialogDescription>
-              {filteredStudents.filter(s => s.isPlaced && (s.gender || '').trim().toLowerCase() === genderDialog?.toLowerCase()).length} {genderDialog?.toLowerCase()} students placed
+              {students.filter(s => s.isPlaced && (s.gender || '').trim().toLowerCase() === genderDialog?.toLowerCase()).length} {genderDialog?.toLowerCase()} students placed
             </DialogDescription>
           </DialogHeader>
 

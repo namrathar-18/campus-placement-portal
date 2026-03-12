@@ -114,6 +114,8 @@ const StudentStats = () => {
 
   const [sectionFilter, setSectionFilter] = useState<'all' | 'A' | 'B' | 'AI/ML'>('all');
 
+  const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all');
+
   const [selectedStudent, setSelectedStudent] = useState<BasicUser | null>(null);
 
 
@@ -205,6 +207,12 @@ const StudentStats = () => {
 
     }
 
+    if (genderFilter !== 'all') {
+
+      list = list.filter(s => (s.gender || '').toLowerCase() === genderFilter);
+
+    }
+
     if (searchTerm.trim()) {
 
       const term = searchTerm.toLowerCase();
@@ -227,7 +235,7 @@ const StudentStats = () => {
 
     return list;
 
-  }, [students, statusFilter, sectionFilter, searchTerm]);
+  }, [students, statusFilter, sectionFilter, genderFilter, searchTerm]);
 
 
 
@@ -405,6 +413,26 @@ const StudentStats = () => {
 
                 </Select>
 
+                <Select value={genderFilter} onValueChange={(v: any) => setGenderFilter(v)}>
+
+                  <SelectTrigger className="w-36 rounded-lg">
+
+                    <SelectValue placeholder="Gender" />
+
+                  </SelectTrigger>
+
+                  <SelectContent>
+
+                    <SelectItem value="all">All Genders</SelectItem>
+
+                    <SelectItem value="male">Male</SelectItem>
+
+                    <SelectItem value="female">Female</SelectItem>
+
+                  </SelectContent>
+
+                </Select>
+
               </div>
 
             </div>
@@ -506,6 +534,16 @@ const StudentStats = () => {
                             <span className={`font-semibold ${(student.gpa || 0) >= 8 ? 'text-success' : (student.gpa || 0) >= 6 ? 'text-warning' : 'text-destructive'}`}>
 
                               {student.gpa?.toFixed(2) ?? '—'}
+
+                            </span>
+
+                          </TableCell>
+
+                          <TableCell>
+
+                            <span className={`text-xs font-medium ${student.gender?.toLowerCase() === 'male' ? 'text-blue-600' : student.gender?.toLowerCase() === 'female' ? 'text-pink-600' : 'text-muted-foreground'}`}>
+
+                              {student.gender ? student.gender.charAt(0).toUpperCase() + student.gender.slice(1) : '—'}
 
                             </span>
 

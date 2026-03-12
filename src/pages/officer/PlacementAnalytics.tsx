@@ -79,7 +79,12 @@ const PlacementAnalytics = () => {
   }
 
   const students = useMemo(() =>
-    (users || []).filter(u => u.role === 'student'),
+    (users || []).filter(u =>
+      u.role === 'student' &&
+      u.registerNumber?.trim() &&
+      u.department?.trim() &&
+      u.section?.trim()
+    ),
   [users]);
 
   const filteredStudents = useMemo(() => {

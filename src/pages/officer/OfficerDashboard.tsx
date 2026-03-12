@@ -294,6 +294,7 @@ const OfficerDashboard = () => {
                     Download Placed Students PDF
                   </Button>
                   <Link to="/officer/students"><Button variant="ghost" size="sm" className="gap-1"><TrendingUp className="w-4 h-4" /> View Details <ArrowRight className="w-4 h-4" /></Button></Link>
+                  <Link to="/officer/placed-students"><Button variant="ghost" size="sm" className="gap-1 text-success"><CheckCircle2 className="w-4 h-4" /> Placed Students <ArrowRight className="w-4 h-4" /></Button></Link>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

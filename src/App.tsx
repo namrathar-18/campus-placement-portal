@@ -20,6 +20,7 @@ import CompanyApplications from "./pages/officer/CompanyApplications";
 import ManageNotifications from "./pages/officer/ManageNotifications";
 import StudentStats from "./pages/officer/StudentStats";
 import PlacementAnalytics from "./pages/officer/PlacementAnalytics";
+import PlacedStudents from "./pages/officer/PlacedStudents";
 
 import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
@@ -75,6 +76,7 @@ const AppContent = () => {
             <Route path="/officer/notifications" element={<ManageNotifications />} />
             <Route path="/officer/students" element={<StudentStats />} />
             <Route path="/officer/analytics" element={<PlacementAnalytics />} />
+            <Route path="/officer/placed-students" element={<PlacedStudents />} />
             
             {/* Student Representative Routes — redirect to identical officer pages */}
             <Route path="/representative/dashboard" element={<OfficerDashboard />} />

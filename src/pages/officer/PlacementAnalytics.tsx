@@ -444,18 +444,17 @@ const PlacementAnalytics = () => {
                         innerRadius={60}
                         outerRadius={95}
                         paddingAngle={4}
-                        onClick={(data: any) => {
-                          if (data?.gender) {
-                            setGenderDialog(data.gender);
-                            setGenderSearchTerm('');
-                            setGenderSectionFilter('all');
-                          }
-                        }}
                       >
                         {genderWisePlaced.map((entry) => (
                           <Cell
                             key={entry.gender}
                             fill={entry.gender === 'Male' ? 'hsl(210 80% 55%)' : 'hsl(340 75% 55%)'}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              setGenderDialog(entry.gender);
+                              setGenderSearchTerm('');
+                              setGenderSectionFilter('all');
+                            }}
                           />
                         ))}
                       </Pie>

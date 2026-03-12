@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { getZenithResponse } from "./zenithEngine";
+import { getZenithResponse, ChatHistoryEntry } from "./zenithEngine";
 
 type Sender = "user" | "bot";
 
@@ -48,6 +48,7 @@ const ZenithChatbot = ({ userId }: ZenithChatbotProps) => {
   const [isHydrated, setIsHydrated] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
   const typingTimerRef = useRef<number | null>(null);
+  const geminiHistory = useRef<ChatHistoryEntry[]>([]);
 
   const storageKey = useMemo(() => `zenith-chat-history:${userId}`, [userId]);
 
@@ -94,34 +95,42 @@ const ZenithChatbot = ({ userId }: ZenithChatbotProps) => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, isTyping, isOpen]);
 
-  const pushUserAndBotMessage = (text: string) => {
+  const pushUserAndBotMessage = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) {
-      return;
-    }
+    if (!trimmed) return;
 
     const userMessage = createMessage("user", trimmed);
     setMessages((prev) => [...prev, userMessage]);
-
     setInputValue("");
     setIsTyping(true);
 
-    if (typingTimerRef.current) {
-      window.clearTimeout(typingTimerRef.current);
-    }
+    if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
 
-    typingTimerRef.current = window.setTimeout(() => {
-      const responseText = getZenithResponse(trimmed);
+    try {
+      const responseText = await getZenithResponse(trimmed, geminiHistory.current);
+
+      // Update Gemini chat history
+      geminiHistory.current = [
+        ...geminiHistory.current,
+        { role: "user", parts: [{ text: trimmed }] },
+        { role: "model", parts: [{ text: responseText }] },
+      ];
+
       const botMessage = createMessage("bot", responseText);
       setMessages((prev) => [...prev, botMessage]);
+    } catch {
+      const errMessage = createMessage("bot", "Sorry, something went wrong. Please try again.");
+      setMessages((prev) => [...prev, errMessage]);
+    } finally {
       setIsTyping(false);
-    }, 650);
+    }
   };
 
   const handleClearChat = () => {
     const welcomeMessage = createWelcomeMessage();
     setMessages([welcomeMessage]);
     setIsTyping(false);
+    geminiHistory.current = [];
     if (typingTimerRef.current) {
       window.clearTimeout(typingTimerRef.current);
     }

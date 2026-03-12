@@ -429,6 +429,8 @@ const StudentStats = () => {
 
                     <TableHead>GPA</TableHead>
 
+                    <TableHead>Gender</TableHead>
+
                     <TableHead className="text-center">Applied</TableHead>
 
                     <TableHead>Placement</TableHead>
@@ -445,7 +447,7 @@ const StudentStats = () => {
 
                     <TableRow>
 
-                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
 
                         No students found
 

@@ -11,7 +11,6 @@ import {
   parseProfileUpdateRequest,
 } from '../services/zenithAiService';
 import { getZenithResponse, type ChatHistoryEntry } from '../../zenithEngine';
-import { getZenithResponse, type ChatHistoryEntry } from '../../zenithEngine';
 
 interface UseZenithChatOptions {
   userId: string;
@@ -135,12 +134,6 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
       const intent = detectIntent(trimmedInput);
       contextRef.current.lastIntent = intent;
 
-      if (intent === 'out_of_scope') {
-        setMessages((prev) => [...prev, makeMessage('assistant', OUT_OF_SCOPE_REPLY)]);
-        setIsTyping(false);
-        return;
-      }
-
       try {
         if (intent === 'show_profile') {
           const profile = await zenithApi.getProfile();
@@ -245,7 +238,7 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
           return;
         }
 
-        // unknown_placement — ask Gemini
+        // unknown_placement or out_of_scope — let Gemini answer (system prompt enforces topic)
         const geminiReply = await getZenithResponse(trimmedInput, geminiHistory.current);
         geminiHistory.current = [
           ...geminiHistory.current,

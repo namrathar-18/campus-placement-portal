@@ -208,7 +208,6 @@ const PlacedStudents = () => {
                       <TableHead>GPA</TableHead>
                       <TableHead>Gender</TableHead>
                       <TableHead>Company</TableHead>
-                      <TableHead>Package</TableHead>
                       <TableHead>Placed On</TableHead>
                       <TableHead></TableHead>
                     </TableRow>
@@ -216,7 +215,7 @@ const PlacedStudents = () => {
                   <TableBody>
                     {filteredStudents.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                           No placed students found
                         </TableCell>
                       </TableRow>
@@ -262,11 +261,6 @@ const PlacedStudents = () => {
                           </TableCell>
                           <TableCell>
                             <span className="text-sm font-medium">{company?.name || '—'}</span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-success font-semibold">
-                              {company?.package ? `₹${company.package} LPA` : '—'}
-                            </span>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
                             {app?.updatedAt ? new Date(app.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}

@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PendingProfileUpdate, ZenithMessage, ZenithProfile } from '../types';
 import { zenithApi } from '../services/zenithApi';
 import {
+  buildPlacementResourcesReply,
   OUT_OF_SCOPE_REPLY,
   UNAVAILABLE_DATA_REPLY,
   detectIntent,
   formatProfile,
   isNo,
   isYes,
+  normalizeAssistantText,
   parseProfileUpdateRequest,
 } from '../services/zenithAiService';
 import { getZenithResponse, type ChatHistoryEntry } from '../../zenithEngine';
@@ -136,6 +138,12 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
       contextRef.current.lastIntent = intent;
 
       try {
+        if (intent === 'out_of_scope') {
+          setMessages((prev) => [...prev, makeMessage('assistant', OUT_OF_SCOPE_REPLY)]);
+          setIsTyping(false);
+          return;
+        }
+
         if (intent === 'show_profile') {
           const profile = await zenithApi.getProfile();
           contextRef.current.lastProfile = profile;
@@ -230,6 +238,12 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
           return;
         }
 
+        if (intent === 'placement_resources') {
+          setMessages((prev) => [...prev, makeMessage('assistant', buildPlacementResourcesReply(trimmedInput))]);
+          setIsTyping(false);
+          return;
+        }
+
         if (intent === 'edit_profile_help') {
           setMessages((prev) => [
             ...prev,
@@ -242,7 +256,44 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
           return;
         }
 
-        // unknown_placement or out_of_scope — let Gemini answer with live portal data
+        if (intent === 'application_policy') {
+          setMessages((prev) => [
+            ...prev,
+            makeMessage(
+              'assistant',
+              'Portal application rules:\n1. You can apply to multiple companies while you are not placed.\n2. You cannot apply to the same company more than once.\n3. Once you are placed, you cannot apply to other companies.',
+            ),
+          ]);
+          setIsTyping(false);
+          return;
+        }
+
+        if (intent === 'cgpa_edit_policy') {
+          const profile = contextRef.current.lastProfile || (await zenithApi.getProfile());
+          contextRef.current.lastProfile = profile;
+
+          const policyReply = profile.gpaLocked
+            ? 'Your CGPA is currently locked by admin, so it cannot be edited.'
+            : 'Your CGPA can be updated only if it is not locked by admin, and it must be between 0 and 10.';
+
+          setMessages((prev) => [...prev, makeMessage('assistant', policyReply)]);
+          setIsTyping(false);
+          return;
+        }
+
+        if (intent === 'placed_application_policy') {
+          setMessages((prev) => [
+            ...prev,
+            makeMessage(
+              'assistant',
+              'No. If you are already placed, you cannot apply to other companies in this portal. This policy is enforced when submitting applications.',
+            ),
+          ]);
+          setIsTyping(false);
+          return;
+        }
+
+        // unknown_placement — let Gemini answer with live portal data
         if (!portalContextRef.current) {
           try {
             const [profile, drives, recs] = await Promise.all([
@@ -265,6 +316,8 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
               `Department: ${profile.department || 'N/A'}`,
               `Section: ${profile.section || 'N/A'}`,
               `CGPA: ${profile.gpa ?? 'N/A'}`,
+              `CGPA Locked By Admin: ${profile.gpaLocked ? 'Yes' : 'No'}`,
+              `Already Placed: ${profile.isPlaced ? 'Yes' : 'No'}`,
               `Skills: ${profile.skills.length ? profile.skills.join(', ') : 'None listed'}`,
               `Certifications: ${profile.certifications.length ? profile.certifications.join(', ') : 'None listed'}`,
               `Projects: ${profile.projects.length ? profile.projects.join(', ') : 'None listed'}`,
@@ -276,7 +329,8 @@ export const useZenithChat = ({ userId }: UseZenithChatOptions) => {
             // context fetch failed — Gemini will still answer generically
           }
         }
-        const geminiReply = await getZenithResponse(trimmedInput, geminiHistory.current, portalContextRef.current);
+        const geminiRawReply = await getZenithResponse(trimmedInput, geminiHistory.current, portalContextRef.current);
+        const geminiReply = normalizeAssistantText(geminiRawReply);
         geminiHistory.current = [
           ...geminiHistory.current,
           { role: 'user', parts: [{ text: trimmedInput }] },

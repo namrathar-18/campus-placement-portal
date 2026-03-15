@@ -2,6 +2,7 @@ import express from 'express';
 import { protect, authorize } from '../middleware/auth.js';
 import User from '../models/User.js';
 import Company from '../models/Company.js';
+import pdfParse from 'pdf-parse';
 
 const router = express.Router();
 
@@ -31,10 +32,34 @@ const sanitizeStringArray = (value) => {
     .slice(0, 50);
 };
 
+const extractPdfTextFromDataUrl = async (resumeUrl) => {
+  if (typeof resumeUrl !== 'string' || !resumeUrl.startsWith('data:application/pdf')) {
+    return '';
+  }
+
+  const base64Data = resumeUrl.split(',')[1];
+  if (!base64Data) {
+    return '';
+  }
+
+  try {
+    const pdfBuffer = Buffer.from(base64Data, 'base64');
+    if (!pdfBuffer.length) {
+      return '';
+    }
+
+    const parsed = await pdfParse(pdfBuffer);
+    return sanitizeText(parsed?.text || '');
+  } catch {
+    return '';
+  }
+};
+
 const buildStudentProfile = (user) => ({
   id: user._id,
   name: user.name,
   email: user.email,
+  isPlaced: !!user.isPlaced,
   registerNumber: user.registerNumber,
   phone: user.phone,
   department: user.department,
@@ -53,7 +78,7 @@ const buildStudentProfile = (user) => ({
 router.get('/profile', protect, authorize('student'), async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select(
-      'name email registerNumber phone department section gpa gpaLocked skills certifications projects resumeText'
+      'name email isPlaced registerNumber phone department section gpa gpaLocked skills certifications projects resumeText'
     );
 
     if (!user) {
@@ -146,7 +171,7 @@ router.patch('/profile', protect, authorize('student'), async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
       new: true,
       runValidators: true,
-    }).select('name email registerNumber phone department section gpa gpaLocked skills certifications projects resumeText');
+    }).select('name email isPlaced registerNumber phone department section gpa gpaLocked skills certifications projects resumeText');
 
     return res.json({ success: true, data: buildStudentProfile(updatedUser) });
   } catch (error) {
@@ -272,16 +297,31 @@ router.get('/upcoming-drives', protect, authorize('student'), async (req, res) =
 // @access  Private/Student
 router.post('/resume-feedback', protect, authorize('student'), async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('resumeText skills projects certifications');
+    const user = await User.findById(req.user._id).select('resumeText resumeUrl skills projects certifications');
     if (!user) {
       return res.status(404).json({ success: false, message: unavailableMessage });
     }
 
     const providedText = typeof req.body?.resumeText === 'string' ? req.body.resumeText : '';
-    const resumeText = sanitizeText(providedText || user.resumeText || '');
+    let resumeText = sanitizeText(providedText || user.resumeText || '');
 
     if (!resumeText) {
-      return res.status(404).json({ success: false, message: unavailableMessage });
+      const extractedFromPdf = await extractPdfTextFromDataUrl(user.resumeUrl);
+      if (extractedFromPdf) {
+        resumeText = extractedFromPdf;
+
+        // Cache extracted text to speed up future feedback requests.
+        if (!user.resumeText) {
+          await User.findByIdAndUpdate(req.user._id, { resumeText: extractedFromPdf.slice(0, 20000) });
+        }
+      }
+    }
+
+    if (!resumeText) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resume text is not available. Upload a readable PDF resume in profile or add resume text.',
+      });
     }
 
     const recommendedKeywords = [

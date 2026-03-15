@@ -11,6 +11,7 @@ export interface ZenithProfile {
   id: string;
   name: string;
   email: string;
+  isPlaced?: boolean;
   registerNumber?: string;
   phone?: string;
   department?: string;

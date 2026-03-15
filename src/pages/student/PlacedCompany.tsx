@@ -91,8 +91,6 @@ const PlacedCompany = () => {
     'Your placed company';
 
   const baseCompanyUrl = normalizeUrl((placedCompany as any)?.websiteUrl || '');
-  const fallbackSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(`${companyName} careers`)}`;
-  const companyUrl = baseCompanyUrl || fallbackSearchUrl;
 
   const handleDownloadDetails = () => {
     if (!(placedCompany as any)?.detailsFile) {
@@ -157,9 +155,13 @@ const PlacedCompany = () => {
                 <Button
                   variant="outline"
                   className="w-full justify-between"
-                  onClick={() => window.open(companyUrl, '_blank', 'noopener,noreferrer')}
+                  onClick={() => {
+                    if (!baseCompanyUrl) return;
+                    window.open(baseCompanyUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                  disabled={!baseCompanyUrl}
                 >
-                  <span className="truncate text-left">{baseCompanyUrl || 'Search company careers page'}</span>
+                  <span className="truncate text-left">{baseCompanyUrl || 'Official company URL not available'}</span>
                   <ExternalLink className="w-4 h-4" />
                 </Button>
               </div>
@@ -274,10 +276,14 @@ const PlacedCompany = () => {
           <Button
             variant="hero"
             className="gap-2"
-            onClick={() => window.open(companyUrl, '_blank', 'noopener,noreferrer')}
+            onClick={() => {
+              if (!baseCompanyUrl) return;
+              window.open(baseCompanyUrl, '_blank', 'noopener,noreferrer');
+            }}
+            disabled={!baseCompanyUrl}
           >
             <ExternalLink className="w-4 h-4" />
-            Open Company URL
+            Open Official Company URL
           </Button>
 
           <Button variant="outline" className="gap-2" onClick={handleDownloadDetails}>

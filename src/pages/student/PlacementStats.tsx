@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatsCard from '@/components/cards/StatsCard';
 import { Users, UserCheck, Building2, TrendingUp, IndianRupee, Award } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, ComposedChart } from 'recharts';
 
 const PlacementStats = () => {
   const batchYear = '2025';
@@ -53,6 +53,7 @@ const PlacementStats = () => {
   const monthCount = monthlyPlacedCountData.length;
   const recruiterCount = companyWiseData.length;
   const roleCount = roleBasedPlacementData.length;
+  const maxRolePlaced = Math.max(...roleBasedPlacementData.map((item) => item.placed));
 
   return (
     <div className="min-h-screen bg-background">
@@ -121,23 +122,36 @@ const PlacementStats = () => {
         {/* Charts */}
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Monthly Placements */}
-          <Card className="animate-slide-up" style={{ animationDelay: '600ms' }}>
+          <Card className="animate-slide-up border-blue-200/70 bg-gradient-to-b from-blue-50/80 via-cyan-50/40 to-white" style={{ animationDelay: '600ms' }}>
             <CardHeader>
               <CardTitle className="text-lg">Placement Momentum by Month ({monthCount}-month trend, Batch {batchYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyPlacedCountData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <AreaChart data={monthlyPlacedCountData}>
+                    <defs>
+                      <linearGradient id="monthlyPlacementFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2563EB" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#2563EB" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="4 4" stroke="#93C5FD" strokeOpacity={0.55} />
+                    <XAxis dataKey="month" stroke="#1E3A8A" tickLine={false} axisLine={false} />
+                    <YAxis stroke="#1E3A8A" tickLine={false} axisLine={false} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
+                        backgroundColor: '#EFF6FF',
+                        border: '1px solid #BFDBFE',
                         borderRadius: '8px',
                       }}
+                      formatter={(value: number) => [`${value} students`, 'Placed']}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="placed"
+                      stroke="none"
+                      fill="url(#monthlyPlacementFill)"
                     />
                     <Line
                       dataKey="placed"
@@ -145,41 +159,55 @@ const PlacementStats = () => {
                       type="monotone"
                       stroke="#2563EB"
                       strokeWidth={3}
-                      dot={{ fill: '#2563EB', r: 5 }}
-                      activeDot={{ r: 7, fill: '#1D4ED8' }}
+                      dot={{ fill: '#2563EB', r: 4, stroke: '#DBEAFE', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: '#1D4ED8' }}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
           {/* Company-wise Stats */}
-          <Card className="animate-slide-up" style={{ animationDelay: '700ms' }}>
+          <Card className="animate-slide-up border-emerald-200/80 bg-gradient-to-b from-emerald-50/70 via-teal-50/40 to-white" style={{ animationDelay: '700ms' }}>
             <CardHeader>
               <CardTitle className="text-lg">Top {recruiterCount} Recruiters by Offers (with LPA)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={companyWiseData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis dataKey="company" type="category" stroke="hsl(var(--muted-foreground))" width={80} />
+                  <ComposedChart data={companyWiseData}>
+                    <CartesianGrid strokeDasharray="4 4" stroke="#6EE7B7" strokeOpacity={0.45} />
+                    <XAxis dataKey="company" stroke="#065F46" tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="left" stroke="#065F46" tickLine={false} axisLine={false} allowDecimals={false} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#0F766E" tickLine={false} axisLine={false} allowDecimals={false} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
+                        backgroundColor: '#ECFDF5',
+                        border: '1px solid #A7F3D0',
                         borderRadius: '8px',
                       }}
-                      formatter={(value: number, _name: string, item: any) => [`${value} offers | ${item?.payload?.lpa} LPA`, 'Company impact']}
+                      formatter={(value: number, name: string) => {
+                        if (name === 'offers') return [`${value} offers`, 'Offers'];
+                        return [`${value} LPA`, 'LPA'];
+                      }}
                     />
-                    <Bar dataKey="offers" radius={[0, 6, 6, 0]}>
+                    <Bar yAxisId="left" dataKey="offers" name="offers" barSize={26} radius={[8, 8, 0, 0]}>
                       {companyWiseData.map((entry) => (
                         <Cell key={`company-${entry.company}`} fill={entry.color} />
                       ))}
                     </Bar>
-                  </BarChart>
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="lpa"
+                      name="lpa"
+                      stroke="#0F766E"
+                      strokeWidth={2.5}
+                      dot={{ r: 4, fill: '#0F766E' }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
@@ -235,31 +263,32 @@ const PlacementStats = () => {
           </Card>
 
           {/* Role-based Placement Stats */}
-          <Card className="animate-slide-up" style={{ animationDelay: '900ms' }}>
+          <Card className="animate-slide-up border-violet-200/80 bg-gradient-to-b from-violet-50/70 via-fuchsia-50/40 to-white" style={{ animationDelay: '900ms' }}>
             <CardHeader>
               <CardTitle className="text-lg">Role-wise Placement Distribution (Top {roleCount} roles, Batch {batchYear})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={roleBasedPlacementData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis dataKey="role" type="category" stroke="hsl(var(--muted-foreground))" width={120} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Bar dataKey="placed" radius={[0, 6, 6, 0]}>
-                      {roleBasedPlacementData.map((entry) => (
-                        <Cell key={`role-${entry.role}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="space-y-5 pt-1">
+                {roleBasedPlacementData.map((entry) => {
+                  const widthPercent = (entry.placed / maxRolePlaced) * 100;
+                  return (
+                    <div key={entry.role} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground">{entry.role}</span>
+                        <span className="font-semibold text-muted-foreground">{entry.placed}</span>
+                      </div>
+                      <div className="h-3 rounded-full bg-violet-100 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${widthPercent}%`,
+                            background: `linear-gradient(90deg, ${entry.color}, ${entry.color}CC)`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

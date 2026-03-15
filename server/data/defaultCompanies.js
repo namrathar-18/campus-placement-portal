@@ -44,6 +44,29 @@ const companyTechStack = {
   'Groww': 'Java/Python, PostgreSQL, Redis, Kafka, low-latency services',
 };
 
+const officialCompanyCareerUrls = {
+  'Anuki Technologies': 'https://www.anukitechnologies.com/careers',
+  Google: 'https://www.google.com/about/careers/applications/',
+  Microsoft: 'https://careers.microsoft.com/v2/global/en/home.html',
+  Amazon: 'https://www.amazon.jobs/',
+  Flipkart: 'https://www.flipkartcareers.com/#!/joblist',
+  Razorpay: 'https://razorpay.com/jobs/',
+  Swiggy: 'https://careers.swiggy.com/',
+  Zoho: 'https://www.zoho.com/careers/',
+  Freshworks: 'https://www.freshworks.com/company/careers/',
+  TCS: 'https://www.tcs.com/careers',
+  Infosys: 'https://www.infosys.com/careers/',
+  Wipro: 'https://careers.wipro.com/',
+  Accenture: 'https://www.accenture.com/in-en/careers',
+  Cognizant: 'https://careers.cognizant.com/global/en',
+  LTIMindtree: 'https://www.ltimindtree.com/careers/',
+  Oracle: 'https://www.oracle.com/careers/',
+  Zomato: 'https://www.zomato.com/careers',
+  Paytm: 'https://paytm.com/careers/',
+  PhonePe: 'https://www.phonepe.com/careers/',
+  Groww: 'https://groww.in/careers',
+};
+
 const buildRealisticDescription = (company) => {
   const focus = companyHiringFocus[company.name] || `Build and maintain core ${company.industry} products.`;
   const stack = companyTechStack[company.name] || 'Programming language, SQL/NoSQL, APIs, cloud basics';
@@ -643,6 +666,7 @@ export const defaultCompanies = [
   },
 ].map((company) => ({
   ...company,
+  websiteUrl: officialCompanyCareerUrls[company.name] || '',
   description: buildRealisticDescription(company),
   detailsFile: createCompanyDetailsPdfDataUri(company),
 }));

@@ -111,6 +111,7 @@ const seedDefaultCompanies = async () => {
             description: company.description,
             industry: company.industry,
             location: company.location,
+            websiteUrl: company.websiteUrl || '',
             salary: company.salary,
             min_gpa: company.min_gpa,
             eligibility: company.eligibility,

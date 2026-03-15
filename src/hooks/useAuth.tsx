@@ -54,7 +54,8 @@ const bootstrapDefaultCompaniesIfNeeded = async (user: { id: string; role: UserR
     return;
   }
 
-  const bootstrapKey = `companiesBootstrapSynced:${user.id}`;
+  const bootstrapVersion = 'v2';
+  const bootstrapKey = `companiesBootstrapSynced:${user.id}:${bootstrapVersion}`;
   const alreadySynced = localStorage.getItem(bootstrapKey) === 'true';
 
   if (alreadySynced) {

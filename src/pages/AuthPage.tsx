@@ -5,11 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
@@ -234,13 +233,9 @@ const AuthPage = () => {
             <div className="rounded-2xl bg-white/90 p-2 shadow-md ring-1 ring-border/40">
               <img src={christLogo} alt="Christ University" className="h-14 w-auto" />
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">Official Login</Badge>
-              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Secure Access</Badge>
-            </div>
           </div>
           <CardTitle className="text-2xl font-heading">Welcome Back</CardTitle>
-          <CardDescription className="text-sm">Christ (Deemed to be University) Placement Portal</CardDescription>
+          <CardDescription className="text-sm font-semibold">Christ (Deemed to be University) Placement Portal</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleLogin} className="space-y-5">
@@ -257,10 +252,6 @@ const AuthPage = () => {
                   className="pl-10 h-12 rounded-xl border-border/80 bg-background/70"
                   required
                 />
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <GraduationCap className="w-3.5 h-3.5" />
-                Use your official @mca.christuniversity.in or @mscaiml.christuniversity.in email.
               </div>
             </div>
 

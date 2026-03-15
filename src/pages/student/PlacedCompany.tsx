@@ -5,7 +5,7 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Building2, Globe, MapPin, Calendar, Briefcase, IndianRupee, GraduationCap, FileDown, ExternalLink, AlertCircle } from 'lucide-react';
+import { Loader2, Building2, MapPin, Calendar, Briefcase, IndianRupee, GraduationCap, FileDown, ExternalLink, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const placedStatuses = new Set(['approved', 'selected', 'placed']);
@@ -147,25 +147,6 @@ const PlacedCompany = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 mt-6">
-              <div className="p-4 rounded-xl bg-muted/40">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Globe className="w-4 h-4" />
-                  Company URL
-                </div>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                  onClick={() => {
-                    if (!baseCompanyUrl) return;
-                    window.open(baseCompanyUrl, '_blank', 'noopener,noreferrer');
-                  }}
-                  disabled={!baseCompanyUrl}
-                >
-                  <span className="truncate text-left">{baseCompanyUrl || 'Official company URL not available'}</span>
-                  <ExternalLink className="w-4 h-4" />
-                </Button>
-              </div>
-
               <div className="p-4 rounded-xl bg-muted/40">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Calendar className="w-4 h-4" />

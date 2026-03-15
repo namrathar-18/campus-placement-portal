@@ -34,17 +34,28 @@ const PIE_COLORS = [
   '#ca8a04',
 ];
 
+const getTreemapLabel = (name: string, width: number) => {
+  if (!name) return '';
+  const maxChars = Math.max(5, Math.floor((width - 14) / 7));
+  return name.length > maxChars ? `${name.slice(0, maxChars - 1)}...` : name;
+};
+
 const TreemapContent = (props: any) => {
   const { x, y, width, height, name, value, index } = props;
   const color = PIE_COLORS[(index ?? 0) % PIE_COLORS.length];
-  const showLabel = width > 45 && height > 30;
+  const showName = width > 58 && height > 28;
+  const showValue = width > 54 && height > 42;
+  const label = getTreemapLabel(name, width);
+  const nameFontSize = Math.max(10, Math.min(14, Math.floor(width / 9)));
   return (
     <g style={{ cursor: 'pointer' }}>
       <rect x={x} y={y} width={width} height={height} fill={color} rx={6} ry={6} stroke="hsl(var(--card))" strokeWidth={3} />
-      {showLabel && (
+      {showName && (
         <>
-          <text x={x + width / 2} y={y + height / 2 - 7} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={600}>{name}</text>
-          <text x={x + width / 2} y={y + height / 2 + 10} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize={11}>{value}</text>
+          <text x={x + width / 2} y={y + height / 2 - (showValue ? 6 : 0)} textAnchor="middle" dominantBaseline="middle" fill="#fff" fontSize={nameFontSize} fontWeight={600} pointerEvents="none">{label}</text>
+          {showValue && (
+            <text x={x + width / 2} y={y + height / 2 + 12} textAnchor="middle" dominantBaseline="middle" fill="rgba(255,255,255,0.88)" fontSize={11} pointerEvents="none">{value}</text>
+          )}
         </>
       )}
     </g>

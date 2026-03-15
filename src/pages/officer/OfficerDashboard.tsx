@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Building2, Users, Plus, ArrowRight, Clock, Loader2, TrendingUp, BarChart2, Search, CheckCircle2, XCircle } from 'lucide-react';
+import { Building2, Users, Plus, ArrowRight, Clock, Loader2, TrendingUp, BarChart2, Search, CheckCircle2, XCircle, Target, BriefcaseBusiness, ShieldCheck } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
 import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
@@ -38,17 +38,28 @@ const PIE_COLORS = [
   '#ca8a04',
 ];
 
+const getTreemapLabel = (name: string, width: number) => {
+  if (!name) return '';
+  const maxChars = Math.max(5, Math.floor((width - 14) / 7));
+  return name.length > maxChars ? `${name.slice(0, maxChars - 1)}...` : name;
+};
+
 const TreemapContent = (props: any) => {
   const { x, y, width, height, name, value, index } = props;
   const color = PIE_COLORS[(index ?? 0) % PIE_COLORS.length];
-  const showLabel = width > 45 && height > 30;
+  const showName = width > 58 && height > 28;
+  const showValue = width > 54 && height > 42;
+  const label = getTreemapLabel(name, width);
+  const nameFontSize = Math.max(10, Math.min(14, Math.floor(width / 9)));
   return (
     <g>
       <rect x={x} y={y} width={width} height={height} fill={color} rx={6} ry={6} stroke="hsl(var(--card))" strokeWidth={3} />
-      {showLabel && (
+      {showName && (
         <>
-          <text x={x + width / 2} y={y + height / 2 - 7} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={600}>{name}</text>
-          <text x={x + width / 2} y={y + height / 2 + 10} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize={11}>{value}</text>
+          <text x={x + width / 2} y={y + height / 2 - (showValue ? 6 : 0)} textAnchor="middle" dominantBaseline="middle" fill="#fff" fontSize={nameFontSize} fontWeight={600} pointerEvents="none">{label}</text>
+          {showValue && (
+            <text x={x + width / 2} y={y + height / 2 + 12} textAnchor="middle" dominantBaseline="middle" fill="rgba(255,255,255,0.88)" fontSize={11} pointerEvents="none">{value}</text>
+          )}
         </>
       )}
     </g>
@@ -282,6 +293,25 @@ const OfficerDashboard = () => {
           </h1>
           <p className="text-muted-foreground">Manage campus placements and monitor student progress</p>
         </div>
+
+        <Card className="mb-6 border-primary/20 bg-gradient-to-r from-primary/10 via-background to-success/10">
+          <CardContent className="py-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Placement Officer View</p>
+                <h2 className="mt-1 text-xl font-heading font-semibold text-foreground">What this dashboard tracks</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Live placement health, section performance, recruiter contribution, and student-level drill-down for quick decisions.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary"><Target className="h-3.5 w-3.5" /> {students.length} active students</Badge>
+                <Badge variant="secondary" className="gap-1 bg-success/10 text-success"><BriefcaseBusiness className="h-3.5 w-3.5" /> {companyWisePlaced.length} hiring companies</Badge>
+                <Badge variant="secondary" className="gap-1 bg-warning/10 text-warning"><ShieldCheck className="h-3.5 w-3.5" /> {pendingApplications} pending applications</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid lg:grid-cols-1 gap-8">
           <div className="space-y-6">

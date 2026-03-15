@@ -13,6 +13,7 @@ import CompanyListings from "./pages/student/CompanyListings";
 import Applications from "./pages/student/Applications";
 import PlacementStats from "./pages/student/PlacementStats";
 import AlumniConnect from "./pages/student/AlumniConnect";
+import PlacedCompany from "./pages/student/PlacedCompany";
 import OfficerDashboard from "./pages/officer/OfficerDashboard";
 import ManageCompanies from "./pages/officer/ManageCompanies";
 import ManageApplications from "./pages/officer/ManageApplications";
@@ -21,6 +22,7 @@ import ManageNotifications from "./pages/officer/ManageNotifications";
 import StudentStats from "./pages/officer/StudentStats";
 import PlacementAnalytics from "./pages/officer/PlacementAnalytics";
 import PlacedStudents from "./pages/officer/PlacedStudents";
+import RepresentativeDashboard from "./pages/representative/RepresentativeDashboard";
 
 import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
@@ -67,6 +69,7 @@ const AppContent = () => {
             <Route path="/student/applications" element={<Applications />} />
             <Route path="/student/stats" element={<PlacementStats />} />
             <Route path="/student/notifications" element={<StudentNotifications />} />
+            <Route path="/student/placed-company" element={<PlacedCompany />} />
             
             {/* Officer Routes */}
             <Route path="/officer/dashboard" element={<OfficerDashboard />} />
@@ -78,8 +81,8 @@ const AppContent = () => {
             <Route path="/officer/analytics" element={<PlacementAnalytics />} />
             <Route path="/officer/placed-students" element={<PlacedStudents />} />
             
-            {/* Student Representative Routes — redirect to identical officer pages */}
-            <Route path="/representative/dashboard" element={<OfficerDashboard />} />
+            {/* Student Representative Routes */}
+            <Route path="/representative/dashboard" element={<RepresentativeDashboard />} />
             <Route path="/representative/companies" element={<ManageCompanies />} />
             <Route path="/representative/applications" element={<ManageApplications />} />
             <Route path="/representative/applications/:companyId" element={<CompanyApplications />} />

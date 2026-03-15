@@ -20,6 +20,38 @@ const QUICK_PROMPTS = [
   'Edit My Profile',
 ];
 
+const URL_PATTERN = /^https?:\/\/[^\s]+$/i;
+
+const renderMessageWithLinks = (text: string) => {
+  const splitPattern = /(https?:\/\/[^\s]+)/g;
+
+  return text.split('\n').map((line, lineIndex) => (
+    <p key={`${lineIndex}-${line}`} className="break-words">
+      {line === '' ? (
+        <span>&nbsp;</span>
+      ) : (
+        line.split(splitPattern).map((part, partIndex) => {
+          if (URL_PATTERN.test(part)) {
+            return (
+              <a
+                key={`${lineIndex}-${partIndex}-${part}`}
+                href={part}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-primary hover:text-primary/80 break-all"
+              >
+                {part}
+              </a>
+            );
+          }
+
+          return <span key={`${lineIndex}-${partIndex}-${part}`}>{part}</span>;
+        })
+      )}
+    </p>
+  ));
+};
+
 const ZenithChatbot = ({ userId }: ZenithChatbotProps) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -80,13 +112,13 @@ const ZenithChatbot = ({ userId }: ZenithChatbotProps) => {
               <div key={message.id} className={cn('flex', message.sender === 'user' ? 'justify-end' : 'justify-start')}>
                 <div
                   className={cn(
-                    'max-w-[86%] whitespace-pre-line rounded-xl px-3 py-2 text-sm leading-relaxed',
+                    'max-w-[86%] rounded-xl px-3 py-2 text-sm leading-relaxed',
                     message.sender === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'border border-border/70 bg-card text-card-foreground',
                   )}
                 >
-                  {message.text}
+                  {message.sender === 'assistant' ? renderMessageWithLinks(message.text) : <p className="whitespace-pre-line break-words">{message.text}</p>}
                 </div>
               </div>
             ))}

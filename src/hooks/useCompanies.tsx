@@ -6,6 +6,7 @@ export interface Company {
   name: string;
   description: string;
   logoUrl?: string;
+  websiteUrl?: string;
   industry?: string;
   location?: string;
   package: number;

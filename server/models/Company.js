@@ -17,6 +17,10 @@ const companySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  websiteUrl: {
+    type: String,
+    default: ''
+  },
   package: {
     type: Number,
     required: false

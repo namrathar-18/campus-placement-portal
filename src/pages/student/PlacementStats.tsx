@@ -1,11 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import StatsCard from '@/components/cards/StatsCard';
-import { Users, UserCheck, Building2, TrendingUp, IndianRupee, Award, Sparkles, BriefcaseBusiness, Target } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Users, UserCheck, Building2, TrendingUp, IndianRupee, Award } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 const PlacementStats = () => {
-  const academicYear = '2023 - 2025';
+  const batchYear = '2025';
 
   const pastBatchStats = {
     totalStudents: 120,
@@ -21,12 +20,12 @@ const PlacementStats = () => {
   const placementRate = Math.round((pastBatchStats.placedStudents / pastBatchStats.totalStudents) * 100);
 
   const monthlyPlacedCountData = [
-    { month: 'Aug', placed: 8, color: '#0EA5E9' },
-    { month: 'Sep', placed: 10, color: '#14B8A6' },
-    { month: 'Oct', placed: 12, color: '#22C55E' },
-    { month: 'Nov', placed: 16, color: '#F59E0B' },
-    { month: 'Dec', placed: 14, color: '#F97316' },
-    { month: 'Jan', placed: 15, color: '#EC4899' },
+    { month: 'Aug', placed: 8 },
+    { month: 'Sep', placed: 10 },
+    { month: 'Oct', placed: 12 },
+    { month: 'Nov', placed: 16 },
+    { month: 'Dec', placed: 14 },
+    { month: 'Jan', placed: 15 },
   ];
 
   const companyWiseData = [
@@ -51,7 +50,9 @@ const PlacementStats = () => {
     { role: 'DevOps Engineer', placed: 8, color: '#7C3AED' },
   ];
 
-  const monthlyPeak = monthlyPlacedCountData.reduce((max, row) => (row.placed > max.placed ? row : max), monthlyPlacedCountData[0]);
+  const monthCount = monthlyPlacedCountData.length;
+  const recruiterCount = companyWiseData.length;
+  const roleCount = roleBasedPlacementData.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,31 +60,12 @@ const PlacementStats = () => {
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
-            Past Year Placement Dashboard (AY {academicYear})
+            Batch {batchYear} Placement Dashboard
           </h1>
           <p className="text-muted-foreground">
-            A clear view of previous-batch outcomes to help current students benchmark preparation and expectations.
+            A clear view of Batch {batchYear} outcomes to help current students benchmark preparation and expectations.
           </p>
         </div>
-
-        <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/10 via-background to-success/10 animate-slide-up" style={{ animationDelay: '40ms' }}>
-          <CardContent className="py-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Dashboard Focus</p>
-                <h2 className="mt-1 text-xl font-heading font-semibold text-foreground">What this dashboard helps you understand</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Placement performance, hiring momentum, role-wise opportunities, and recruiter-wise contributions from the last batch.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary"><Target className="h-3.5 w-3.5" /> {placementRate}% placed</Badge>
-                <Badge variant="secondary" className="gap-1 bg-success/10 text-success"><BriefcaseBusiness className="h-3.5 w-3.5" /> {monthlyPeak.month} was peak month</Badge>
-                <Badge variant="secondary" className="gap-1 bg-warning/10 text-warning"><Sparkles className="h-3.5 w-3.5" /> Highest package: {pastBatchStats.highestPackage}</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -141,12 +123,12 @@ const PlacementStats = () => {
           {/* Monthly Placements */}
           <Card className="animate-slide-up" style={{ animationDelay: '600ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Placement Momentum by Month (AY {academicYear})</CardTitle>
+              <CardTitle className="text-lg">Placement Momentum by Month ({monthCount}-month trend, Batch {batchYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyPlacedCountData}>
+                  <LineChart data={monthlyPlacedCountData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
                     <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -157,15 +139,16 @@ const PlacementStats = () => {
                         borderRadius: '8px',
                       }}
                     />
-                    <Bar
+                    <Line
                       dataKey="placed"
-                      radius={[6, 6, 0, 0]}
-                    >
-                      {monthlyPlacedCountData.map((entry) => (
-                        <Cell key={`monthly-${entry.month}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
+                      name="Students Placed"
+                      type="monotone"
+                      stroke="#2563EB"
+                      strokeWidth={3}
+                      dot={{ fill: '#2563EB', r: 5 }}
+                      activeDot={{ r: 7, fill: '#1D4ED8' }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
@@ -174,7 +157,7 @@ const PlacementStats = () => {
           {/* Company-wise Stats */}
           <Card className="animate-slide-up" style={{ animationDelay: '700ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Top Recruiters by Offers (with LPA)</CardTitle>
+              <CardTitle className="text-lg">Top {recruiterCount} Recruiters by Offers (with LPA)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
@@ -205,7 +188,7 @@ const PlacementStats = () => {
           {/* Placement Ratio */}
           <Card className="animate-slide-up" style={{ animationDelay: '800ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Placed vs Unplaced (AY {academicYear})</CardTitle>
+              <CardTitle className="text-lg">Placed vs Unplaced (Batch {batchYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row items-center justify-center gap-8">
@@ -254,7 +237,7 @@ const PlacementStats = () => {
           {/* Role-based Placement Stats */}
           <Card className="animate-slide-up" style={{ animationDelay: '900ms' }}>
             <CardHeader>
-              <CardTitle className="text-lg">Role-wise Placement Distribution (AY {academicYear})</CardTitle>
+              <CardTitle className="text-lg">Role-wise Placement Distribution (Top {roleCount} roles, Batch {batchYear})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">

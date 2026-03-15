@@ -24,13 +24,19 @@ const Navbar = () => {
 
   const getNavLinks = () => {
     if (user?.role === 'student') {
-      return [
+      const studentLinks = [
         { to: '/student/dashboard', label: 'Dashboard' },
         { to: '/student/companies', label: 'Companies' },
         { to: '/student/alumni-connect', label: 'Alumni Connect' },
         { to: '/student/applications', label: 'My Applications' },
         { to: '/student/stats', label: 'Placement Stats' },
       ];
+
+      if (user?.isPlaced) {
+        studentLinks.splice(4, 0, { to: '/student/placed-company', label: 'Placed Company' });
+      }
+
+      return studentLinks;
     }
     if (user?.role === 'student_representative') {
       return [
@@ -156,4 +162,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-// comment

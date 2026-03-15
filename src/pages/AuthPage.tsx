@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck, GraduationCap } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
@@ -27,6 +28,7 @@ const AuthPage = () => {
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
 
@@ -70,7 +72,7 @@ const AuthPage = () => {
   useEffect(() => {
     // Only redirect if authenticated AND not currently loading
     if (isAuthenticated && user && !authLoading) {
-      if (user.role === 'placement_officer' || user.role === 'student_representative') {
+      if (user.role === 'placement_officer') {
         navigate('/officer/dashboard', { replace: true });
       } else if (user.role === 'student_representative') {
         navigate('/representative/dashboard', { replace: true });
@@ -214,27 +216,36 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden">
       {/* Blurred background image */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-sm scale-105 brightness-[0.6]"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-[3px] scale-105 brightness-[0.52]"
         style={{ backgroundImage: `url('https://bangalorestudy.com/static/media/Central.85c63a34.jpg')` }}
       />
       {/* Overlay for additional dimming */}
-      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-primary/45 to-black/55" />
+      <div className="pointer-events-none absolute -top-32 -left-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-success/20 blur-3xl" />
+
       {/* Card content */}
-      <Card className="w-full max-w-md shadow-2xl border-border/50 relative z-10 bg-background/95 backdrop-blur-sm">
-        <CardHeader className="text-center pb-6">
-          <div className="flex flex-col items-center gap-4 mb-4">
-            <img src={christLogo} alt="Christ University" className="h-16 w-auto bg-white rounded-lg p-1" />
+      <Card className="w-full max-w-md shadow-2xl border-border/40 relative z-10 bg-background/95 backdrop-blur-xl rounded-2xl overflow-hidden">
+        <CardHeader className="text-center pb-5 border-b border-border/30 bg-gradient-to-b from-background to-background/70">
+          <div className="flex flex-col items-center gap-3 mb-2">
+            <div className="rounded-2xl bg-white/90 p-2 shadow-md ring-1 ring-border/40">
+              <img src={christLogo} alt="Christ University" className="h-14 w-auto" />
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">Official Login</Badge>
+              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Secure Access</Badge>
+            </div>
           </div>
-          <CardTitle className="text-xl">Welcome</CardTitle>
-          <CardDescription>Christ (Deemed to be University) Placement Portal</CardDescription>
+          <CardTitle className="text-2xl font-heading">Welcome Back</CardTitle>
+          <CardDescription className="text-sm">Christ (Deemed to be University) Placement Portal</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="login-email">Student Email</Label>
+        <CardContent className="pt-6">
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-2.5">
+              <Label htmlFor="login-email" className="font-semibold">Student Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -243,37 +254,52 @@ const AuthPage = () => {
                   placeholder="sample@mca.christuniversity.in"
                   value={loginData.email}
                   onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  className="pl-10"
+                  className="pl-10 h-12 rounded-xl border-border/80 bg-background/70"
                   required
                 />
               </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <GraduationCap className="w-3.5 h-3.5" />
+                Use your official @mca.christuniversity.in or @mscaiml.christuniversity.in email.
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="login-password">Password</Label>
+
+            <div className="space-y-2.5">
+              <Label htmlFor="login-password" className="font-semibold">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="login-password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  className="pl-10"
+                  className="pl-10 pr-11 h-12 rounded-xl border-border/80 bg-background/70"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
+
             <div className="flex justify-end">
               <Button
                 type="button"
                 variant="link"
-                className="px-0 text-sm"
+                className="px-0 text-sm font-semibold"
                 onClick={() => setForgotPasswordOpen(true)}
               >
                 Forgot Password?
               </Button>
             </div>
-            <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
+
+            <Button type="submit" variant="hero" className="w-full h-12 rounded-xl text-base" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -283,18 +309,19 @@ const AuthPage = () => {
                 'Sign In'
               )}
             </Button>
-            <div className="relative my-2">
+            <div className="relative my-1">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-border/60" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">or</span>
+                <span className="bg-background px-3 text-muted-foreground tracking-wider">or continue with</span>
               </div>
             </div>
+
             <Button
               type="button"
               variant="outline"
-              className="w-full flex items-center gap-2"
+              className="w-full h-12 rounded-xl flex items-center gap-2 bg-white/70 hover:bg-white"
               disabled={isLoading}
               onClick={() => googleLoginForLogin()}
             >
@@ -306,6 +333,11 @@ const AuthPage = () => {
               </svg>
               Continue with Google
             </Button>
+
+            <div className="flex items-center justify-center gap-2 pt-1 text-xs text-muted-foreground">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Protected sign-in with institutional access control.
+            </div>
           </form>
           
           <p className="text-center text-xs text-muted-foreground mt-6">

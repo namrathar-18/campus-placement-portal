@@ -33,6 +33,7 @@ const ManageCompanies = () => {
   const [formData, setFormData] = useState({
     name: '',
     role: '',
+    websiteUrl: '',
     salary: '',
     minGpa: '',
     description: '',
@@ -56,6 +57,7 @@ const ManageCompanies = () => {
       setFormData({
         name: company.name,
         role: company.roles?.[0] || '',
+        websiteUrl: (company as any).websiteUrl || '',
         salary: company.salary || '',
         minGpa: (company.min_gpa ?? '').toString(),
         description: company.description,
@@ -72,6 +74,7 @@ const ManageCompanies = () => {
       setFormData({
         name: '',
         role: '',
+        websiteUrl: '',
         salary: '',
         minGpa: '',
         description: '',
@@ -105,6 +108,7 @@ const ManageCompanies = () => {
     const payload: CompanyInsert = {
       name: formData.name,
       description: formData.description,
+      websiteUrl: formData.websiteUrl,
       industry: formData.industry,
       location: formData.location,
       package: packageValue,
@@ -215,6 +219,10 @@ const ManageCompanies = () => {
                       <Label htmlFor="location">Location</Label>
                       <Input id="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="e.g. Bengaluru" />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="websiteUrl">Company URL</Label>
+                    <Input id="websiteUrl" value={formData.websiteUrl} onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })} placeholder="https://company.com/careers" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">

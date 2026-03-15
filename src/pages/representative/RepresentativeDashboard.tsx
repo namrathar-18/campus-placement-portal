@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, CheckCircle, Clock, Building2, TrendingUp, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Users, CheckCircle, Clock, Building2, TrendingUp, AlertCircle, BriefcaseBusiness, ArrowRight, Bell } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from 'react-router-dom';
 
 interface DashboardStats {
   totalStudents: number;
@@ -40,9 +43,18 @@ const RepresentativeDashboard = () => {
     }
   };
 
-  const placementPercentage = stats 
-    ? ((stats.placedStudents / stats.totalStudents) * 100).toFixed(1)
-    : 0;
+  const placementPercentage = useMemo(() => {
+    if (!stats?.totalStudents) return 0;
+    return Number(((stats.placedStudents / stats.totalStudents) * 100).toFixed(1));
+  }, [stats]);
+
+  const applicationConversion = useMemo(() => {
+    if (!stats?.totalApplications) return 0;
+    return Number(((stats.placedApplications / stats.totalApplications) * 100).toFixed(1));
+  }, [stats]);
+
+  const placementProgressWidth = `${Math.min(100, Math.max(0, placementPercentage))}%`;
+  const conversionProgressWidth = `${Math.min(100, Math.max(0, applicationConversion))}%`;
 
   if (loading) {
     return (
@@ -65,9 +77,28 @@ const RepresentativeDashboard = () => {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Student Representative Dashboard</h1>
         <p className="text-muted-foreground">
-          Manage and coordinate placement activities for your department
+          Department-level placement command center for tracking students, applications, and immediate follow-ups.
         </p>
       </div>
+
+      <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/10 via-background to-success/10">
+        <CardContent className="py-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Representative Focus</p>
+              <h2 className="mt-1 text-xl font-semibold text-foreground">What this dashboard helps you do</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Monitor placement health of your department, identify pending student actions, and coordinate faster with the placement cell.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary" className="bg-primary/10 text-primary">{stats?.totalStudents || 0} students</Badge>
+              <Badge variant="secondary" className="bg-success/10 text-success">{placementPercentage}% placement rate</Badge>
+              <Badge variant="secondary" className="bg-warning/10 text-warning">{stats?.pendingApplications || 0} pending applications</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -109,7 +140,7 @@ const RepresentativeDashboard = () => {
               {stats?.pendingApplications || 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Awaiting review
+              Need review or follow-up
             </p>
           </CardContent>
         </Card>
@@ -131,12 +162,12 @@ const RepresentativeDashboard = () => {
       </div>
 
       {/* Additional Stats Row */}
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
+      <div className="grid gap-6 lg:grid-cols-3 mb-8">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Application Statistics
+              Application Pipeline
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -157,6 +188,13 @@ const RepresentativeDashboard = () => {
                   {stats?.pendingApplications || 0}
                 </span>
               </div>
+              <div className="pt-2">
+                <p className="text-xs text-muted-foreground mb-1">Application-to-placement conversion</p>
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-success" style={{ width: conversionProgressWidth }} />
+                </div>
+                <p className="text-xs font-semibold mt-1 text-success">{applicationConversion}%</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -165,7 +203,7 @@ const RepresentativeDashboard = () => {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Placement Overview
+              Placement Health
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -186,6 +224,12 @@ const RepresentativeDashboard = () => {
                 <span className="text-sm text-muted-foreground">Success Rate</span>
                 <span className="font-semibold">{placementPercentage}%</span>
               </div>
+              <div className="pt-2">
+                <p className="text-xs text-muted-foreground mb-1">Department placement progress</p>
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary" style={{ width: placementProgressWidth }} />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -193,27 +237,40 @@ const RepresentativeDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Quick Actions Needed
+              <BriefcaseBusiness className="h-5 w-5" />
+              Quick Actions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {stats?.pendingApplications && stats.pendingApplications > 0 ? (
-                <p className="text-sm">
+                <p className="text-sm flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-warning" />
                   {stats.pendingApplications} applications pending review
                 </p>
               ) : null}
               {stats?.unplacedStudents && stats.unplacedStudents > 0 ? (
-                <p className="text-sm">
+                <p className="text-sm flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
                   {stats.unplacedStudents} students need placement support
                 </p>
               ) : null}
               {!stats?.pendingApplications && !stats?.unplacedStudents && (
                 <p className="text-sm text-muted-foreground">
-                  All caught up! 🎉
+                  No urgent actions right now.
                 </p>
               )}
+              <div className="grid grid-cols-1 gap-2 pt-1">
+                <Link to="/representative/applications">
+                  <Button variant="outline" className="w-full justify-between">Review Applications <ArrowRight className="h-4 w-4" /></Button>
+                </Link>
+                <Link to="/representative/companies">
+                  <Button variant="outline" className="w-full justify-between">View Companies <ArrowRight className="h-4 w-4" /></Button>
+                </Link>
+                <Link to="/representative/notifications">
+                  <Button variant="outline" className="w-full justify-between">Manage Notifications <ArrowRight className="h-4 w-4" /></Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -223,7 +280,7 @@ const RepresentativeDashboard = () => {
       {stats?.recentNotifications && stats.recentNotifications.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Notifications</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5" /> Recent Notifications</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">

@@ -65,8 +65,6 @@ const resourceKeywords = [
   'resources',
   'link',
   'links',
-  'website',
-  'websites',
   'roadmap',
   'course',
   'courses',
@@ -86,6 +84,8 @@ export const isNo = (value: string) => /^(no|n|cancel|stop)$/i.test(value.trim()
 
 export const detectIntent = (rawQuery: string): ZenithIntent => {
   const query = normalize(rawQuery);
+  const asksCompanyDetailOrUrl =
+    /(company\s+(url|website|details)|placed\s+company|my\s+company\s+details|where\s+i\s+am\s+placed)/.test(query);
 
   if (/show\s+my\s+profile|view\s+my\s+profile|my\s+profile/.test(query)) return 'show_profile';
   if (/what\s+is\s+my\s+cgpa|my\s+cgpa|my\s+gpa/.test(query)) return 'show_cgpa';
@@ -93,6 +93,7 @@ export const detectIntent = (rawQuery: string): ZenithIntent => {
   if (/best\s+companies|recommend|recommendation/.test(query)) return 'recommend_companies';
   if (/upcoming\s+drives|next\s+drives|upcoming\s+companies/.test(query)) return 'upcoming_drives';
   if (/resume\s+feedback|review\s+my\s+resume|ats/.test(query)) return 'resume_feedback';
+  if (asksCompanyDetailOrUrl) return 'unknown_placement';
   if (
     hasKeyword(query, resourceKeywords) &&
     (!hasKeyword(query, outOfScopeKeywords) || hasKeyword(query, placementKeywords))

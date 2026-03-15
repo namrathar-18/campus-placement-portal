@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 import api from '@/lib/api';
@@ -324,11 +324,6 @@ const AuthPage = () => {
               </svg>
               Continue with Google
             </Button>
-
-            <div className="flex items-center justify-center gap-2 pt-1 text-xs text-muted-foreground">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Protected sign-in with institutional access control.
-            </div>
           </form>
           
           <p className="text-center text-xs text-muted-foreground mt-6">

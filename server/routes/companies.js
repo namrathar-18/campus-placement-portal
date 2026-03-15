@@ -5,13 +5,46 @@ import { defaultCompanies } from '../data/defaultCompanies.js';
 
 const router = express.Router();
 
+const defaultCompanyUrlByName = new Map(
+  defaultCompanies
+    .filter((company) => company?.name && company?.websiteUrl)
+    .map((company) => [company.name, company.websiteUrl]),
+);
+
+const withFallbackWebsiteUrl = (company) => {
+  const plain = typeof company?.toObject === 'function' ? company.toObject() : company;
+  const fallbackUrl = defaultCompanyUrlByName.get(plain?.name) || '';
+  const currentUrl = (plain?.websiteUrl || '').trim();
+
+  return {
+    ...plain,
+    websiteUrl: currentUrl || fallbackUrl,
+  };
+};
+
 // @route   GET /api/companies
 // @desc    Get all companies
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
     const companies = await Company.find().sort({ deadline: 1 });
-    res.json({ success: true, data: companies });
+
+    const enrichedCompanies = companies.map(withFallbackWebsiteUrl);
+
+    const missingUrlUpdates = enrichedCompanies
+      .filter((company) => company?.websiteUrl && !(companies.find((doc) => String(doc._id) === String(company._id))?.websiteUrl || '').trim())
+      .map((company) => ({
+        updateOne: {
+          filter: { _id: company._id },
+          update: { $set: { websiteUrl: company.websiteUrl } },
+        },
+      }));
+
+    if (missingUrlUpdates.length > 0) {
+      await Company.bulkWrite(missingUrlUpdates, { ordered: false });
+    }
+
+    res.json({ success: true, data: enrichedCompanies });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -28,7 +61,13 @@ router.get('/:id', protect, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Company not found' });
     }
 
-    res.json({ success: true, data: company });
+    const enrichedCompany = withFallbackWebsiteUrl(company);
+
+    if (enrichedCompany.websiteUrl && !(company.websiteUrl || '').trim()) {
+      await Company.findByIdAndUpdate(company._id, { websiteUrl: enrichedCompany.websiteUrl });
+    }
+
+    res.json({ success: true, data: enrichedCompany });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

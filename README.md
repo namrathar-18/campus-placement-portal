@@ -58,6 +58,49 @@ The **Campus Placement Portal** simplifies campus hiring by providing a centrali
 
 ---
 
+## Resume Analyzer (Python ML)
+
+The backend now includes a Python-based resume analyzer that:
+- extracts skills from resume text
+- extracts required skills from a job description
+- computes semantic similarity using TF-IDF + cosine similarity
+- returns matched skills, missing skills, and a fit score
+
+### Install Python dependencies
+
+From the project root:
+
+```bash
+pip install -r server/ml/requirements.txt
+```
+
+If your server uses a custom Python command, set:
+
+```bash
+PYTHON_EXECUTABLE=python
+```
+
+### API endpoint
+
+`POST /api/zenith/resume-analyzer`
+
+Request body:
+
+```json
+{
+	"jobDescription": "We need React, Node.js, SQL and problem solving skills...",
+	"resumeText": "Built React dashboards and Node APIs with MongoDB...",
+	"topKMissing": 10
+}
+```
+
+Notes:
+- `jobDescription` is required.
+- `resumeText` is optional. If omitted, backend uses stored resume text or extracts it from uploaded resume PDF.
+- Model scores are estimations and cannot guarantee 100% real-world accuracy.
+
+---
+
 ## 📂 Project Structure
 
 ```text

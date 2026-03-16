@@ -1,10 +1,17 @@
 import express from 'express';
+import { spawn } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { protect, authorize } from '../middleware/auth.js';
 import User from '../models/User.js';
 import Company from '../models/Company.js';
 import pdfParse from 'pdf-parse';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const resumeAnalyzerScriptPath = path.join(__dirname, '../ml/resume_analyzer.py');
+const pythonExecutable = process.env.PYTHON_EXECUTABLE || 'python';
 
 const unavailableMessage = "I don't have access to that information. Please contact Placement Cell.";
 
@@ -31,6 +38,56 @@ const sanitizeStringArray = (value) => {
     .filter((item) => item.length > 0)
     .slice(0, 50);
 };
+
+const runPythonResumeAnalyzer = (payload) =>
+  new Promise((resolve, reject) => {
+    const py = spawn(pythonExecutable, [resumeAnalyzerScriptPath], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    const timeout = setTimeout(() => {
+      py.kill();
+      reject(new Error('Resume analyzer timed out'));
+    }, 15000);
+
+    py.stdout.on('data', (chunk) => {
+      stdout += String(chunk);
+    });
+
+    py.stderr.on('data', (chunk) => {
+      stderr += String(chunk);
+    });
+
+    py.on('error', (error) => {
+      clearTimeout(timeout);
+      reject(new Error(`Failed to start Python analyzer: ${error.message}`));
+    });
+
+    py.on('close', (code) => {
+      clearTimeout(timeout);
+
+      let parsed;
+      try {
+        parsed = JSON.parse(stdout || '{}');
+      } catch {
+        parsed = null;
+      }
+
+      if (code !== 0 || !parsed?.success) {
+        const message = parsed?.error || stderr.trim() || 'Python resume analyzer failed';
+        reject(new Error(message));
+        return;
+      }
+
+      resolve(parsed.data);
+    });
+
+    py.stdin.write(JSON.stringify(payload));
+    py.stdin.end();
+  });
 
 const extractPdfTextFromDataUrl = async (resumeUrl) => {
   if (typeof resumeUrl !== 'string' || !resumeUrl.startsWith('data:application/pdf')) {
@@ -364,6 +421,61 @@ router.post('/resume-feedback', protect, authorize('student'), async (req, res) 
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   POST /api/zenith/resume-analyzer
+// @desc    Compare resume skills against job description using Python ML analyzer
+// @access  Private/Student
+router.post('/resume-analyzer', protect, authorize('student'), async (req, res) => {
+  try {
+    const jobDescription = sanitizeText(req.body?.jobDescription || '').slice(0, 15000);
+    if (!jobDescription) {
+      return res.status(400).json({ success: false, message: 'jobDescription is required' });
+    }
+
+    const user = await User.findById(req.user._id).select('resumeText resumeUrl');
+    if (!user) {
+      return res.status(404).json({ success: false, message: unavailableMessage });
+    }
+
+    const providedResumeText = sanitizeText(req.body?.resumeText || '').slice(0, 20000);
+    let resumeText = providedResumeText || sanitizeText(user.resumeText || '');
+
+    if (!resumeText) {
+      const extractedFromPdf = await extractPdfTextFromDataUrl(user.resumeUrl);
+      if (extractedFromPdf) {
+        resumeText = extractedFromPdf;
+
+        if (!user.resumeText) {
+          await User.findByIdAndUpdate(req.user._id, { resumeText: extractedFromPdf.slice(0, 20000) });
+        }
+      }
+    }
+
+    if (!resumeText) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resume text is not available. Upload a readable PDF resume in profile or provide resumeText.',
+      });
+    }
+
+    const topKMissing = Number(req.body?.topKMissing || 10);
+
+    const analysis = await runPythonResumeAnalyzer({
+      resume_text: resumeText,
+      job_description: jobDescription,
+      top_k_missing: Number.isFinite(topKMissing) ? topKMissing : 10,
+    });
+
+    return res.json({ success: true, data: analysis });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message ||
+        'Unable to run resume analyzer. Ensure Python and ML dependencies are installed on the server.',
+    });
   }
 });
 

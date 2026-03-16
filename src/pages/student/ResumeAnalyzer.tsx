@@ -18,9 +18,6 @@ interface ResumeAnalyzerResult {
   missing_skills: string[];
   skill_match_percent: number;
   semantic_similarity_percent: number;
-  ats_friendly?: boolean;
-  ats_score?: number;
-  ats_feedback?: string[];
 }
 
 const buildCompanyJobDescription = (company: any) =>
@@ -207,10 +204,7 @@ const ResumeAnalyzer = () => {
 
               {result && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/30">
-                    <p className="font-semibold">Resume Fit Score</p>
-                    <Badge className="bg-success/10 text-success border border-success/20">{result.score}%</Badge>
-                  </div>
+                  {/* Removed ATS Friendly UI element and Resume Fit Score */}
 
                   <p className="text-sm text-muted-foreground">{result.summary}</p>
 
@@ -218,22 +212,6 @@ const ResumeAnalyzer = () => {
                     <p>Skill Match: {result.skill_match_percent}%</p>
                     <p>Semantic Similarity: {result.semantic_similarity_percent}%</p>
                   </div>
-
-                  {/* ATS-friendliness section */}
-                  <div className="flex items-center gap-2 p-4 rounded-xl border bg-primary/10">
-                    <span className="font-semibold">ATS Friendly:</span>
-                    <Badge className={result.ats_friendly ? "bg-success/10 text-success border border-success/20" : "bg-destructive/10 text-destructive border border-destructive/20"}>
-                      {result.ats_friendly ? "Yes" : "No"}
-                    </Badge>
-                    <span className="text-xs">Score: {Math.round((result.ats_score || 0) * 100)}%</span>
-                  </div>
-                  {result.ats_feedback && (
-                    <ul className="list-disc pl-6 text-xs text-muted-foreground">
-                      {result.ats_feedback.map((fb, idx) => (
-                        <li key={idx}>{fb}</li>
-                      ))}
-                    </ul>
-                  )}
 
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-success">Matched Skills</p>

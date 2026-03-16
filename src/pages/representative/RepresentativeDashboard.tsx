@@ -82,23 +82,7 @@ const RepresentativeDashboard = () => {
       </div>
 
       <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/10 via-background to-success/10">
-        <CardContent className="py-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Representative Focus</p>
-              <h2 className="mt-1 text-xl font-semibold text-foreground">What this dashboard helps you do</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Monitor placement health of your department, identify pending student actions, and coordinate faster with the placement cell.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary">{stats?.totalStudents || 0} students</Badge>
-              <Badge variant="secondary" className="bg-success/10 text-success">{placementPercentage}% placement rate</Badge>
-              <Badge variant="secondary" className="bg-warning/10 text-warning">{stats?.pendingApplications || 0} pending applications</Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Removed dashboard summary info box for cleaner UI */}
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">

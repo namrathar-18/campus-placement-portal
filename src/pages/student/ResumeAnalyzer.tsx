@@ -164,26 +164,13 @@ const ResumeAnalyzer = () => {
                 {uploadedFileName && <p className="text-xs text-muted-foreground">Selected file: {uploadedFileName}</p>}
               </div>
 
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Or paste Resume Text</p>
-                <Textarea
-                  value={resumeText}
-                  onChange={(event) => {
-                    setResumeText(event.target.value);
-                    if (event.target.value.trim()) {
-                      setResumeFileDataUrl('');
-                    }
-                  }}
-                  placeholder="Paste resume text here..."
-                  className="min-h-[140px] rounded-xl"
-                />
-              </div>
+              {/* Removed paste resume text section for cleaner UI */}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">Job Description</p>
-                  <Button size="sm" variant="secondary" onClick={() => setJobDescription('')} className="ml-2">Clear</Button>
                 </div>
+                  {/* Removed Clear button for cleaner UI */}
                 <Textarea
                   value={jobDescription}
                   onChange={(event) => setJobDescription(event.target.value)}

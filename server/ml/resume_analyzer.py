@@ -3,10 +3,22 @@ import re
 import sys
 from pathlib import Path
 
-from docx import Document
-from pypdf import PdfReader
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+try:
+	from docx import Document  # type: ignore
+except Exception:
+	Document = None
+
+try:
+	from pypdf import PdfReader  # type: ignore
+except Exception:
+	PdfReader = None
+
+try:
+	from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore
+	from sklearn.metrics.pairwise import cosine_similarity  # type: ignore
+except Exception:
+	TfidfVectorizer = None
+	cosine_similarity = None
 
 
 SKILL_ALIASES = {
@@ -70,11 +82,15 @@ def _extract_text_from_resume_path(resume_path: str) -> str:
 		return _normalize_spaces(path.read_text(encoding="utf-8", errors="ignore"))
 
 	if suffix == ".pdf":
+		if PdfReader is None:
+			raise ValueError("PDF parsing requires pypdf package")
 		reader = PdfReader(str(path))
 		text = "\n".join(page.extract_text() or "" for page in reader.pages)
 		return _normalize_spaces(text)
 
 	if suffix == ".docx":
+		if Document is None:
+			raise ValueError("DOCX parsing requires python-docx package")
 		doc = Document(str(path))
 		text = "\n".join(paragraph.text for paragraph in doc.paragraphs)
 		return _normalize_spaces(text)
@@ -114,6 +130,15 @@ def _safe_similarity(resume_text: str, jd_text: str) -> float:
 	if not corpus[0] or not corpus[1]:
 		return 0.0
 
+	if TfidfVectorizer is None or cosine_similarity is None:
+		resume_tokens = set(tokenize(corpus[0]))
+		jd_tokens = set(tokenize(corpus[1]))
+		if not resume_tokens or not jd_tokens:
+			return 0.0
+		intersection = len(resume_tokens.intersection(jd_tokens))
+		union = len(resume_tokens.union(jd_tokens))
+		return (intersection / union) if union else 0.0
+
 	try:
 		vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
 		matrix = vectorizer.fit_transform(corpus)
@@ -121,6 +146,11 @@ def _safe_similarity(resume_text: str, jd_text: str) -> float:
 		return max(0.0, min(1.0, similarity))
 	except ValueError:
 		return 0.0
+
+
+def tokenize(text: str) -> list[str]:
+	clean = re.sub(r"[^a-z0-9\s]", " ", text.lower())
+	return [token for token in clean.split() if len(token) > 2]
 
 
 def analyze_resume_job_match(payload: dict) -> dict:

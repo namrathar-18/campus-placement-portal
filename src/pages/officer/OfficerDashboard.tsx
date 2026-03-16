@@ -294,24 +294,7 @@ const OfficerDashboard = () => {
           <p className="text-muted-foreground">Manage campus placements and monitor student progress</p>
         </div>
 
-        <Card className="mb-6 border-primary/20 bg-gradient-to-r from-primary/10 via-background to-success/10">
-          <CardContent className="py-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Placement Officer View</p>
-                <h2 className="mt-1 text-xl font-heading font-semibold text-foreground">What this dashboard tracks</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Live placement health, section performance, recruiter contribution, and student-level drill-down for quick decisions.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary"><Target className="h-3.5 w-3.5" /> {students.length} active students</Badge>
-                <Badge variant="secondary" className="gap-1 bg-success/10 text-success"><BriefcaseBusiness className="h-3.5 w-3.5" /> {companyWisePlaced.length} hiring companies</Badge>
-                <Badge variant="secondary" className="gap-1 bg-warning/10 text-warning"><ShieldCheck className="h-3.5 w-3.5" /> {pendingApplications} pending applications</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Removed placement officer dashboard info box for cleaner UI */}
 
         <div className="grid lg:grid-cols-1 gap-8">
           <div className="space-y-6">
@@ -349,29 +332,42 @@ const OfficerDashboard = () => {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="flex gap-4 mb-6">
+                <Select value={selectedSection} onValueChange={setSelectedSection} className="w-48">
+                  <SelectTrigger>Select Section</SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {SECTION_OPTIONS.map(section => (
+                        <SelectItem key={section} value={section}>{section}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <Select value={selectedCompany} onValueChange={setSelectedCompany} className="w-48">
+                  <SelectTrigger>Select Company</SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {companies?.map(company => (
+                        <SelectItem key={company._id} value={company._id}>{company.name}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
               <Card className="rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Section-wise Placement Analytics</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">{sectionWiseAnalytics.length} Sections</Badge>
-                    <Link to="/officer/analytics"><Button variant="ghost" size="sm" className="gap-1"><BarChart2 className="w-4 h-4" /> Full Analytics <ArrowRight className="w-4 h-4" /></Button></Link>
-                  </div>
+                  <Badge variant="outline" className="text-xs">{sectionWiseAnalytics.length} Sections</Badge>
                 </CardHeader>
                 <CardContent>
                   {sectionWiseAnalytics.length > 0 ? (
                     <div className="h-72 cursor-pointer">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={sectionWiseAnalytics} onClick={(data) => { if (data?.activeLabel) { setSectionDialog({ section: data.activeLabel, tab: 'all' }); setSectionSearch(''); } }}>
+                        <BarChart data={filteredSectionAnalytics}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                           <XAxis dataKey="section" stroke="hsl(var(--muted-foreground))" />
                           <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: 'hsl(var(--card))',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px',
-                            }}
-                          />
+                          <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                           <Legend />
                           <Bar dataKey="placed" name="Placed" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
                           <Bar dataKey="unplaced" name="Unplaced" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
@@ -380,9 +376,32 @@ const OfficerDashboard = () => {
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground py-4">
-                      No section data available yet.
-                    </p>
+                    <p className="text-sm text-muted-foreground py-4">No section data available yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+              <Card className="rounded-2xl">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg">Company-wise Placed Students</CardTitle>
+                  <Badge variant="outline" className="text-xs">{companyWisePlaced.length} Companies</Badge>
+                </CardHeader>
+                <CardContent>
+                  {companyWisePlaced.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={filteredCompanyAnalytics} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} label>
+                            {filteredCompanyAnalytics.map((entry, idx) => (
+                              <Cell key={entry.name} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(value) => [`${value} students`, 'Placed']} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground py-4">No placed student data by company yet.</p>
                   )}
                 </CardContent>
               </Card>

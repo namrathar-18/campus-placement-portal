@@ -86,10 +86,7 @@ def _extract_text_from_resume_path(resume_path: str) -> str:
 			raise ValueError("PDF parsing requires pypdf package")
 		reader = PdfReader(str(path))
 		text = "\n".join(page.extract_text() or "" for page in reader.pages)
-		text = _normalize_spaces(text)
-		if not text or len(text) < 30:
-			raise ValueError("Uploaded resume could not be parsed. Please upload a readable PDF resume.")
-		return text
+		return _normalize_spaces(text)
 
 	if suffix == ".docx":
 		if Document is None:
@@ -157,35 +154,6 @@ def tokenize(text: str) -> list[str]:
 
 
 def analyze_resume_job_match(payload: dict) -> dict:
-	# ATS-friendly checks
-	ats_sections = ["education", "experience", "skills", "projects", "certifications", "contact", "summary", "objective"]
-	resume_text_lower = resume_text.lower()
-	section_count = sum(1 for section in ats_sections if section in resume_text_lower)
-	ats_section_score = section_count / len(ats_sections)
-	# Check for keyword density (skills from JD)
-	jd_keywords = set(jd_skills)
-	resume_keywords = set(resume_skills)
-	keyword_match_count = len(resume_keywords.intersection(jd_keywords))
-	keyword_density = keyword_match_count / (len(jd_keywords) or 1)
-	# Formatting checks: look for tables/graphics/columns (simple heuristic)
-	formatting_issues = False
-	if re.search(r"table|column|graphic|image|chart", resume_text_lower):
-		formatting_issues = True
-	# ATS-friendliness score
-	ats_score = (ats_section_score * 0.5 + keyword_density * 0.4 + (not formatting_issues) * 0.1)
-	ats_score = round(max(0.0, min(1.0, ats_score)), 2)
-	ats_friendly = ats_score >= 0.7
-	ats_feedback = []
-	if section_count < 4:
-		ats_feedback.append("Add more standard sections (Education, Experience, Skills, etc.)")
-	if keyword_density < 0.5:
-		ats_feedback.append("Include more job-related keywords.")
-	if formatting_issues:
-		ats_feedback.append("Avoid tables, columns, graphics, or images.")
-	if ats_friendly:
-		ats_feedback.append("Resume is likely ATS-friendly.")
-	else:
-		ats_feedback.append("Resume may not be ATS-friendly.")
 	job_description = str(payload.get("job_description", "") or "").strip()
 	if not job_description:
 		raise ValueError("job_description is required")
@@ -245,9 +213,6 @@ def analyze_resume_job_match(payload: dict) -> dict:
 		"job_description_excerpt": _normalize_spaces(job_description)[:500],
 		"summary": summary,
 		"note": "No resume analyzer can guarantee 100% real-world accuracy; this score is an estimation.",
-		"ats_friendly": ats_friendly,
-		"ats_score": ats_score,
-		"ats_feedback": ats_feedback,
 	}
 
 

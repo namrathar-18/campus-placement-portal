@@ -439,8 +439,21 @@ router.post('/resume-analyzer', protect, authorize('student'), async (req, res) 
       return res.status(404).json({ success: false, message: unavailableMessage });
     }
 
+    const resumeFileDataUrl = typeof req.body?.resumeFileDataUrl === 'string' ? req.body.resumeFileDataUrl : '';
+    let uploadedResumeText = '';
+
+    if (resumeFileDataUrl) {
+      uploadedResumeText = await extractPdfTextFromDataUrl(resumeFileDataUrl);
+      if (!uploadedResumeText) {
+        return res.status(400).json({
+          success: false,
+          message: 'Uploaded resume could not be parsed. Please upload a readable PDF resume.',
+        });
+      }
+    }
+
     const providedResumeText = sanitizeText(req.body?.resumeText || '').slice(0, 20000);
-    let resumeText = providedResumeText || sanitizeText(user.resumeText || '');
+    let resumeText = providedResumeText || uploadedResumeText || sanitizeText(user.resumeText || '');
 
     if (!resumeText) {
       const extractedFromPdf = await extractPdfTextFromDataUrl(user.resumeUrl);

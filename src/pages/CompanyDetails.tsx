@@ -1,12 +1,24 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useApplications, useCreateApplication } from '@/hooks/useApplications';
 import { useCompanies } from '@/hooks/useCompanies';
+import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Calendar, Briefcase, IndianRupee, GraduationCap, Clock, FileText, CheckCircle, Ban, CheckCircle2, Download, Loader2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, IndianRupee, GraduationCap, Clock, CheckCircle, Ban, CheckCircle2, Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+interface ResumeAnalyzerResult {
+  score: number;
+  fit_level: string;
+  summary: string;
+  matched_skills: string[];
+  missing_skills: string[];
+  skill_match_percent: number;
+  semantic_similarity_percent: number;
+}
 
 const CompanyDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +28,8 @@ const CompanyDetails = () => {
   const { data: companies = [], isLoading } = useCompanies();
   const createApplication = useCreateApplication();
   const { toast } = useToast();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalyzerResult | null>(null);
 
   const company = companies.find((c) => c._id === id);
 
@@ -47,6 +61,16 @@ const CompanyDetails = () => {
   const hasPlacedApplication = studentApplications.some(app => app.status === 'placed');
   const isPlacementLocked = isPlaced || hasPlacedApplication;
   const hasApplied = studentApplications.some(app => app.companyId?._id === id);
+
+  const analyzerJobDescription = [
+    `Company: ${company.name}`,
+    `Role: ${company.roles?.[0] || 'N/A'}`,
+    `Description: ${company.description || ''}`,
+    `Eligibility: ${company.eligibility || ''}`,
+    `Requirements: ${(company.requirements || []).join(', ')}`,
+  ]
+    .filter((item) => item.trim().length > 0)
+    .join('\n\n');
 
   const handleDownloadDetails = () => {
     if (!(company as any).detailsFile) {
@@ -124,6 +148,52 @@ const CompanyDetails = () => {
         description: error?.message || 'Could not submit your application.',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleResumeAnalyzer = async () => {
+    if (!user) {
+      toast({
+        title: 'Please log in',
+        description: 'You need to log in before using resume analyzer.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!analyzerJobDescription.trim()) {
+      toast({
+        title: 'Job Description Missing',
+        description: 'Could not prepare job description for this listing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    try {
+      const response = await api.post('/zenith/resume-analyzer', {
+        jobDescription: analyzerJobDescription,
+        topKMissing: 10,
+      });
+
+      const result = response?.data as ResumeAnalyzerResult;
+      setResumeAnalysis(result);
+
+      toast({
+        title: 'Resume Analysis Complete',
+        description: `Fit score: ${result.score}% for ${company.name}`,
+      });
+    } catch (error: any) {
+      setResumeAnalysis(null);
+      toast({
+        title: 'Resume Analysis Failed',
+        description: error?.message || 'Unable to analyze resume right now.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -341,12 +411,56 @@ const CompanyDetails = () => {
                 <Button
                   variant="outline"
                   className="w-full gap-2 rounded-xl"
-                  disabled={!isEligible || isExpired}
-                  onClick={() => window.open('https://resume-analyzer-job-matcher.streamlit.app/', '_blank')}
+                  disabled={!isEligible || isExpired || isAnalyzing}
+                  onClick={handleResumeAnalyzer}
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  Check if your resume fits with this listing
+                  {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  {isAnalyzing ? 'Analyzing Resume...' : 'Check if your resume fits with this listing'}
                 </Button>
+
+                {resumeAnalysis && (
+                  <div className="p-4 rounded-xl border bg-muted/30 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold">Resume Fit Score</p>
+                      <Badge className="bg-success/10 text-success border border-success/20">
+                        {resumeAnalysis.score}%
+                      </Badge>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">{resumeAnalysis.summary}</p>
+
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p>Skill Match: {resumeAnalysis.skill_match_percent}%</p>
+                      <p>Semantic Similarity: {resumeAnalysis.semantic_similarity_percent}%</p>
+                    </div>
+
+                    {resumeAnalysis.matched_skills.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-success">Matched Skills</p>
+                        <div className="flex flex-wrap gap-2">
+                          {resumeAnalysis.matched_skills.slice(0, 8).map((skill) => (
+                            <Badge key={skill} variant="secondary" className="text-[11px]">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {resumeAnalysis.missing_skills.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-destructive">Missing Skills</p>
+                        <div className="flex flex-wrap gap-2">
+                          {resumeAnalysis.missing_skills.slice(0, 8).map((skill) => (
+                            <Badge key={skill} variant="outline" className="text-[11px] border-destructive/30 text-destructive">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <p className="text-xs text-center text-muted-foreground">
                   By applying, you agree to share your profile with {company.name}

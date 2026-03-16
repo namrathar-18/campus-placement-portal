@@ -1,3 +1,7 @@
+// ResumeAnalyzer.tsx - Student resume analysis page
+// Last updated: March 17, 2026
+// This file analyzes student resumes and provides fit scores and skill matches.
+
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, Loader2, UploadCloud } from 'lucide-react';

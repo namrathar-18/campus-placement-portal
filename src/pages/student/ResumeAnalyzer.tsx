@@ -156,12 +156,7 @@ const ResumeAnalyzer = () => {
               <CardTitle className="text-2xl font-heading">Resume Analyzer</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              {selectedCompany && (
-                <div className="p-3 rounded-xl bg-muted/40 border text-sm">
-                  <p className="font-medium">Job listing selected: {selectedCompany.name}</p>
-                  <p className="text-muted-foreground">JD is auto-fetched. You can edit it below.</p>
-                </div>
-              )}
+              {/* Removed job listing info box for cleaner UI */}
 
               <div className="space-y-2">
                 <p className="text-sm font-medium">Upload Resume (PDF or TXT)</p>
@@ -185,12 +180,15 @@ const ResumeAnalyzer = () => {
               </div>
 
               <div className="space-y-2">
-                <p className="text-sm font-medium">Job Description</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Job Description</p>
+                  <Button size="sm" variant="secondary" onClick={() => setJobDescription('')} className="ml-2">Clear</Button>
+                </div>
                 <Textarea
                   value={jobDescription}
                   onChange={(event) => setJobDescription(event.target.value)}
-                  placeholder="Paste job description here or open this page from a company listing to auto-fill it."
-                  className="min-h-[180px] rounded-xl"
+                  placeholder="Paste or edit the job description here. Make it concise and relevant."
+                  className="min-h-[180px] rounded-xl border-2 border-primary/30 shadow-lg"
                 />
               </div>
 
@@ -261,9 +259,9 @@ const ResumeAnalyzer = () => {
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-success/10 border border-success/20 text-sm text-success flex items-start gap-2">
+                  <div className="p-3 rounded-xl bg-gradient-to-r from-success/10 to-primary/10 border border-success/20 text-sm text-success flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 mt-0.5" />
-                    Use missing skills to improve your resume before applying.
+                    <span className="font-semibold">Tip:</span> Use missing skills to improve your resume before applying!
                   </div>
                 </div>
               )}

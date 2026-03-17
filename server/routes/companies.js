@@ -92,7 +92,7 @@ router.post('/', protect, authorize('placement_officer', 'admin'), async (req, r
 // @route   POST /api/companies/bootstrap-defaults
 // @desc    Upsert default companies for placement officer/admin
 // @access  Private/Placement Officer
-router.post('/bootstrap-defaults', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+router.post('/bootstrap-defaults', protect, authorize('placement_officer', 'admin', 'student_representative'), async (req, res) => {
   try {
     const defaultCompanyNames = defaultCompanies.map((company) => company.name);
 

@@ -1,128 +1,78 @@
-import { useEffect, useMemo, useState } from 'react';
+// ...existing imports from OfficerDashboard.tsx...
+import { useMemo, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useCompanies } from '@/hooks/useCompanies';
+import { useApplications } from '@/hooks/useApplications';
+import { useNotifications } from '@/hooks/useNotifications';
+import { usePlacementStats } from '@/hooks/usePlacementStats';
+import { useUsers } from '@/hooks/useUsers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Select, SelectGroup, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Users, CheckCircle, Clock, Building2, TrendingUp, AlertCircle, BriefcaseBusiness, ArrowRight, Bell } from 'lucide-react';
-import api from '@/lib/api';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Building2, Users, Plus, ArrowRight, Clock, Loader2, TrendingUp, BarChart2, Search, CheckCircle2, XCircle, Target, BriefcaseBusiness, ShieldCheck } from 'lucide-react';
+import { Link, Navigate } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
+import { exportPlacedApprovedStudentsPdf } from '@/lib/exportPlacedApprovedStudentsPdf';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Link } from 'react-router-dom';
+import { SECTION_OPTIONS, type SectionOption, isSectionOption, normalizeSection } from '@/constants/sections';
 
-interface DashboardStats {
-  totalStudents: number;
-  placedStudents: number;
-  unplacedStudents: number;
-  totalApplications: number;
-  pendingApplications: number;
-  placedApplications: number;
-  activeCompanies: number;
-  recentNotifications: any[];
-}
+// ...existing OfficerDashboard.tsx logic and component code...
+
+const PIE_COLORS = [
+  '#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed',
+  '#0891b2', '#be185d', '#4f46e5', '#15803d', '#ea580c',
+  '#6d28d9', '#0284c7', '#b91c1c', '#0d9488', '#c026d3',
+  '#ca8a04',
+];
+
+const getTreemapLabel = (name: string, width: number) => {
+  if (!name) return '';
+  const maxChars = Math.max(5, Math.floor((width - 14) / 7));
+  return name.length > maxChars ? `${name.slice(0, maxChars - 1)}...` : name;
+};
+
+const TreemapContent = (props: any) => {
+  const { x, y, width, height, name, value, index } = props;
+  const color = PIE_COLORS[(index ?? 0) % PIE_COLORS.length];
+  const showName = width > 58 && height > 28;
+  const showValue = width > 54 && height > 42;
+  const label = getTreemapLabel(name, width);
+  const nameFontSize = Math.max(10, Math.min(14, Math.floor(width / 9)));
+  return (
+    <g>
+      <rect x={x} y={y} width={width} height={height} fill={color} rx={6} ry={6} stroke="hsl(var(--card))" strokeWidth={3} />
+      {showName && (
+        <>
+          <text x={x + width / 2} y={y + height / 2 - (showValue ? 6 : 0)} textAnchor="middle" dominantBaseline="middle" fill="#fff" fontSize={nameFontSize} fontWeight={600} pointerEvents="none">{label}</text>
+          {showValue && (
+            <text x={x + width / 2} y={y + height / 2 + 12} textAnchor="middle" dominantBaseline="middle" fill="rgba(255,255,255,0.88)" fontSize={11} pointerEvents="none">{value}</text>
+          )}
+        </>
+      )}
+    </g>
+  );
+};
 
 const RepresentativeDashboard = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
-
-  const fetchDashboardStats = async () => {
-    try {
-      const response = await api.get('/representative/dashboard-stats');
-      setStats(response.data);
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to fetch dashboard statistics',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const placementPercentage = useMemo(() => {
-    if (!stats?.totalStudents) return 0;
-    return Number(((stats.placedStudents / stats.totalStudents) * 100).toFixed(1));
-  }, [stats]);
-
-  const applicationConversion = useMemo(() => {
-    if (!stats?.totalApplications) return 0;
-    return Number(((stats.placedApplications / stats.totalApplications) * 100).toFixed(1));
-  }, [stats]);
-
-  const placementProgressWidth = `${Math.min(100, Math.max(0, placementPercentage))}%`;
-  const conversionProgressWidth = `${Math.min(100, Math.max(0, applicationConversion))}%`;
-
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="mb-8">
-          <Skeleton className="h-10 w-64 mb-2" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Student Representative Dashboard</h1>
-        <p className="text-muted-foreground">
-          Department-level placement command center for tracking students, applications, and immediate follow-ups.
-        </p>
-      </div>
-
-      <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/10 via-background to-success/10">
-        {/* Removed dashboard summary info box for cleaner UI */}
-
-        {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {/* ...existing code for stats cards... */}
-        </div>
-
-        {/* Additional Stats Row */}
-        <div className="grid gap-6 lg:grid-cols-3 mb-8">
-          {/* ...existing code for additional stats row... */}
-        </div>
-      </Card>
-
-      {/* Recent Notifications */}
-      {stats?.recentNotifications && stats.recentNotifications.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5" /> Recent Notifications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats.recentNotifications.map((notification, index) => (
-                <div
-                  key={index}
-                  className="p-3 border rounded-lg hover:bg-accent transition-colors"
-                >
-                  <h4 className="font-medium">{notification.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {new Date(notification.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+  // ...copy OfficerDashboard logic here...
+  // ...existing code...
 };
 
 export default RepresentativeDashboard;

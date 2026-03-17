@@ -44,7 +44,6 @@ const Navbar = () => {
         { to: '/officer/companies', label: 'Manage Companies' },
         { to: '/officer/applications', label: 'Applications' },
         { to: '/officer/students', label: 'Student Stats' },
-        { to: '/officer/analytics', label: 'Analytics' },
         { to: '/officer/notifications', label: 'Notifications' },
       ];
     }
@@ -54,7 +53,6 @@ const Navbar = () => {
         { to: '/officer/companies', label: 'Manage Companies' },
         { to: '/officer/applications', label: 'Applications' },
         { to: '/officer/students', label: 'Student Stats' },
-        { to: '/officer/analytics', label: 'Analytics' },
         { to: '/officer/notifications', label: 'Notifications' },
       ];
     }

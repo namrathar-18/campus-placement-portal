@@ -165,10 +165,6 @@ const OfficerDashboard = () => {
     return sectionWiseAnalytics.filter(item => item.section === selectedSection);
   }, [sectionWiseAnalytics, selectedSection]);
 
-  const filteredCompanyAnalytics = useMemo(() => {
-    if (!selectedCompany) return companyWisePlaced;
-    return companyWisePlaced.filter(item => item.name === (companies?.find(c => c._id === selectedCompany)?.name || ''));
-  }, [companyWisePlaced, selectedCompany, companies]);
   const companyWisePlaced = useMemo(() => {
     const placedApplications = (applications || []).filter(
       (application) => application.status === 'placed' && application.companyId?._id
@@ -201,6 +197,10 @@ const OfficerDashboard = () => {
       .filter((company) => company.value > 0)
       .sort((a, b) => b.value - a.value);
   }, [applications]);
+  const filteredCompanyAnalytics = useMemo(() => {
+    if (!selectedCompany) return companyWisePlaced;
+    return companyWisePlaced.filter(item => item.name === (companies?.find(c => c._id === selectedCompany)?.name || ''));
+  }, [companyWisePlaced, selectedCompany, companies]);
   const roleWisePlaced = useMemo(() => {
     const companyById = new Map((companies || []).map((company) => [company._id, company]));
     const placedApplications = (applications || []).filter(
@@ -302,14 +302,13 @@ const OfficerDashboard = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 animate-fade-in">
           <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
-            Welcome, {user?.name}! 
+            Welcome, {user?.name}!
           </h1>
           <p className="text-muted-foreground">Manage campus placements and monitor student progress</p>
         </div>
 
-        {/* Removed placement officer dashboard info box for cleaner UI */}
-
-        <div className="grid lg:grid-cols-1 gap-8">
+        {/* Dashboard main grid restored to PlacementAnalytics style */}
+        <div className="grid grid-cols-1 gap-6">
           <div className="space-y-6">
             <Card className="rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -344,28 +343,32 @@ const OfficerDashboard = () => {
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="flex gap-4 mb-6">
-                <Select value={selectedSection} onValueChange={setSelectedSection} className="w-48">
-                  <SelectTrigger>Select Section</SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {SECTION_OPTIONS.map(section => (
-                        <SelectItem key={section} value={section}>{section}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <Select value={selectedCompany} onValueChange={setSelectedCompany} className="w-48">
-                  <SelectTrigger>Select Company</SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {companies?.map(company => (
-                        <SelectItem key={company._id} value={company._id}>{company.name}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="flex gap-4 mb-6 flex-nowrap items-center justify-center">
+                <div className="w-1/2 min-w-[220px]">
+                  <Select value={selectedSection} onValueChange={setSelectedSection}>
+                    <SelectTrigger>Select Section</SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {SECTION_OPTIONS.map(section => (
+                          <SelectItem key={section} value={section}>{section}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-1/2 min-w-[220px]">
+                  <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+                    <SelectTrigger>Select Company</SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {companies?.map(company => (
+                          <SelectItem key={company._id} value={company._id}>{company.name}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <Card className="rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -390,31 +393,6 @@ const OfficerDashboard = () => {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground py-4">No section data available yet.</p>
-                  )}
-                </CardContent>
-              </Card>
-              <Card className="rounded-2xl">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-lg">Company-wise Placed Students</CardTitle>
-                  <Badge variant="outline" className="text-xs">{companyWisePlaced.length} Companies</Badge>
-                </CardHeader>
-                <CardContent>
-                  {companyWisePlaced.length > 0 ? (
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={filteredCompanyAnalytics} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} label>
-                            {filteredCompanyAnalytics.map((entry, idx) => (
-                              <Cell key={entry.name} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(value) => [`${value} students`, 'Placed']} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground py-4">No placed student data by company yet.</p>
                   )}
                 </CardContent>
               </Card>

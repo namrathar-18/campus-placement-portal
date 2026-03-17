@@ -26,7 +26,7 @@ import RepresentativeDashboard from "./pages/representative/RepresentativeDashbo
 
 import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
-import ResumeAnalyzer from "./pages/student/ResumeAnalyzer";
+// import ResumeAnalyzer from "./pages/student/ResumeAnalyzer";
 import NotFound from "./pages/NotFound";
 import ZenithChatbot from "@/components/chatbot/zenith/ZenithChatbot";
 
@@ -71,7 +71,7 @@ const AppContent = () => {
             <Route path="/student/stats" element={<PlacementStats />} />
             <Route path="/student/notifications" element={<StudentNotifications />} />
             <Route path="/student/placed-company" element={<PlacedCompany />} />
-            <Route path="/student/resume-analyzer" element={<ResumeAnalyzer />} />
+            {/* <Route path="/student/resume-analyzer" element={<ResumeAnalyzer />} /> */}
             
             {/* Officer Routes */}
             <Route path="/officer/dashboard" element={<OfficerDashboard />} />

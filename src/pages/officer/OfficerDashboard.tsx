@@ -6,6 +6,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { usePlacementStats } from '@/hooks/usePlacementStats';
 import { useUsers } from '@/hooks/useUsers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectGroup, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -67,6 +68,8 @@ const TreemapContent = (props: any) => {
 };
 
 const OfficerDashboard = () => {
+    const [selectedSection, setSelectedSection] = useState<string>('');
+    const [selectedCompany, setSelectedCompany] = useState<string>('');
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { data: companies } = useCompanies();
   const { data: applications } = useApplications();
@@ -121,6 +124,15 @@ const OfficerDashboard = () => {
   }, [applications]);
 
   const sectionWiseAnalytics = useMemo(() => {
+      const filteredSectionAnalytics = useMemo(() => {
+        if (!selectedSection) return sectionWiseAnalytics;
+        return sectionWiseAnalytics.filter(item => item.section === selectedSection);
+      }, [sectionWiseAnalytics, selectedSection]);
+
+      const filteredCompanyAnalytics = useMemo(() => {
+        if (!selectedCompany) return companyWisePlaced;
+        return companyWisePlaced.filter(item => item.name === (companies?.find(c => c._id === selectedCompany)?.name || ''));
+      }, [companyWisePlaced, selectedCompany, companies]);
     const pendingStudentIds = new Set(
       (applications || [])
         .filter((application) => application.status === 'pending' || application.status === 'ongoing')

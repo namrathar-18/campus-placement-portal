@@ -35,7 +35,7 @@ router.get('/', protect, async (req, res) => {
 // @route   POST /api/notifications
 // @desc    Create a notification (broadcast or targeted)
 // @access  Private/Placement Officer
-router.post('/', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+router.post('/', protect, authorize('placement_officer', 'admin', 'student_representative'), async (req, res) => {
   try {
     const { title, message, type, targetRole, userId, userIds } = req.body;
 

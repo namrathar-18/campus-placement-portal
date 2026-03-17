@@ -124,15 +124,6 @@ const OfficerDashboard = () => {
   }, [applications]);
 
   const sectionWiseAnalytics = useMemo(() => {
-      const filteredSectionAnalytics = useMemo(() => {
-        if (!selectedSection) return sectionWiseAnalytics;
-        return sectionWiseAnalytics.filter(item => item.section === selectedSection);
-      }, [sectionWiseAnalytics, selectedSection]);
-
-      const filteredCompanyAnalytics = useMemo(() => {
-        if (!selectedCompany) return companyWisePlaced;
-        return companyWisePlaced.filter(item => item.name === (companies?.find(c => c._id === selectedCompany)?.name || ''));
-      }, [companyWisePlaced, selectedCompany, companies]);
     const pendingStudentIds = new Set(
       (applications || [])
         .filter((application) => application.status === 'pending' || application.status === 'ongoing')
@@ -168,6 +159,16 @@ const OfficerDashboard = () => {
 
     return SECTION_OPTIONS.map((section) => groupedBySection[section]);
   }, [applications, students]);
+
+  const filteredSectionAnalytics = useMemo(() => {
+    if (!selectedSection) return sectionWiseAnalytics;
+    return sectionWiseAnalytics.filter(item => item.section === selectedSection);
+  }, [sectionWiseAnalytics, selectedSection]);
+
+  const filteredCompanyAnalytics = useMemo(() => {
+    if (!selectedCompany) return companyWisePlaced;
+    return companyWisePlaced.filter(item => item.name === (companies?.find(c => c._id === selectedCompany)?.name || ''));
+  }, [companyWisePlaced, selectedCompany, companies]);
   const companyWisePlaced = useMemo(() => {
     const placedApplications = (applications || []).filter(
       (application) => application.status === 'placed' && application.companyId?._id

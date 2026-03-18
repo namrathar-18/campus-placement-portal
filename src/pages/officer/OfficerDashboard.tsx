@@ -205,7 +205,7 @@ const OfficerDashboard = () => {
         name: company.name,
         value: company.studentIds.size,
       }))
-      .filter((company) => company.value > 0)
+      .filter((company) => company.value > 0 && company.name && company.name !== 'Unknown Company')
       .sort((a, b) => b.value - a.value);
   }, [applications]);
   const filteredCompanyAnalytics = useMemo(() => {
@@ -509,23 +509,26 @@ const OfficerDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {companies?.slice(0, 4).map((company) => (
-                    <div key={company._id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg ring-2 ring-white">
-                          {company.name.charAt(0)}
+                  {companies
+                    ?.filter(c => c.name && c.name !== 'Company' && c.name !== 'Unknown Company')
+                    .slice(0, 4)
+                    .map((company) => (
+                      <div key={company._id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg ring-2 ring-white">
+                            {company.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{company.name}</h3>
+                            <p className="text-sm text-muted-foreground">{company.roles?.[0] || 'Position'}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold">{company.name}</h3>
-                          <p className="text-sm text-muted-foreground">{company.roles?.[0] || 'Position'}</p>
+                        <div className="text-right">
+                          <p className="font-semibold text-success">₹{company.salary || 'TBD'}</p>
+                          <p className="text-xs text-muted-foreground">Due: {new Date(company.deadline).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-success">₹{company.salary || 'TBD'}</p>
-                        <p className="text-xs text-muted-foreground">Due: {new Date(company.deadline).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </CardContent>
             </Card>

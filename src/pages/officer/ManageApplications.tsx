@@ -15,11 +15,11 @@ const ManageApplications = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const downloadCompanyStudentsPdf = (companyApplications: Application[], reportType: 'pending' | 'placed') => {
+  const downloadCompanyStudentsPdf = (companyApplications: Application[], reportType: 'applied' | 'placed') => {
     const companyName = companyApplications[0]?.companyId?.name || 'Company';
     const filteredApplications = reportType === 'placed'
       ? companyApplications.filter((application) => application.status === 'placed')
-      : companyApplications.filter((application) => application.status === 'pending' || application.status === 'under_review');
+      : companyApplications.filter((application) => application.status !== 'rejected');
 
     if (filteredApplications.length === 0) {
       toast({
@@ -64,7 +64,7 @@ const ManageApplications = () => {
 
     toast({
       title: 'PDF exported',
-      description: `${reportType === 'pending' ? 'Pending' : 'Placed'} students PDF downloaded for ${companyName}.`,
+      description: `${reportType === 'applied' ? 'Applied' : 'Placed'} students PDF downloaded for ${companyName}.`,
     });
   };
 
@@ -124,8 +124,12 @@ const ManageApplications = () => {
   }, [applications]);
 
   const filteredCompanies = useMemo(() => {
-    if (!searchTerm.trim()) return groupedByCompany;
-    return groupedByCompany.filter((companyApps) => {
+    const validCompanies = groupedByCompany.filter((companyApps) => {
+      const name = companyApps[0]?.companyId?.name || '';
+      return name && name !== 'Company' && name !== 'Unknown Company';
+    });
+    if (!searchTerm.trim()) return validCompanies;
+    return validCompanies.filter((companyApps) => {
       const name = companyApps[0]?.companyId?.name || '';
       return name.toLowerCase().includes(searchTerm.toLowerCase());
     });
@@ -144,28 +148,7 @@ const ManageApplications = () => {
           </p>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          {(['pending', 'ongoing', 'placed', 'rejected'] as const).map((status, index) => {
-            const config = getStatusConfig(status);
-            const Icon = config.icon;
-            return (
-              <Card
-                key={status}
-                className="animate-slide-up rounded-2xl"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CardContent className="p-5 text-center">
-                  <div className={`inline-flex p-3 rounded-xl mb-3 ${config.color}`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <p className="text-3xl font-bold">{statusCounts[status]}</p>
-                  <p className="text-sm text-muted-foreground">{formatStatusLabel(status)}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        {/* Summary Cards removed as requested */}
 
         {/* Company Cards */}
         <Card className="animate-slide-up rounded-2xl" style={{ animationDelay: '250ms' }}>

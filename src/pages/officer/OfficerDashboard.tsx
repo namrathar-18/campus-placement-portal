@@ -167,10 +167,8 @@ const OfficerDashboard = () => {
     return SECTION_OPTIONS.map((section) => groupedBySection[section]);
   }, [applications, students]);
 
-  const filteredSectionAnalytics = useMemo(() => {
-    if (!selectedSection) return sectionWiseAnalytics;
-    return sectionWiseAnalytics.filter(item => item.section === selectedSection);
-  }, [sectionWiseAnalytics, selectedSection]);
+  // The analytics graph should always show all three sections
+  const filteredSectionAnalytics = sectionWiseAnalytics;
 
   const companyWisePlaced = useMemo(() => {
     const placedApplications = (applications || []).filter(
@@ -351,20 +349,7 @@ const OfficerDashboard = () => {
             </Card>
 
             <div className="grid grid-cols-1 gap-6">
-              <div className="flex gap-4 mb-6 flex-nowrap items-center justify-center">
-                <div className="w-1/2 min-w-[220px]">
-                  <Select value={selectedSection} onValueChange={setSelectedSection}>
-                    <SelectTrigger>Select Section</SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {SECTION_FILTER_OPTIONS.map(option => (
-                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              {/* ...existing code (other cards) ... */}
               <Card className="rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Section-wise Placement Analytics</CardTitle>
@@ -374,7 +359,7 @@ const OfficerDashboard = () => {
                   {sectionWiseAnalytics.length > 0 ? (
                     <div className="h-72 cursor-pointer">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={filteredSectionAnalytics}>
+                        <BarChart data={sectionWiseAnalytics}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                           <XAxis dataKey="section" stroke="hsl(var(--muted-foreground))" />
                           <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
@@ -540,8 +525,13 @@ const OfficerDashboard = () => {
             </Card>
           </div>
         </div>
+
+
+
+
       </div>
       {/* Section Student List Dialog */}
+
       <Dialog open={!!sectionDialog} onOpenChange={open => { if (!open) { setSectionDialog(null); setSectionSearch(''); } }}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
@@ -656,6 +646,6 @@ const OfficerDashboard = () => {
       </Dialog>
     </div>
   );
-};
+}
 
 export default OfficerDashboard;

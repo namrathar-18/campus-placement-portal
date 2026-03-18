@@ -51,7 +51,7 @@ const runPythonResumeAnalyzer = (payload) =>
     const timeout = setTimeout(() => {
       py.kill();
       reject(new Error('Resume analyzer timed out'));
-    }, 15000);
+    }, 60000);
 
     py.stdout.on('data', (chunk) => {
       stdout += String(chunk);
@@ -106,8 +106,10 @@ const extractPdfTextFromDataUrl = async (resumeUrl) => {
     }
 
     const parsed = await pdfParse(pdfBuffer);
+    console.log('PDF Extracted Text:', parsed?.text?.slice(0, 500)); // Log first 500 chars
     return sanitizeText(parsed?.text || '');
-  } catch {
+  } catch (err) {
+    console.error('PDF Parse Error:', err);
     return '';
   }
 };

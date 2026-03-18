@@ -1,3 +1,5 @@
+import { CelebrationContext } from "@/contexts/CelebrationContext";
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,7 +28,7 @@ import RepresentativeDashboard from "./pages/representative/RepresentativeDashbo
 
 import CompanyDetails from "./pages/CompanyDetails";
 import StudentNotifications from "./pages/student/Notifications";
-// import ResumeAnalyzer from "./pages/student/ResumeAnalyzer";
+import ResumeAnalyzer from "./pages/student/ResumeAnalyzer";
 import NotFound from "./pages/NotFound";
 import ZenithChatbot from "@/components/chatbot/zenith/ZenithChatbot";
 
@@ -47,16 +49,18 @@ const AppContent = () => {
   const showLoader = hasToken && isLoading;
   const showZenith = isAuthenticated && user?.role === "student";
 
+  const [showCelebration, setShowCelebration] = useState(false);
   return (
-    <div style={{ minHeight: '100vh', width: '100%' }}>
-      {showLoader && <LoadingScreen />}
+    <CelebrationContext.Provider value={{ showCelebration, setShowCelebration }}>
+      <div style={{ minHeight: '100vh', width: '100%' }}>
+        {showLoader && <LoadingScreen />}
 
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Navbar />
-        <div style={{ minHeight: '100vh' }}>
-          <Routes>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Navbar />
+          <div style={{ minHeight: '100vh' }}>
+            <Routes>
             <Route path="/" element={<AuthPage />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/auth" element={<AuthPage />} />
@@ -71,7 +75,7 @@ const AppContent = () => {
             <Route path="/student/stats" element={<PlacementStats />} />
             <Route path="/student/notifications" element={<StudentNotifications />} />
             <Route path="/student/placed-company" element={<PlacedCompany />} />
-            {/* <Route path="/student/resume-analyzer" element={<ResumeAnalyzer />} /> */}
+            <Route path="/student/resume-analyzer" element={<ResumeAnalyzer />} />
             
             {/* Officer Routes */}
             <Route path="/officer/dashboard" element={<OfficerDashboard />} />
@@ -97,9 +101,10 @@ const AppContent = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
-        {showZenith && <ZenithChatbot userId={user.id} />}
-      </BrowserRouter>
-    </div>
+        {showZenith && !showCelebration && <ZenithChatbot userId={user.id} />}
+        </BrowserRouter>
+      </div>
+    </CelebrationContext.Provider>
   );
 };
 

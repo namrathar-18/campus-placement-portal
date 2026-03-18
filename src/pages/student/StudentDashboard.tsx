@@ -1,3 +1,4 @@
+import { useCelebration } from '@/contexts/CelebrationContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useApplications } from '@/hooks/useApplications';
@@ -27,7 +28,7 @@ const StudentDashboard = () => {
   const location = useLocation();
 
   const { toast } = useToast();
-  const [showCelebration, setShowCelebration] = useState(false);
+  const { showCelebration, setShowCelebration } = useCelebration();
   const celebrationKey = user?.id ? `placementCelebrated:${user.id}` : null;
   const [resumeUrl, setResumeUrl] = useState<string | undefined>(user?.resumeUrl);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(user?.photoUrl);

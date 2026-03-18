@@ -39,6 +39,13 @@ const PIE_COLORS = [
   '#ca8a04',
 ];
 
+const SECTION_FILTER_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'A', label: 'MCA A' },
+  { value: 'B', label: 'MCA B' },
+  { value: 'AI/ML', label: 'AI/ML' },
+];
+
 const getTreemapLabel = (name: string, width: number) => {
   if (!name) return '';
   const maxChars = Math.max(5, Math.floor((width - 14) / 7));
@@ -350,20 +357,8 @@ const OfficerDashboard = () => {
                     <SelectTrigger>Select Section</SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {SECTION_OPTIONS.map(section => (
-                          <SelectItem key={section} value={section}>{section}</SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-1/2 min-w-[220px]">
-                  <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                    <SelectTrigger>Select Company</SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {companies?.map(company => (
-                          <SelectItem key={company._id} value={company._id}>{company.name}</SelectItem>
+                        {SECTION_FILTER_OPTIONS.map(option => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>

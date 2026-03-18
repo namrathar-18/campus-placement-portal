@@ -76,7 +76,7 @@ router.get('/:id', protect, async (req, res) => {
 // @route   POST /api/companies
 // @desc    Create a company
 // @access  Private/Placement Officer
-router.post('/', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+router.post('/', protect, authorize('placement_officer', 'admin', 'student_representative'), async (req, res) => {
   try {
     const company = await Company.create({
       ...req.body,
@@ -145,7 +145,7 @@ router.post('/bootstrap-defaults', protect, authorize('placement_officer', 'admi
 // @route   PUT /api/companies/:id
 // @desc    Update a company
 // @access  Private/Placement Officer
-router.put('/:id', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+router.put('/:id', protect, authorize('placement_officer', 'admin', 'student_representative'), async (req, res) => {
   try {
     const company = await Company.findByIdAndUpdate(
       req.params.id,
@@ -166,7 +166,7 @@ router.put('/:id', protect, authorize('placement_officer', 'admin'), async (req,
 // @route   DELETE /api/companies/:id
 // @desc    Delete a company
 // @access  Private/Placement Officer
-router.delete('/:id', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+router.delete('/:id', protect, authorize('placement_officer', 'admin', 'student_representative'), async (req, res) => {
   try {
     const company = await Company.findByIdAndDelete(req.params.id);
 

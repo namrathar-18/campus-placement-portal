@@ -326,14 +326,6 @@ const ManageCompanies = () => {
                     <Button variant="outline" size="icon" onClick={() => handleOpenDialog(company)}>
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDelete(company._id)}
-                      className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
                 </div>
               </CardContent>

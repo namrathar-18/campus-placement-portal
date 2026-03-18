@@ -103,14 +103,17 @@ const StudentDashboard = () => {
 
   // Show one-time celebration overlay for placed students after sign-in
   useEffect(() => {
-    if (user?.isPlaced && celebrationKey) {
+    // Student is placed if they have at least one application with status 'placed', 'approved', or 'selected'
+    const placedStatuses = new Set(['approved', 'selected', 'placed']);
+    const isActuallyPlaced = (applications || []).some(app => placedStatuses.has(String(app?.status || '').trim().toLowerCase()));
+    if (isActuallyPlaced && celebrationKey) {
       const alreadyShown = sessionStorage.getItem(celebrationKey);
       if (!alreadyShown) {
         setShowCelebration(true);
         sessionStorage.setItem(celebrationKey, 'true');
       }
     }
-  }, [user?.isPlaced, celebrationKey]);
+  }, [applications, celebrationKey]);
 
   const onViewResume = () => {
     if (!resumeUrl) return;

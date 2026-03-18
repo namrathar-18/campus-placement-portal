@@ -108,7 +108,13 @@ const OfficerDashboard = () => {
     u.department?.trim() &&
     u.section?.trim()
   );
-  const placedStudents = students.filter(s => s.isPlaced).length;
+  // Mark students as placed only if they have at least one application with status 'placed'
+  const placedStudentIds = new Set(
+    (applications || [])
+      .filter(a => a.status === 'placed' && a.studentId?._id)
+      .map(a => a.studentId._id)
+  );
+  const placedStudents = students.filter(s => placedStudentIds.has(s._id)).length;
   const unplacedStudents = students.length - placedStudents;
   const averageGpa = students.length
     ? (students.reduce((sum, s) => sum + (s.gpa || 0), 0) / students.length).toFixed(2)
@@ -151,7 +157,7 @@ const OfficerDashboard = () => {
         const section = normalizeSection(student.section) as SectionOption;
         if (!isSectionOption(section)) return acc;
 
-        if (student.isPlaced) {
+        if (placedStudentIds.has(student._id)) {
           acc[section].placed += 1;
         } else if (pendingStudentIds.has(student._id)) {
           acc[section].pending += 1;

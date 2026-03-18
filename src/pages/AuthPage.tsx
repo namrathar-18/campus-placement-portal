@@ -279,16 +279,7 @@ const AuthPage = () => {
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="link"
-                className="px-0 text-sm font-semibold"
-                onClick={() => setForgotPasswordOpen(true)}
-              >
-                Forgot Password?
-              </Button>
-            </div>
+            {/* Forgot Password button removed */}
 
             <Button type="submit" variant="hero" className="w-full h-12 rounded-xl text-base" disabled={isLoading}>
               {isLoading ? (

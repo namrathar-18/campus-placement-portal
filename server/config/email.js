@@ -1,45 +1,15 @@
-import pkg from 'nodemailer';
-const { createTransport } = pkg;
 
-// Create reusable transporter
-const createTransporter = () => {
-  // For Gmail, you'll need to:
-  // 1. Enable 2-Factor Authentication on your Gmail account
-  // 2. Generate an "App Password" at https://myaccount.google.com/apppasswords
-  // 3. Use the app password instead of your regular password
-  
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-    console.warn('⚠️  Email credentials not configured. Password reset emails will not be sent.');
-    return null;
-  }
+import postmark from "postmark";
 
-  return createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-};
+const client = new postmark.ServerClient(process.env.POSTMARK_API_TOKEN);
 
-// Send password reset email
+// Send password reset email using Postmark
 export const sendPasswordResetEmail = async (email, resetCode) => {
-  const transporter = createTransporter();
-  
-  if (!transporter) {
-    // If email not configured, just log the code (development mode)
-    console.log('\n=== PASSWORD RESET CODE ===');
-    console.log(`Email: ${email}`);
-    console.log(`Reset Code: ${resetCode}`);
-    console.log('===========================\n');
-    return { success: true, devMode: true };
-  }
-
-  const mailOptions = {
-    from: `"Campus Placement Portal" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: 'Password Reset Code - Campus Placement Portal',
-    html: `
+  await client.sendEmail({
+    From: "your_verified_sender@email.com", // Use a verified sender from Postmark
+    To: email,
+    Subject: "Password Reset Code - Campus Placement Portal",
+    HtmlBody: `
       <!DOCTYPE html>
       <html>
         <head>
@@ -61,15 +31,11 @@ export const sendPasswordResetEmail = async (email, resetCode) => {
             <div class="content">
               <p>Hello,</p>
               <p>You have requested to reset your password for the Campus Placement Portal. Use the code below to reset your password:</p>
-              
               <div class="code">${resetCode}</div>
-              
               <p>This code will expire in <strong>10 minutes</strong>.</p>
-              
               <div class="warning">
                 <strong>⚠️ Security Notice:</strong> If you did not request this password reset, please ignore this email and ensure your account is secure.
               </div>
-              
               <p>Best regards,<br>Campus Placement Team<br>Christ University</p>
             </div>
             <div class="footer">
@@ -79,7 +45,7 @@ export const sendPasswordResetEmail = async (email, resetCode) => {
         </body>
       </html>
     `,
-    text: `
+    TextBody: `
 Password Reset Request
 
 You have requested to reset your password for the Campus Placement Portal.
@@ -94,16 +60,8 @@ Best regards,
 Campus Placement Team
 Christ University
     `,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`✅ Password reset email sent to ${email}`);
-    return { success: true, devMode: false };
-  } catch (error) {
-    console.error('❌ Error sending email:', error);
-    throw error;
-  }
+  });
+  return { success: true };
 };
 
 export default { sendPasswordResetEmail };

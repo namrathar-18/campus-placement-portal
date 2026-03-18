@@ -100,7 +100,7 @@ router.put('/:id', protect, async (req, res) => {
 // @route   DELETE /api/notifications/:id
 // @desc    Delete a notification
 // @access  Private/Placement Officer
-router.delete('/:id', protect, authorize('placement_officer', 'admin'), async (req, res) => {
+router.delete('/:id', protect, authorize('placement_officer', 'admin', 'student_representative'), async (req, res) => {
   try {
     const notification = await Notification.findByIdAndDelete(req.params.id);
 

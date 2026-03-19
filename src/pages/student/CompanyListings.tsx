@@ -220,10 +220,7 @@ const CompanyListings = () => {
                   <p className="text-muted-foreground text-sm mb-4">{company.role}</p>
 
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Briefcase className="w-4 h-4 text-success" />
-                      <span className="font-medium text-success">{company.salary}</span>
-                    </div>
+                    {/* Money display removed */}
                     {company.location && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="w-4 h-4" />

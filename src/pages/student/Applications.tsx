@@ -126,11 +126,7 @@ const Applications = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          {application.companyId.package && (
-                            <span className="font-medium text-success">
-                              ₹{application.companyId.package.toLocaleString('en-IN')}
-                            </span>
-                          )}
+                          {/* Money display removed */}
                           <Badge className={config.color}>
                             <StatusIcon className="w-3 h-3 mr-1" />
                             {config.label}

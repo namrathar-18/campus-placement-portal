@@ -170,11 +170,7 @@ const PlacedCompany = () => {
               </div>
 
               <div className="p-4 rounded-xl bg-muted/40">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <IndianRupee className="w-4 h-4" />
-                  Package
-                </div>
-                <p className="font-semibold">{placedCompany?.salary || (placedCompany?.package ? `INR ${placedCompany.package}` : 'Not available')}</p>
+                {/* Money display removed */}
               </div>
 
               <div className="p-4 rounded-xl bg-muted/40">

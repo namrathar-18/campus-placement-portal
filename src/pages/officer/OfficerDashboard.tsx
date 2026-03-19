@@ -520,7 +520,7 @@ const OfficerDashboard = () => {
                           </div>
                           <div>
                             <h3 className="font-semibold">{company.name}</h3>
-                            <p className="text-sm text-muted-foreground">{company.roles?.[0] || 'Position'}</p>
+                            <p className="text-sm text-muted-foreground">{company.roles?.[0] || company.role || 'Position'}</p>
                           </div>
                         </div>
                         <div className="text-right">

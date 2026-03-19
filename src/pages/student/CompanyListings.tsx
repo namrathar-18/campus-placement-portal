@@ -160,26 +160,7 @@ const CompanyListings = () => {
               />
             </div>
 
-            <Select value={jobTypeFilter} onValueChange={setJobTypeFilter}>
-              <SelectTrigger className="w-full md:w-48 h-12 rounded-xl">
-                <SelectValue placeholder="Job Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="Full-time">Full-time</SelectItem>
-                <SelectItem value="Internship">Internship</SelectItem>
-                <SelectItem value="Part-time">Part-time</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant={showEligibleOnly ? 'default' : 'outline'}
-              onClick={() => setShowEligibleOnly(!showEligibleOnly)}
-              className="gap-2 h-12 rounded-xl px-6"
-            >
-              <Filter className="w-4 h-4" />
-              Eligible Only
-            </Button>
+            {/* Filter dropdown and Eligible Only button removed */}
           </div>
 
           <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-border/50">

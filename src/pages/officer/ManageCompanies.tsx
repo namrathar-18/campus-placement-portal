@@ -44,30 +44,12 @@ const ManageCompanies = () => {
     jobType: 'full-time' as 'full-time' | 'internship' | 'both',
     detailsFile: '' as string,
   });
-  // New filter states
-  const [jobTypeFilter, setJobTypeFilter] = useState('all'); // 'all', 'full-time', 'internship', 'both'
-  const [eligibleOnly, setEligibleOnly] = useState(false);
+  // ...existing code...
 
   const filteredCompanies = companies.filter((company) => {
-    // Search filter
+    // Search filter only
     const searchTarget = `${company.name} ${(company.roles || []).join(' ')} ${company.industry || ''}`.toLowerCase();
-    if (!searchTarget.includes(searchTerm.toLowerCase())) return false;
-
-    // Job type filter
-    if (jobTypeFilter !== 'all') {
-      if (jobTypeFilter === 'both') {
-        if (company.job_type !== 'both') return false;
-      } else {
-        if (company.job_type !== jobTypeFilter) return false;
-      }
-    }
-
-    // Eligible Only filter
-    if (eligibleOnly) {
-      // Example eligibility logic: show companies with eligibility field not empty
-      if (!company.eligibility || company.eligibility.trim() === '') return false;
-    }
-    return true;
+    return searchTarget.includes(searchTerm.toLowerCase());
   });
 
   const handleOpenDialog = (company?: Company) => {
@@ -256,17 +238,7 @@ const ManageCompanies = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="jobType">Job Type</Label>
-                      <Select value={formData.jobType} onValueChange={(v: 'full-time' | 'internship' | 'both') => setFormData({ ...formData, jobType: v })}>
-                        <SelectTrigger id="jobType"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="full-time">Full-time</SelectItem>
-                          <SelectItem value="internship">Internship</SelectItem>
-                          <SelectItem value="both">Both</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* Job Type dropdown removed as requested */}
                     <div className="space-y-2">
                       <Label htmlFor="deadline">Application Deadline</Label>
                       <Input id="deadline" type="date" value={formData.deadline} onChange={(e) => setFormData({ ...formData, deadline: e.target.value })} />
@@ -308,40 +280,15 @@ const ManageCompanies = () => {
           </div>
         </div>
 
-        {/* Filters & Search */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 animate-slide-up">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search companies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 max-w-md"
-            />
-          </div>
-          <div>
-            <Select value={jobTypeFilter} onValueChange={setJobTypeFilter}>
-              <SelectTrigger className="min-w-[140px]">
-                <SelectValue>{jobTypeFilter === 'all' ? 'All Types' : jobTypeFilter.charAt(0).toUpperCase() + jobTypeFilter.slice(1)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="full-time">Full-time</SelectItem>
-                <SelectItem value="internship">Internship</SelectItem>
-                <SelectItem value="both">Both</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            variant={eligibleOnly ? "default" : "outline"}
-            className="ml-2"
-            onClick={() => setEligibleOnly((prev) => !prev)}
-          >
-            <span className="flex items-center gap-2">
-              <svg width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 11l5-5m-5 5V7m0 4h4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Eligible Only
-            </span>
-          </Button>
+        {/* Search */}
+        <div className="relative mb-6 animate-slide-up">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search companies..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 max-w-md"
+          />
         </div>
 
         {/* Companies List */}

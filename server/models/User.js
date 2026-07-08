@@ -88,26 +88,24 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  // ...existing code...
 }, {
   timestamps: true
 });
 
-// Hash password before saving
+// Hash password before saving (only when it has changed)
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 // Method to compare password
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-
-// ...existing code...
 
 const User = mongoose.model('User', userSchema);
 

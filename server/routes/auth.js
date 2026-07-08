@@ -2,8 +2,6 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import User from '../models/User.js';
-// ...existing code...
-
 
 const router = express.Router();
 const studentEmailDomains = ['@mca.christuniversity.in', '@mscaiml.christuniversity.in'];
@@ -195,8 +193,6 @@ router.post('/logout', (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-
-// ...existing code...
 
 // @route   POST /api/auth/google
 // @desc    Verify Google ID token and login/register user

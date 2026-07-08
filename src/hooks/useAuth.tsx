@@ -25,6 +25,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInWithGoogle: (accessToken: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, name: string, registerNumber?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -163,6 +164,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const signInWithGoogle = async (accessToken: string) => {
+    try {
+      const response = await api.post('/auth/google', { accessToken });
+      const data = extractPayload(response) as any;
+      const { token, ...userData } = data || {};
+
+      localStorage.setItem('token', token);
+      clearPlacementCelebrationFlag(userData?.id);
+      setUser(userData);
+      await bootstrapDefaultCompaniesIfNeeded(userData);
+
+      return { error: null };
+    } catch (error: any) {
+      const message = error?.message || error?.data?.message || 'Google sign-in failed';
+      return { error: new Error(message) };
+    }
+  };
+
   const signUp = async (email: string, password: string, name: string, registerNumber?: string) => {
     try {
       const payload = { email, password, name, ...(registerNumber ? { registerNumber } : {}), role: 'student' };
@@ -200,6 +219,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         isLoading,
         signIn,
+        signInWithGoogle,
         signUp,
         signOut,
         refreshUser,

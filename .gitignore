@@ -30,3 +30,6 @@ dist-ssr
 .env.local
 .env.production
 server/.env
+
+# Local tooling
+.claude/

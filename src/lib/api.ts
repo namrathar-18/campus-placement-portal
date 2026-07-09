@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://campus-placement-portal-dl0o.onrender.com/api';
+// Active backend. A decommissioned deployment host is normalized to the live
+// one so the app keeps working even if an old build-time env var lingers.
+const LIVE_API_URL = 'https://campus-placement-portal-dl0o.onrender.com/api';
+const STALE_API_HOST = 'backend-campus-placement-portal.onrender.com';
+
+const configuredApiUrl = import.meta.env.VITE_API_URL || LIVE_API_URL;
+const API_URL = configuredApiUrl.includes(STALE_API_HOST) ? LIVE_API_URL : configuredApiUrl;
 
 // Create axios instance
 const api = axios.create({

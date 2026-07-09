@@ -148,15 +148,55 @@ The app runs at `http://localhost:8080`.
 
 ---
 
-## ☁️ Deployment
+## 🔑 Environment Variables
 
-| Service | Platform | Root | Build | Start |
-|--------|----------|------|-------|-------|
-| Frontend | Vercel | `/` | `npm run build` | static (`dist`) |
-| Backend | Render | `server` | `npm install` | `npm start` |
-| Database | MongoDB Atlas | — | — | — |
+### Backend (`server/.env`)
 
-Set the environment variables above in each platform's dashboard. Pushing to `main` redeploys automatically when the repos are connected.
+| Variable | Required | Description |
+|----------|:--------:|-------------|
+| `MONGODB_URI` | ✅ | MongoDB Atlas connection string (`mongodb+srv://…/placement_db`) |
+| `JWT_SECRET` | ✅ | Long random string used to sign JWTs |
+| `PORT` | ⬜ | API port (default `5000`; Render sets this automatically) |
+| `NODE_ENV` | ⬜ | `development` or `production` |
+| `GOOGLE_CLIENT_ID` | ✅ | Google OAuth 2.0 Web client ID (verifies Google sign-in) |
+| `EMAIL_USER` | ⬜ | Gmail address for status-update emails (blank = emails skipped) |
+| `EMAIL_PASSWORD` | ⬜ | 16-char Gmail **App Password** (not your normal password) |
+
+### Frontend (`.env`)
+
+| Variable | Required | Description |
+|----------|:--------:|-------------|
+| `VITE_API_URL` | ✅ | Backend base URL, e.g. `https://<your-api>.onrender.com/api` |
+| `VITE_GOOGLE_CLIENT_ID` | ✅ | Same Google client ID as the backend |
+
+> 🔒 `.env` files are gitignored. Never commit real secrets — use the `.env.example` templates.
+
+---
+
+## ☁️ Deployment (Vercel + Render + Atlas)
+
+### 1. Database — MongoDB Atlas
+1. Create a free **M0** cluster at [cloud.mongodb.com](https://cloud.mongodb.com).
+2. **Database Access** → add a user + password.
+3. **Network Access** → **Allow access from anywhere** (`0.0.0.0/0`).
+4. **Connect → Drivers** → copy the connection string → this is `MONGODB_URI`.
+
+### 2. Backend — Render
+1. [render.com](https://render.com) → **New → Web Service** → connect this GitHub repo.
+2. **Root Directory:** `server` · **Build:** `npm install` · **Start:** `npm start`.
+3. Add environment variables from the backend table above.
+4. Deploy → copy the URL, e.g. `https://campus-placement-portal-dl0o.onrender.com`.
+
+### 3. Frontend — Vercel
+1. [vercel.com](https://vercel.com) → **Add New → Project** → import this repo.
+2. Framework preset: **Vite** (build `npm run build`, output `dist`).
+3. Add env vars: `VITE_API_URL = https://<your-render-url>/api` and `VITE_GOOGLE_CLIENT_ID`.
+4. Deploy → your app is live at `https://<project>.vercel.app`.
+
+### 4. Google OAuth
+In [Google Cloud Console](https://console.cloud.google.com) → Credentials → your OAuth client → add both your Vercel URL and `http://localhost:8080` to **Authorized JavaScript origins**.
+
+> Pushing to `main` redeploys automatically once the repos are connected to Render/Vercel.
 
 ---
 

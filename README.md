@@ -1,103 +1,84 @@
 # 🎓 Campus Placement Portal
 
-A full-stack web application designed to streamline and manage the campus recruitment process for students and placement officers.
+A full-stack, role-based platform that digitizes the entire campus recruitment lifecycle — from company drives and student applications to shortlisting, offers, and placement analytics.
+
+<p align="center">
+  <a href="https://campus-placement-portal.vercel.app"><b>🌐 Live Demo</b></a> &nbsp;•&nbsp;
+  <a href="#-features"><b>Features</b></a> &nbsp;•&nbsp;
+  <a href="#-tech-stack"><b>Tech Stack</b></a> &nbsp;•&nbsp;
+  <a href="#-getting-started"><b>Getting Started</b></a>
+</p>
+
+---
+
+## 🌐 Live Demo
+
+- **Frontend:** https://campus-placement-portal.vercel.app
+- **API:** https://campus-placement-portal-dl0o.onrender.com/api
+
+> Access is restricted to official Christ University email accounts (`@mca.christuniversity.in`, `@mscaiml.christuniversity.in`) via email/password or Google sign-in.
 
 ---
 
 ## 📌 Overview
 
-The **Campus Placement Portal** simplifies campus hiring by providing a centralized platform for students, placement officers, and companies. It enables efficient job postings, application tracking, notifications, and analytics — all in one place.
-
----
-
-## 👩‍💻 Creator
-
-
+The Campus Placement Portal replaces spreadsheets and email threads with a single source of truth for placements. It serves three distinct roles — **Students**, **Student Representatives**, and **Placement Officers** — each with a tailored dashboard, permissions, and workflow. The result is faster drives, transparent tracking, and data-driven placement decisions.
 
 ---
 
 ## ✨ Features
 
-### 👨‍🎓 Student Features
-- Secure registration and login
-- View and search company/job listings
-- Apply for eligible positions
-- Track application status
-- View placement statistics and updates
+### 👨‍🎓 Student
+- Google / university-email authentication with guided profile setup
+- Browse verified company drives with eligibility indicators
+- One-click apply and real-time application status tracking
+- Personal placement statistics and offer history
+- **AI Resume Analyzer** — matches a resume against a job description and returns a fit score with matched/missing skills
+- In-app assistant for placement queries
 
-### 🧑‍💼 Placement Officer Features
-- Officer dashboard for management
-- Add and manage companies and job postings
-- Review and update student applications
-- Send notifications to students
-- Generate placement reports and analytics
+### 🧑‍💼 Placement Officer
+- Central dashboard with live placement KPIs
+- Create and manage companies, roles, and eligibility criteria
+- Review, shortlist, and update applications across drives
+- Broadcast notifications to students
+- **Placement Analytics** — charts for offers, CTC ranges, department-wise placement, and company participation
+- Export placed-student reports (PDF)
 
-### 🔔 General Features
-- Role-based authentication
-- Real-time notifications
-- Responsive UI
-- Clean and modern design
+### 🧑‍🏫 Student Representative
+- Delegated management of drives, applications, and notifications
+- Role-scoped permissions distinct from officers
+
+### 🔐 Platform
+- JWT-based auth with bcrypt password hashing
+- Google OAuth restricted to whitelisted university domains
+- Role-based access control across every route
+- Responsive, accessible UI with light/dark support
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- Vite
-
-### Backend
-- Node.js
-- Express.js
-
-### Database
-- MongoDB
+| Layer | Technologies |
+|-------|-------------|
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, React Router |
+| **Backend** | Node.js, Express, JWT, bcrypt |
+| **Database** | MongoDB (Atlas) with Mongoose |
+| **Auth** | Email/password + Google OAuth (`@react-oauth/google`) |
+| **Analytics/PDF** | Recharts, jsPDF |
+| **Hosting** | Vercel (frontend) · Render (API) · MongoDB Atlas (DB) |
 
 ---
 
-## Resume Analyzer (Python ML)
+## 🏗️ Architecture
 
-The backend now includes a Python-based resume analyzer that:
-- extracts skills from resume text
-- extracts required skills from a job description
-- computes semantic similarity using TF-IDF + cosine similarity
-- returns matched skills, missing skills, and a fit score
-
-### Install Python dependencies
-
-From the project root:
-
-```bash
-pip install -r server/ml/requirements.txt
 ```
-
-If your server uses a custom Python command, set:
-
-```bash
-PYTHON_EXECUTABLE=python
+Browser ──▶ Vercel (React + Vite SPA)
+                │  REST / JWT
+                ▼
+          Render (Express API) ──▶ MongoDB Atlas
+                │
+                └──▶ Google OAuth · Resume Analyzer
 ```
-
-### API endpoint
-
-`POST /api/zenith/resume-analyzer`
-
-Request body:
-
-```json
-{
-	"jobDescription": "We need React, Node.js, SQL and problem solving skills...",
-	"resumeText": "Built React dashboards and Node APIs with MongoDB...",
-	"topKMissing": 10
-}
-```
-
-Notes:
-- `jobDescription` is required.
-- `resumeText` is optional. If omitted, backend uses stored resume text or extracts it from uploaded resume PDF.
-- Model scores are estimations and cannot guarantee 100% real-world accuracy.
 
 ---
 
@@ -105,9 +86,82 @@ Notes:
 
 ```text
 campus-placement-portal/
-│
-├── src/            # Frontend React application
-├── public/         # Static assets
-├── server/         # Backend Express server
-├── .env.example    # Sample environment variables
+├── src/                 # React frontend
+│   ├── pages/           # Student, officer, representative views
+│   ├── components/      # UI + shared components
+│   ├── hooks/           # Auth and data hooks
+│   └── lib/             # API client
+├── server/              # Express backend
+│   ├── routes/          # Auth, companies, applications, stats…
+│   ├── models/          # Mongoose schemas
+│   ├── middleware/      # Auth / RBAC
+│   └── ml/              # Resume analyzer
 └── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- A MongoDB connection string (MongoDB Atlas free tier works)
+
+### 1. Clone
+```bash
+git clone https://github.com/namrathar-18/campus-placement-portal.git
+cd campus-placement-portal
+```
+
+### 2. Backend
+```bash
+cd server
+npm install
+# create server/.env (see below)
+npm start
+```
+
+`server/.env`:
+```env
+MONGODB_URI=your_mongodb_atlas_uri
+JWT_SECRET=a_long_random_string
+PORT=5000
+NODE_ENV=development
+GOOGLE_CLIENT_ID=your_google_client_id
+```
+
+### 3. Frontend
+```bash
+cd ..
+npm install
+# create .env (see below)
+npm run dev
+```
+
+`.env`:
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
+
+The app runs at `http://localhost:8080`.
+
+---
+
+## ☁️ Deployment
+
+| Service | Platform | Root | Build | Start |
+|--------|----------|------|-------|-------|
+| Frontend | Vercel | `/` | `npm run build` | static (`dist`) |
+| Backend | Render | `server` | `npm install` | `npm start` |
+| Database | MongoDB Atlas | — | — | — |
+
+Set the environment variables above in each platform's dashboard. Pushing to `main` redeploys automatically when the repos are connected.
+
+---
+
+## 👩‍💻 Author
+
+**Namratha R** — [@namrathar-18](https://github.com/namrathar-18)
+
+> Built as a full-stack MERN-style placement management system for real campus recruitment workflows.

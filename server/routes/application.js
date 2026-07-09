@@ -2,6 +2,7 @@ import express from 'express';
 import Application from '../models/Application.js';
 import User from '../models/User.js';
 import { protect, authorize } from '../middleware/auth.js';
+import { sendApplicationStatusEmail } from '../config/email.js';
 
 const router = express.Router();
 
@@ -137,14 +138,27 @@ router.put('/:id', protect, async (req, res) => {
     // If status changed to placed, mark student as placed and remove all other applications
     if (req.body.status === 'placed' && application.status !== 'placed') {
       await User.findByIdAndUpdate(application.studentId, { isPlaced: true });
-      
+
       // Keep only the placed application for this student
       await Application.deleteMany(
-        { 
-          studentId: application.studentId, 
+        {
+          studentId: application.studentId,
           _id: { $ne: req.params.id }
         }
       );
+    }
+
+    // Notify the student by email when an officer/representative changes the status
+    const statusChanged = req.body.status && req.body.status !== application.status;
+    const changedByStaff = req.user.role === 'placement_officer' || req.user.role === 'student_representative';
+    if (statusChanged && changedByStaff && updatedApplication.studentId?.email) {
+      // Fire-and-forget: never block the response on email delivery
+      sendApplicationStatusEmail({
+        to: updatedApplication.studentId.email,
+        name: updatedApplication.studentId.name,
+        companyName: updatedApplication.companyId?.name || 'the company',
+        status: req.body.status,
+      });
     }
 
     res.json({ success: true, data: updatedApplication });

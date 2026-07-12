@@ -16,7 +16,17 @@ A full-stack, role-based platform that digitizes the entire campus recruitment l
 - **Frontend:** https://campus-placement-portal-live.vercel.app
 - **API:** https://campus-placement-portal-dl0o.onrender.com/api
 
-> Access is restricted to official Christ University email accounts (`@mca.christuniversity.in`, `@mscaiml.christuniversity.in`) via email/password or Google sign-in.
+### Demo accounts (password: `Demo@12345`)
+
+| Role | Email |
+|------|-------|
+| Placement Officer | `demo.officer@christuniversity.in` |
+| Student Representative | `demo.rep@christuniversity.in` |
+| Student | `demo.student@mca.christuniversity.in` |
+
+> Sign in with the email + password above. Google sign-in additionally requires the
+> deployment domain to be whitelisted in the Google OAuth client (see Deployment).
+> The API runs on Render's free tier, so the first request after idle may take ~30s to wake.
 
 ---
 

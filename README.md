@@ -3,7 +3,7 @@
 A full-stack, role-based platform that digitizes the entire campus recruitment lifecycle — from company drives and student applications to shortlisting, offers, and placement analytics.
 
 <p align="center">
-  <a href="https://christ-placement-portal.vercel.app"><b>🌐 Live Demo</b></a> &nbsp;•&nbsp;
+  <a href="https://campus-placement-portal-live.vercel.app"><b>🌐 Live Demo</b></a> &nbsp;•&nbsp;
   <a href="#-features"><b>Features</b></a> &nbsp;•&nbsp;
   <a href="#-tech-stack"><b>Tech Stack</b></a> &nbsp;•&nbsp;
   <a href="#-getting-started"><b>Getting Started</b></a>
@@ -13,7 +13,7 @@ A full-stack, role-based platform that digitizes the entire campus recruitment l
 
 ## 🌐 Live Demo
 
-- **Frontend:** https://christ-placement-portal.vercel.app
+- **Frontend:** https://campus-placement-portal-live.vercel.app
 - **API:** https://campus-placement-portal-dl0o.onrender.com/api
 
 > Access is restricted to official Christ University email accounts (`@mca.christuniversity.in`, `@mscaiml.christuniversity.in`) via email/password or Google sign-in.

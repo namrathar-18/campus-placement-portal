@@ -54,7 +54,8 @@ export const authorize = (...roles) => {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    // Admin is a superuser and may access any authorized route
+    if (req.user.role !== 'admin' && !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         message: `User role '${req.user.role}' is not authorized to access this route`,

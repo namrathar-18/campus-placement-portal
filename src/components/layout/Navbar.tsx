@@ -47,12 +47,14 @@ const Navbar = () => {
         { to: '/officer/notifications', label: 'Notifications' },
       ];
     }
-    if (user?.role === 'placement_officer') {
+    if (user?.role === 'placement_officer' || user?.role === 'admin') {
       return [
         { to: '/officer/dashboard', label: 'Dashboard' },
         { to: '/officer/companies', label: 'Manage Companies' },
         { to: '/officer/applications', label: 'Applications' },
         { to: '/officer/students', label: 'Student Stats' },
+        { to: '/officer/analytics', label: 'Analytics' },
+        { to: '/officer/placed-students', label: 'Placed Students' },
         { to: '/officer/notifications', label: 'Notifications' },
       ];
     }
@@ -61,7 +63,7 @@ const Navbar = () => {
 
   const getDashboardPath = () => {
     if (user?.role === 'student') return '/student/dashboard';
-    if (user?.role === 'placement_officer' || user?.role === 'student_representative') return '/officer/dashboard';
+    if (user?.role === 'placement_officer' || user?.role === 'student_representative' || user?.role === 'admin') return '/officer/dashboard';
     return '/';
   };
 

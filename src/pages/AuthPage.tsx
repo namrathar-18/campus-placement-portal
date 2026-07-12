@@ -17,11 +17,17 @@ import {
   TrendingUp,
   ShieldCheck,
   CheckCircle2,
+  User,
+  Hash,
 } from 'lucide-react';
 import christLogo from '@/assets/christ-university-logo.png';
 import { z } from 'zod';
 
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const emailSchema = z.string().trim().email('Please enter a valid email address');
+
+const isStudentEmail = (email: string) => /@(mca|mscaiml)\.christuniversity\.in$/i.test(email.trim());
+const isUniversityEmail = (email: string) => /@([a-z]+\.)?christuniversity\.in$/i.test(email.trim());
 
 const highlights = [
   {
@@ -70,16 +76,19 @@ const GoogleIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { signIn, signInWithGoogle, isAuthenticated, user, isLoading: authLoading } = useAuth();
+  const { signIn, signInWithGoogle, signUp, isAuthenticated, user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [signupName, setSignupName] = useState('');
+  const [signupRegNumber, setSignupRegNumber] = useState('');
 
   useEffect(() => {
     if (isAuthenticated && user && !authLoading) {
-      if (user.role === 'placement_officer') {
+      if (user.role === 'placement_officer' || user.role === 'admin') {
         navigate('/officer/dashboard', { replace: true });
       } else if (user.role === 'student_representative') {
         navigate('/representative/dashboard', { replace: true });
@@ -126,6 +135,55 @@ const AuthPage = () => {
       });
     }
 
+    setIsLoading(false);
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = loginData.email.trim();
+
+    try {
+      emailSchema.parse(email);
+      passwordSchema.parse(loginData.password);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({ title: 'Validation Error', description: error.errors[0].message, variant: 'destructive' });
+        return;
+      }
+    }
+
+    if (!signupName.trim()) {
+      toast({ title: 'Name required', description: 'Please enter your full name.', variant: 'destructive' });
+      return;
+    }
+
+    if (!isUniversityEmail(email)) {
+      toast({
+        title: 'University email required',
+        description: 'Use a @christuniversity.in address. Students use @mca / @mscaiml; coordinators use @christuniversity.in.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const isStudent = isStudentEmail(email);
+    if (isStudent && !signupRegNumber.trim()) {
+      toast({ title: 'Register number required', description: 'Students must provide their register number.', variant: 'destructive' });
+      return;
+    }
+
+    setIsLoading(true);
+    const role = isStudent ? 'student' : 'placement_officer';
+    const { error } = await signUp(email, loginData.password, signupName.trim(), isStudent ? signupRegNumber.trim() : undefined, role);
+
+    if (error) {
+      toast({ title: 'Registration Failed', description: error.message || 'Could not create account.', variant: 'destructive' });
+    } else {
+      toast({
+        title: 'Account created 🎉',
+        description: isStudent ? 'Welcome! Complete your profile to continue.' : 'Welcome, coordinator! Your placement-officer account is ready.',
+      });
+    }
     setIsLoading(false);
   };
 
@@ -244,13 +302,36 @@ const AuthPage = () => {
           </div>
 
           <div className="mb-8">
-            <h2 className="font-heading text-3xl font-bold text-foreground">Welcome back</h2>
+            <h2 className="font-heading text-3xl font-bold text-foreground">
+              {mode === 'login' ? 'Welcome back' : 'Create your account'}
+            </h2>
             <p className="mt-1.5 text-muted-foreground">
-              Sign in to continue to your placement dashboard.
+              {mode === 'login'
+                ? 'Sign in to continue to your placement dashboard.'
+                : 'Students and placement coordinators can self-enroll with a university email.'}
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-5">
+            {mode === 'signup' && (
+              <div className="space-y-2">
+                <Label htmlFor="signup-name" className="font-semibold">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="Your full name"
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    className="pl-10 h-12 rounded-xl"
+                    autoComplete="name"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="login-email" className="font-semibold">University Email</Label>
               <div className="relative">
@@ -293,14 +374,32 @@ const AuthPage = () => {
               </div>
             </div>
 
+            {mode === 'signup' && isStudentEmail(loginData.email) && (
+              <div className="space-y-2">
+                <Label htmlFor="signup-reg" className="font-semibold">Register Number</Label>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signup-reg"
+                    type="text"
+                    placeholder="e.g. 2547001"
+                    value={signupRegNumber}
+                    onChange={(e) => setSignupRegNumber(e.target.value)}
+                    className="pl-10 h-12 rounded-xl"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <Button type="submit" variant="hero" className="w-full h-12 rounded-xl text-base" disabled={busy}>
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Signing in...
+                  {mode === 'login' ? 'Signing in...' : 'Creating account...'}
                 </>
               ) : (
-                'Sign In'
+                mode === 'login' ? 'Sign In' : 'Create Account'
               )}
             </Button>
           </form>
@@ -327,15 +426,26 @@ const AuthPage = () => {
             ) : (
               <GoogleIcon />
             )}
-            Sign in with Google
+            {mode === 'login' ? 'Sign in with Google' : 'Sign up with Google'}
           </Button>
+
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              type="button"
+              onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+              className="font-semibold text-primary hover:underline"
+            >
+              {mode === 'login' ? 'Create one' : 'Sign in'}
+            </button>
+          </p>
 
           <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
             <CheckCircle2 className="h-3.5 w-3.5 text-success" />
             Only official Christ University accounts can access this portal.
           </p>
 
-          <p className="mt-8 text-center text-xs text-muted-foreground">
+          <p className="mt-6 text-center text-xs text-muted-foreground">
             By continuing, you agree to the university's placement policies.
           </p>
         </div>

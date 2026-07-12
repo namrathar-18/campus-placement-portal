@@ -26,7 +26,7 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: (accessToken: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, name: string, registerNumber?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, name: string, registerNumber?: string, role?: UserRole) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserData: (updates: Partial<AuthUser>) => void;
@@ -182,9 +182,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, registerNumber?: string) => {
+  const signUp = async (email: string, password: string, name: string, registerNumber?: string, role: UserRole = 'student') => {
     try {
-      const payload = { email, password, name, ...(registerNumber ? { registerNumber } : {}), role: 'student' };
+      const payload = { email, password, name, ...(registerNumber ? { registerNumber } : {}), role };
       
       const response = await api.post('/auth/register', payload);
       const data = extractPayload(response) as any;
